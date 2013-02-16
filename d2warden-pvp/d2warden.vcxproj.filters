@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="_BUILD">
+      <UniqueIdentifier>{91308a65-7f47-49ad-95f9-5ecb52b0e5e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Web Services %28SOAP%29">
+      <UniqueIdentifier>{4581a208-a0a3-4d75-97f9-23a59d32e4ea}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D2Handlers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D2Ptrs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D2Stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D2Warden.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LRoster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="md5c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RC4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Spectator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StatDumpThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vars.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WardenMisc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WardenThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NodesEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LItems.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LMonsters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PartyExp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExMemory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LQuests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LWorldEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LTrade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soapARQuerySaldoBindingProxy.cpp">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClCompile>
+    <ClCompile Include="soapARTransferGoldBindingProxy.cpp">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClCompile>
+    <ClCompile Include="soapC.cpp">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClCompile>
+    <ClCompile Include="soapARLiveBroadcastBindingProxy.cpp">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClCompile>
+    <ClCompile Include="stdsoap2.cpp">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClCompile>
+    <ClCompile Include="LEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="d2warden.def">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D2Handlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Ptrs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Stubs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Warden.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="introtate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LRoster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RC4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Spectator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatDumpThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WardenMisc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WardenThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodesEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LItems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LMonsters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Build.h">
+      <Filter>_BUILD</Filter>
+    </ClInclude>
+    <ClInclude Include="PartyExp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExMemory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LQuests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Consts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LWorldEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LTrade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="soapARQuerySaldoBindingProxy.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="soapARTransferGoldBindingProxy.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="soapH.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="soapStub.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="soapARLiveBroadcastBindingProxy.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="stdsoap2.h">
+      <Filter>Web Services %28SOAP%29</Filter>
+    </ClInclude>
+    <ClInclude Include="LEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="HashGameSeed.asm">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
