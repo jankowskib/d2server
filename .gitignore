@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+*.pdb
+*.idb
+*.htm
+*.obj
+*.tlog
+*.log
+*.pch
+
