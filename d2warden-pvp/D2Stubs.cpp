@@ -7,7 +7,6 @@
 #include "NodesEx.h"
 #include "PartyExp.h"
 #include "LQuests.h"
-#include "LTrade.h"
 #include "LRoster.h"
 #include "LEvents.h"
 #include "Vars.h"
@@ -294,24 +293,6 @@ __declspec(naked) int __fastcall D2GAME_SaveItems(BYTE *pBuffer, BOOL _2, Game *
 	}
 }
 
-__declspec(naked) BYTE D2GAME_AllocTradeStrc_STUB()
-{
-	__asm
-	{
-		push ebx
-		push edi
-
-		mov edx, ebx // pUnit
-		mov ecx, edi // pGame
-
-		call TRADE_AllocTradeStrc
-
-		pop edi
-		pop ebx
-
-		ret
-	}
-}
 
 __declspec(naked) void __fastcall D2GAME_CastSkill(UnitAny *ptUnit, Skill *ptSkill, Game *pGame, int xPos, int yPos)
 {

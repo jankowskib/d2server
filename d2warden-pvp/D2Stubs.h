@@ -14,7 +14,6 @@ void __fastcall D2GAME_UpdateQuantity(UnitAny* pPlayer);
 void __fastcall D2GAME_UpdateItemQuantity(UnitAny* pPlayer, UnitAny* pItem);
 void __fastcall D2GAME_RemoveBonuses(Game* pGame, UnitAny* pPlayer);
 int __fastcall D2GAME_SaveItems(BYTE *pBuffer, BOOL _2, Game *ptGame, UnitAny *ptUnit, Inventory *pInv, int nMaxSize, BOOL bInTrade, BOOL bQuit, BOOL bUnk);
-BYTE D2GAME_AllocTradeStrc_STUB();
 void D2GAME_OnPlayerModeChange_I();
 
  void __fastcall D2GAME_StopSequence(UnitAny* pUnit);

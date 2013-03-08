@@ -5,7 +5,6 @@
 #include "D2Stubs.h"
 #include "WardenMisc.h"
 #include "Vars.h"
-#include "soapARLiveBroadcastBindingProxy.h"
 #include <sstream>
 
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
@@ -20,13 +19,6 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 				ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
 				if(pClient) {
 					if(pClient->pPlayerUnit->pPlayerData->isPlaying == 0)  return;
-
-					ARLiveBroadcastBindingProxy hQuery;
-					string wynik;
-					if(hQuery.ARLiveBroadcast(GSName,pGame->GameName,"02",pClient->AccountName,wynik) != SOAP_OK)
-					{
-						Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (02), blad : '%s', '%s'",hQuery.soap_fault_string(),wynik.c_str());
-					}
 					DoRoundEndStuff(pGame, pClient->pPlayerUnit);
 				}
 				else Debug("Nie znalazlem struktury WardenClient w %s",__FUNCTION__);
@@ -53,7 +45,6 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 	Debug("DEBUG: Robie DoRoundEndStuff");
 	if(!pGame || !pUnit) return;
 
-	ARLiveBroadcastBindingProxy hQuery;
 	ostringstream str; 
 	string wynik;
 
@@ -107,10 +98,6 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 		ClearCanAttackFlag(pGame);
 		ClearIsPlayingFlag(pGame);
 		BroadcastExEvent(pGame,1,0,3,-1,200, "Runda zakonczona!", "Round end!");
-		if(hQuery.ARLiveBroadcast(GSName,pGame->GameName,"06","",wynik) != SOAP_OK)
-		{
-			Log("ARLiveBroadcast: Wystapil blad podczas raportowania konca rundy (06), blad : '%s', '%s'",hQuery.soap_fault_string(),wynik.c_str());
-		}
 	}
 
 }

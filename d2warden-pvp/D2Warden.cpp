@@ -29,7 +29,6 @@
 #include "ExMemory.h"
 #include "LQuests.h"
 #include "LItems.h"
-#include "LTrade.h"
 #include "LWorldEvent.h"
 #include <boost/tokenizer.hpp>
 #include "soapARLiveBroadcastBindingProxy.h"
@@ -222,15 +221,11 @@ UNUSED
 //#endif
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7D66D),(DWORD)D2GAME_LastHitIntercept_STUB,5,"LastHitIntercept");
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x99130),(DWORD)D2GAME_OnCreateDamage_STUB,6,"OnDamageCreation");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x35480), (DWORD)D2GAME_AllocTradeStrc_STUB,7,"Alloc Trade Func");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x32200), (DWORD)TRADE_OnTradeAction,5,"0x4F Override");
 	PatchGS(CALL,GetDllOffset("D2Net.dll",0x62AD),(DWORD)D2NET_ReceivePacket_STUB,5,"Client Packet Wrapper");
 	if(AllowD2Ex) {
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2C1E0),(DWORD)OnD2ExPacket,5,"D2Ex Connect");
 	p_D2NET_ToSrvPacketSizes[0x0B]=5;
 	} 
-	p_D2NET_ToSrvPacketSizes[0x2C]=18;
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2BE70),(DWORD)TRADE_OnARGoldPass,5,"Get Ar Gold 0x2C Packet");
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x617B5),(DWORD)OnActLoad,5,"Act Load");
 	if(MoveToTown)
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x42DAB),(DWORD)OnCreateCorpse,5,"Move Player Corpse To Town");

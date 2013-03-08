@@ -15,7 +15,6 @@
 #include "LEvents.h"
 #include "LMonsters.h"
 #include "LWorldEvent.h"
-#include "soapARLiveBroadcastBindingProxy.h"
 #include <boost\random.hpp>
 
 map<string,int> Dane;
@@ -1066,14 +1065,7 @@ if(ClientID==NULL) return TRUE;
 			if(i->InitStatus != 4) continue;
 			if(i->pGame==pUnit->pGame && i->pPlayerUnit->pPlayerData->isPlaying != 0)  i->pPlayerUnit->pPlayerData->CanAttack = 1;
 			}
-
 				BroadcastExEvent(pUnit->pGame,COL_RED,D2EX_PLAY,3,-1,200, "Runda rozpoczeta!", "Round begins!");
-				if(!pakiet.str().empty()) {
-					ARLiveBroadcastBindingProxy hQuery;
-					string wynik; 
-					if(hQuery.ARLiveBroadcast(GSName,pUnit->pGame->GameName,"01",pakiet.str(),wynik) != SOAP_OK)
-						Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (01), blad : '%s'",hQuery.soap_fault_string());
-				}
 			}
 			return true;
 		}
@@ -1096,12 +1088,6 @@ if(ClientID==NULL) return TRUE;
 				}
 
 				BroadcastExEvent(pUnit->pGame,1,D2EX_PLAY,3,-1,200, "Runda rozpoczeta!" , "Round begins!");
-				if(!pakiet.str().empty()) {
-					ARLiveBroadcastBindingProxy hQuery;
-					string wynik; 
-					if(hQuery.ARLiveBroadcast(GSName,pUnit->pGame->GameName,"01",pakiet.str(),wynik) != SOAP_OK)
-						Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (01), blad : '%s'",hQuery.soap_fault_string());
-				}
 			}
 		return true;
 		}
@@ -1120,12 +1106,6 @@ if(ClientID==NULL) return TRUE;
 			}
 			if(pUnit->pGame->bFestivalMode == 1)
 				if(pUnit->pPlayerData->isPlaying) {
-					ARLiveBroadcastBindingProxy hQuery;
-					string wynik;
-					if(hQuery.ARLiveBroadcast(GSName,pUnit->pGame->GameName,"02",pUnit->pPlayerData->pClientData->AccountName,wynik) != SOAP_OK)
-					{
-						Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (02), blad : '%s', '%s'",hQuery.soap_fault_string(),wynik.c_str());
-					}
 					pUnit->pPlayerData->SaidGO = 0;
 					pUnit->pPlayerData->CanAttack = 0;
 					DoRoundEndStuff(pUnit->pGame,pUnit);
@@ -1134,41 +1114,6 @@ if(ClientID==NULL) return TRUE;
 				}
 
 				return TRUE;
-		}
-		if(_stricmp(str,"#score")==0)
-		{
-		ostringstream pakiet;
-		string wynik;
-		ARLiveBroadcastBindingProxy hQuery;
-
-		char * t2;
-		if(!pUnit->pGame->bFestivalMode) return true;
-		char* Team1 = strtok_s(NULL," ",&t);
-		if(!Team1) goto info;
-		char* Score = strtok_s(NULL," ",&t);
-		if(!Score) goto info;
-		char* S1 = strtok_s(Score,":;-",&t2);
-		if(!S1) goto info;
-		char* S2 = strtok_s(NULL,":;-",&t2);
-		if(!S2) goto info;
-		char* Team2 = strtok_s(NULL," ",&t);
-		if(!Team2) goto info;
-		
-		pakiet << Team1 << '#' << S1 << '#' << S2 << '#' << Team2 << '#' << pUnit->pPlayerData->pClientData->AccountName;
-		if(hQuery.ARLiveBroadcast(GSName,pUnit->pGame->GameName,"03",pakiet.str(),wynik) != SOAP_OK)
-		{
-		Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (03), blad : '%s'",hQuery.soap_fault_string());
-		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Blad podczas zglaszania wyniku" : "Score sign failure");
-		}
-		if(wynik == "OK")
-		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Zgloszono wynik" : "Score signed");
-		else
-		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Wpisz wynik porz¹dnie!" : "Type score correctly!");
-		return false;
-	info:
-		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Uzycie #score NazwaTeamu1 Wynik1:Wynik2 Nazwa Teamu2 ! Np #score HC 5:0 BD" : "Usage #score Team1 Score1:Score2 Team2 ! ie #score HC 5:0 BD");
-		
-		return false;
 		}
 		if(_stricmp(str,"#debug")==0)
 		{

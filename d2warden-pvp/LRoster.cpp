@@ -7,7 +7,6 @@
 #include "LEvents.h"
 #include <sstream>
 
-#include "soapARLiveBroadcastBindingProxy.h"
 
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile)
 {
@@ -98,14 +97,6 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 void __fastcall OnGameDestroy(Game* ptGame)
 {
 	LRost::Clear(ptGame);
-	if(ptGame->bFestivalMode) {
-	ARLiveBroadcastBindingProxy hQuery;
-	string wynik;
-	if(hQuery.ARLiveBroadcast(GSName,ptGame->GameName,"05","",wynik) != SOAP_OK)
-	{
-		Log("ARLiveBroadcast: Wystapil blad podczas raportowania wiadomosci (05), blad : '%s'",hQuery.soap_fault_string());
-	}
-}
 	Debug("Zamykam gre %s", ptGame->GameName);
 }
 
@@ -182,16 +173,6 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 		if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER)
 		{
 		if(ptGame->bFestivalMode == 1) {
-			ARLiveBroadcastBindingProxy hQuery;
-			ostringstream str;
-			string wynik;
-			str << ptVictim->pPlayerData->pClientData->AccountName << "#" << ptKiller->pPlayerData->pClientData->AccountName;
-			if(hQuery.ARLiveBroadcast(GSName,ptGame->GameName,"04",str.str(),wynik) != SOAP_OK)
-			{
-				Log("ARLiveBroadcast: Wystapil blad podczas raportowania smierci (04), blad : '%s'",wynik.c_str());
-			}
-
-
 			ptVictim->pPlayerData->CanAttack = 0;
 			ptVictim->pPlayerData->SaidGO = 0;
 			

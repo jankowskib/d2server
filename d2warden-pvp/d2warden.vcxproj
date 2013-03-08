@@ -170,16 +170,11 @@ ping -n 2 127.0.0.1 &gt;NUL</Command>
     <ClCompile Include="LMonsters.cpp" />
     <ClCompile Include="LQuests.cpp" />
     <ClCompile Include="LRoster.cpp" />
-    <ClCompile Include="LTrade.cpp" />
     <ClCompile Include="LWorldEvent.cpp" />
     <ClCompile Include="md5c.cpp" />
     <ClCompile Include="NodesEx.cpp" />
     <ClCompile Include="PartyExp.cpp" />
     <ClCompile Include="RC4.cpp" />
-    <ClCompile Include="soapARLiveBroadcastBindingProxy.cpp" />
-    <ClCompile Include="soapARQuerySaldoBindingProxy.cpp" />
-    <ClCompile Include="soapARTransferGoldBindingProxy.cpp" />
-    <ClCompile Include="soapC.cpp" />
     <ClCompile Include="Spectator.cpp" />
     <ClCompile Include="StatDumpThread.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -188,7 +183,6 @@ ping -n 2 127.0.0.1 &gt;NUL</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Full</Optimization>
     </ClCompile>
-    <ClCompile Include="stdsoap2.cpp" />
     <ClCompile Include="Vars.cpp" />
     <ClCompile Include="WardenMisc.cpp" />
     <ClCompile Include="WardenThread.cpp">
@@ -225,21 +219,14 @@ ping -n 2 127.0.0.1 &gt;NUL</Command>
     <ClInclude Include="LMonsters.h" />
     <ClInclude Include="LQuests.h" />
     <ClInclude Include="LRoster.h" />
-    <ClInclude Include="LTrade.h" />
     <ClInclude Include="LWorldEvent.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="NodesEx.h" />
     <ClInclude Include="PartyExp.h" />
     <ClInclude Include="RC4.h" />
-    <ClInclude Include="soapARLiveBroadcastBindingProxy.h" />
-    <ClInclude Include="soapARQuerySaldoBindingProxy.h" />
-    <ClInclude Include="soapARTransferGoldBindingProxy.h" />
-    <ClInclude Include="soapH.h" />
-    <ClInclude Include="soapStub.h" />
     <ClInclude Include="Spectator.h" />
     <ClInclude Include="StatDumpThread.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="stdsoap2.h" />
     <ClInclude Include="Vars.h" />
     <ClInclude Include="WardenMisc.h" />
     <ClInclude Include="WardenThread.h" />
