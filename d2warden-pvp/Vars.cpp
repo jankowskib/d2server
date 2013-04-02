@@ -31,6 +31,7 @@ std::string UpdateURL;
 std::string DmgOwner;
 std::string GSName;
 std::map<std::string,BYTE> ColorSet;
+std::list<std::string> Admins;
 
 bool Warden_Enable;
 Vote * sVote = 0;

@@ -35,7 +35,9 @@ short CalculateDistance(short x1, short y1, short x2, short y2)
 bool isAnAdmin(string szAcc)
 {
  boost::to_lower(szAcc);
- if(szAcc=="lord" ||  szAcc == "lolet" || szAcc == "mrmag-ws" || szAcc == "wimt" || szAcc == "rogh" || szAcc == "hamer" || szAcc == "raditz-azm-") return true;
+
+ for(list<std::string>::iterator i = Admins.begin(); i != Admins.end(); ++i) if(szAcc == *i) return true;
+
  return false;
 }
 

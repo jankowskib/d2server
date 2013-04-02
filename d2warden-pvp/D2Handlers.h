@@ -30,6 +30,6 @@ BOOL __fastcall OnReceivePacket (BYTE * ThePacket, PacketData * pClient);
 DWORD __stdcall OnPacketSend(DWORD unk1,DWORD ClientID,unsigned char *ThePacket,DWORD PacketLen);
 
 int __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, int PacketLen);
-int  __fastcall d2warden_0X68Handler(PacketData *pPacket);
+int __fastcall d2warden_0X68Handler(PacketData *pPacket);
 
 #endif

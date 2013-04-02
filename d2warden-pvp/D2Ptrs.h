@@ -322,8 +322,8 @@ D2FUNCPTR(D2NET, ReceivePacket, bool __stdcall, (int PacketLen, int _1, BYTE *aP
 void DefineOffsets();
 DWORD GetDllOffset(char *dll, int offset);
 
-#define ASSERT(e) if (e == 0) { Log("Krytyczny blad w linii %d, plik '%s' , funkcja: '%s'.",__LINE__,__FILE__,__FUNCTION__); exit(-1); }
-#define D2ERROR(s) { Log("Krytyczny blad '%s' w linii %d, plik '%s' , funkcja: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
+#define ASSERT(e) if (e == 0) { Log("Critical error in line %d, plik '%s' , function: '%s'.",__LINE__,__FILE__,__FUNCTION__); exit(-1); }
+#define D2ERROR(s) { Log("Critical error '%s' in line %d, plik '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
 #define LOCK   {/*Log("--> CS : %d : %s",__LINE__,__FUNCTION__); */EnterCriticalSection(&hWarden.WardenLock);}
 #define UNLOCK {/*Log("<-- CS : %d : %s",__LINE__,__FUNCTION__); */LeaveCriticalSection(&hWarden.WardenLock);}
 #undef D2FUNCPTR

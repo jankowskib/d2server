@@ -313,13 +313,21 @@ pEvent.MsgType=3;
 	hWarden.Clients.push_back(NewClientData);
 	UNLOCK
 	if(hWarden.Clients.size()==200) {
+#ifdef _ENGLISH_LOGS
+		Log("NEWCLIENT: Number of clients (%d) is bigger than 200, isn't it a memory leak though?",hWarden.Clients.size());
+#else
 		Log("NOWYKLIENT: Liczba klientów w petli %d wieksza niz 200, czy to napewno nie wyciek pamieci?",hWarden.Clients.size());
+#endif
 	}
 	Debug("Gracz %s dodany!",pClient->CharName);
 	}
 	else
 	{
+#ifdef _ENGLISH_LOGS
+		Log("NEWCLIENT: No SessionKey in database! Droping player %s !",pClient->AccountName);
+#else
 		Log("NOWYKLIENT: Brak SessionKey w bazie! Wykopuje gracza %s !",pClient->AccountName);
+#endif
 		KickPlayer(pClient->ClientID);
 	}
 
@@ -522,7 +530,7 @@ if(!ptClientData ) { D2GAME_LeaveCriticalSection(pGame); break; }
 	DWORD ItemID = *(DWORD*)&ThePacket[5];
 	UnitAny* ptItem = D2GAME_FindUnit(ptClientData->pGame,ItemID,UNIT_ITEM);
 	if(!ptItem) { D2GAME_LeaveCriticalSection(pGame); break; }
-	if(ptItem->pItemData->InvPage==4) Log("HACK: %s (*%s) otworzyl skrzynie bedac poza miastem!",ptClientData->CharName,ptClientData->AccountName);
+	if(ptItem->pItemData->InvPage==4) Log("HACK: %s (*%s) opened stash being out of town [STASH HACK]!",ptClientData->CharName,ptClientData->AccountName);
 	D2GAME_LeaveCriticalSection(pGame); 
 	}
 	break;
@@ -606,7 +614,7 @@ static int AttackCount;
 
 	PlayerData* pPlayerData = ptPlayer->pPlayerData;
 	if(!pPlayerData) {
-		Log("Nieznaleziono PlayerData, funkcja %s, %d",__FUNCTION__,__LINE__);
+		Log("Didn't find a PlayerData, function %s, %d",__FUNCTION__,__LINE__);
 		return 2;
 	}
 
@@ -652,15 +660,15 @@ static int AttackCount;
 		if((ptWardenClient->UIModes[UI_CHARACTER] || ptWardenClient->UIModes[UI_QUEST]) && (ptWardenClient->MouseXPosition>=0 && ptWardenClient->MouseXPosition<=200) && (ptWardenClient->MouseYPosition>=0 && ptWardenClient->MouseYPosition<=550))
 		{	
 		if(ptWardenClient->DebugTrick)	
-		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Lewe okno) X=%d Y=%d, LAG= %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
-		Log("HACK: %s (*%s) uzyl tricka [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_CHARACTER] ? "Character Stats":"Quests",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);				
+		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Left window) X=%d Y=%d, LAG= %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
+		Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_CHARACTER] ? "Character Stats":"Quests",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);				
 		}
 		else 
 		if((ptWardenClient->UIModes[UI_INVENTORY] || ptWardenClient->UIModes[UI_SKILL]) && (ptWardenClient->MouseXPosition>=600 && ptWardenClient->MouseXPosition<=800) && (ptWardenClient->MouseYPosition>=0 && ptWardenClient->MouseYPosition<=550))
 		{	
 		if(ptWardenClient->DebugTrick)	
-		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Prawe okno) X=%d Y=%d, LAG = %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
-		Log("HACK: %s (*%s) uzyl tricka [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory":"Skill Tree",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);
+		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Right window) X=%d Y=%d, LAG = %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
+		Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory":"Skill Tree",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);
 		}
 		UNLOCK
 		return 0;
@@ -757,7 +765,11 @@ int  __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPa
 
 		delete[] New66->ThePacket;
 		delete New66;
+#ifdef _ENGLISH_LOGS
+		Log("WardenPacket: Unexpected packet from player'%s'! Returning an error..",ptPlayer->pPlayerData->szName);
+#else
 		Log("WardenPacket: Nieoczekiwany pakiet od gracza '%s'! Zwracam blad...",ptPlayer->pPlayerData->szName);
+#endif
 		return 3;
 
 }
@@ -817,9 +829,17 @@ struct px67 //Create Game 0x2E
 	{
 		KickPlayer(pPacket->ClientID);
 		if(D2Version==11)
+#ifdef _ENGLISH_LOGS
+		Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.",pJoinPacket->szCharName);
+#else
 		Log("NowyKlient: Zrywam polaczenie z graczem '%s', powod : Brak D2Ex.",pJoinPacket->szCharName);
+#endif
 		else
+#ifdef _ENGLISH_LOGS
+		Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).",pJoinPacket->szCharName,D2Version);
+#else
 		Log("NowyKlient: Zrywam polaczenie z graczem '%s', powod : Nieoblsugiwana wersja patcha (1.%d).",pJoinPacket->szCharName,D2Version);
+#endif
 		return 3;
 	}
 	Dane[pJoinPacket->szCharName] = pJoinPacket->ServerHash;
@@ -981,6 +1001,7 @@ if(ClientID==NULL) return TRUE;
 		}
 		if(_stricmp(str,"#update")==0)
 		{
+		if(UpdateURL.empty()) return false;
 		SendMsgToClient(pUnit->pPlayerData->pClientData,"Trying to download patch....");
 		ExEvent pEvent;
 		::memset(&pEvent,0,sizeof(ExEvent));

@@ -35,12 +35,22 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	{
 		DeleteCriticalSection(&LOG_CS);
 		DeleteCriticalSection(&hWarden.WardenLock);
+#ifdef _ENGLISH_LOGS
+		LogNoLock("Error during initialization. Warden is turned off");
+#else
 		LogNoLock("Blad podczas inicjalizacji. Warden wylaczony.");
+#endif
 		return -1;
 	}
+#ifdef _ENGLISH_LOGS
+	Log("Available memory can handle %d clients.", hWarden.Clients.max_size());
+	Log("Warden initialized successfuly.");
+#else
 	Log("Dostepna pamiec wystarczy na %d klientow.", hWarden.Clients.max_size());
-
 	Log("Warden pomyslnie zainicjowany.");
+#endif
+
+
 	WardenUpTime = GetTickCount();
 
 	while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
@@ -53,7 +63,11 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	LOCK
 	hWarden.Clients.clear();
 	UNLOCK
+#ifdef _ENGLISH_LOGS
+	LogNoLock("End of main thread!");
+#else
 	LogNoLock("Koniec watku glownego!");
+#endif
 	DeleteCriticalSection(&LOG_CS);
 	return 0; 
 }
@@ -81,7 +95,11 @@ case DLL_PROCESS_ATTACH:
 break;
 case DLL_PROCESS_DETACH:
 	{
+#ifdef _ENGLISH_LOGS
+	LogNoLock("Closing threads..");
+#else
 	LogNoLock("Trwa zamykanie watkow...");
+#endif
 	SetEvent(hEvent);
 	WaitForSingleObject(WardenThread,5000);
 	WaitForSingleObject(DumpHandle,5000);

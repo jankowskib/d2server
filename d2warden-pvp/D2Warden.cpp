@@ -73,15 +73,25 @@ DWORD SendPartOfMOD2Client(DWORD ClientID,unsigned char *RC4_KEY,DWORD MOD_Posit
 	return ModLen+MOD_Position;
 };
 
-void Warden_DownloadIni()
-{
-	if(URLDownloadToFile(0,"http://realm.angrenost.org//txt//Colors.ini","Colors.ini",0,0) == S_OK)
-	{
-	Log("Pobieram plik konfiguracyjny!");
-	}
-	else
-	Log("Wystapil blad podczas pobierania pliku konfiguracyjnego");
-}
+//void Warden_DownloadIni()
+//{
+//	if(URLDownloadToFile(0,"http://realm.angrenost.org//txt//Colors.ini","Colors.ini",0,0) == S_OK)
+//	{
+//#ifdef _ENGLISH_LOGS
+//	Log("Downloading configuration file...");
+//#else
+//	Log("Pobieram plik konfiguracyjny!");
+//#endif
+//	}
+//	else
+//	{
+//#ifdef _ENGLISH_LOGS
+//	Log("An error occured during configuration file download");
+//#else
+//	Log("Wystapil blad podczas pobierania pliku konfiguracyjnego");
+//#endif
+//	}
+//}
 
 void Warden_Config()
 {
@@ -117,12 +127,20 @@ void Warden_Config()
 	//DmgRekord = GetPrivateProfileInt("Warden","DmgRekord",1,ConfigFile.c_str());
 	GetPrivateProfileString("Warden","ClanDataURL","http://www.lolet.yoyo.pl/Clans.ini",URL,255,ConfigFile.c_str());
 	ClansURL = URL;
-	GetPrivateProfileString("Warden","UpdateURL","http://realm.angrenost.org/files/AR-PVP-10-02-12-patch.exe",URL,255,ConfigFile.c_str());
+	GetPrivateProfileString("Warden","UpdateURL","",URL,255,ConfigFile.c_str());
 	UpdateURL = URL;
 	//GetPrivateProfileString("Warden","DmgOwner","N/A",URL,255,ConfigFile.c_str());
 	//DmgOwner = URL;
 	GetPrivateProfileString("Warden","GSName","N/A",URL,255,ConfigFile.c_str());
 	GSName = URL;
+	GetPrivateProfileString("Warden","Admins","LOLET",URL, 255, ConfigFile.c_str());
+	tk = 0;
+	for(rt = strtok_s(URL,", ",&tk); rt; rt = strtok_s(NULL,", ",&tk))
+	{
+	boost::to_lower(rt);
+	if(rt[0]) Admins.push_back(rt);
+	}
+
 	//World Event Stuff
 	EnableWE = GetPrivateProfileInt("World Event","Enabled",0,ConfigFile.c_str());
 
@@ -184,8 +202,12 @@ void Warden_Config()
 		if(!NextDC) WE_GenerateNextDC();
 
 	}
-	Warden_DownloadIni();
+//	Warden_DownloadIni();
+#ifdef _ENGLISH_LOGS
+	Log("Settings loaded.");
+#else
 	Log("Ustawienia zaladowane.");
+#endif
 }
 
 void Warden_Init()
@@ -207,7 +229,11 @@ UNUSED
 */
 #define JUMP 0xE9
 #define CALL 0xE8
+#ifdef _ENGLISH_LOGS
+	Log("Warden ver. 1.5a BUILD %d by Lolet has started. Compiled on %s, %s",__BUILDNO__,__DATE__,__TIME__);
+#else
 	Log("Warden ver. 1.5 BUILD %d by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,__DATE__,__TIME__);
+#endif
 	Warden_Config();
 //        HDR    ADDR                         FUNC                          SIZE    DESC
 	//PatchGS(0,(DWORD)&p_D2GAME_PacketTable[0x66].Callback,(DWORD)d2warden_0X66Handler,4,"On Warden Packet");
@@ -318,12 +344,18 @@ UNUSED
 //	PatchGS(JUMP,GetDllOffset("Fog.dll",0x1DBF0),(DWORD)ExMemory::Realloc,5,"Mem Realloc Override");
 
 //Zmieniam dozwolona liczbê graczy
-
+#ifdef _ENGLISH_LOGS
+Log("Setting allowed player limit on %d", Max_Players);
+#else
 Log("Ustalam dozwolona liczbe graczy w grze na %d", Max_Players);
-
+#endif
 int NEU_NODE = Max_Players + 3;
 //NODES
+#ifdef _ENGLISH_LOGS
 	Log("Przeprogramowuje Nodes'y...");
+#else
+	Log("Reconfiguring nodes...");
+#endif
 	PatchGS(0x90,GetDllOffset("D2Game.dll",0x2341D),0x90909090,9,"NodesEX: Ai Temp Fix");
 	
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2A790),(DWORD)NODES_BaalCheck,7,"NodesEX: Baal Ai"); // bylo 0x2BB75
@@ -430,7 +462,11 @@ int NEU_NODE = Max_Players + 3;
 
 	if (strlen(Warden_MOD) != 36)
 	{
+#ifdef _ENGLISH_LOGS
+		Log("Incorrect name of module '%s' (len!=36)",Warden_MOD);
+#else
 		Log("Nieprawidlowa nawa modulu '%s' (len!=36)",Warden_MOD);
+#endif
 		Warden_Enable = false;
 		return;
 	}
@@ -438,7 +474,11 @@ int NEU_NODE = Max_Players + 3;
 	fopen_s(&fp,Warden_MOD,"rb");
 	if (!fp)
 	{
+#ifdef _ENGLISH_LOGS
+		Log("Cannot find module filename '%s'!",Warden_MOD);
+#else
 		Log("Nie moge znalesc pliku modulu '%s'!",Warden_MOD);
+#endif
 		Warden_Enable = false;
 		return;
 	}
@@ -447,7 +487,11 @@ int NEU_NODE = Max_Players + 3;
 	
 	if (MOD_Length <= 260 || MOD_Length > 100000)
 	{
-		Log("Nieprawidlowa wielkosc modulu",MOD_Length);
+#ifdef _ENGLISH_LOGS
+		Log("Incorrect module size (%d)",MOD_Length);
+#else
+		Log("Nieprawidlowa wielkosc modulu (%d)",MOD_Length);
+#endif
 		Warden_Enable = false;
 		fclose(fp);
 		return;
@@ -456,7 +500,11 @@ int NEU_NODE = Max_Players + 3;
 	MOD_Enrypted = new unsigned char[MOD_Length];
 	if (MOD_Enrypted == NULL)
 	{
-		Log("Brak pamieci na zaincjowanie modulu.",MOD_Length);
+#ifdef _ENGLISH_LOGS
+		Log("No memory to allocate module!");
+#else
+		Log("Brak pamieci na zaincjowanie modulu!");
+#endif
 		Warden_Enable = false;
 		fclose(fp);
 		return;
@@ -468,7 +516,11 @@ int NEU_NODE = Max_Players + 3;
 	
 	if (MOD_Enrypted[MOD_Length-260] != 'N' || MOD_Enrypted[MOD_Length-259] != 'G' || MOD_Enrypted[MOD_Length-258] != 'I' || MOD_Enrypted[MOD_Length-257] != 'S')
 	{
+#ifdef _ENGLISH_LOGS
+		Log("Damaged module file!");
+#else
 		Log("Uszkodzony plik modulu!");
+#endif
 		Warden_Enable = false;
 		delete[] MOD_Enrypted;
 		return;
@@ -500,14 +552,22 @@ int NEU_NODE = Max_Players + 3;
 	
 	Warden_Enable = true;
 
+#ifdef _ENGLISH_LOGS
+	Log("Module '%s' has loaded correctly!",Warden_MOD);
+#else
 	Log("Modul '%s' wczytany!",Warden_MOD);
-	
+#endif
+
 	if(DumpInterval)
 	{
 	if(!DumpHandle)
 	DumpHandle = (HANDLE)_beginthreadex(0,0,&StatThread,0,0,&StatID);
 	if(DumpHandle)
+#ifdef _ENGLISH_LOGS
+	Log("Started stat dump, every %d second(s).",DumpInterval);
+#else
 	Log("Rozpoczeto zrzut statystyk, co %d sekund(y).",DumpInterval);
+#endif
 	}
 	else
 	{
@@ -797,7 +857,7 @@ void WardenLoop()
 						pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyXY != pRec->dwFlags.bSearchEnemyXY ||
 						pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyNear != pRec->dwFlags.bSearchEnemyNear ||
 						pSrvTxt[pRec->wSkillId].dwFlags.bSearchOpenXY != pRec->dwFlags.bSearchOpenXY)
-						Log("Hack: %s (*%s) modyfikacja Skills.Txt: Skill %s, Flags : LeftSkill %d InTown %d, bSearchEnemyXY %d, bSearchEnemyNear %d, bSearchOpenXY %d",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ConvertSkill(pRec->wSkillId).c_str(),pRec->dwFlags.bLeftSkill,pRec->dwFlags.bInTown,pRec->dwFlags.bSearchEnemyXY, pRec->dwFlags.bSearchEnemyNear, pRec->dwFlags.bSearchOpenXY);
+						Log("Hack: %s (*%s) modification of Skills.Txt: Skill %s, Flags : LeftSkill %d InTown %d, bSearchEnemyXY %d, bSearchEnemyNear %d, bSearchOpenXY %d",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ConvertSkill(pRec->wSkillId).c_str(),pRec->dwFlags.bLeftSkill,pRec->dwFlags.bInTown,pRec->dwFlags.bSearchEnemyXY, pRec->dwFlags.bSearchEnemyNear, pRec->dwFlags.bSearchOpenXY);
 						if(ptCurrentClient->CheckCounter==12) ptCurrentClient->GMDetected=true;
 					}
 					break;
@@ -809,7 +869,7 @@ void WardenLoop()
 						{
 						char out[100];
 						ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,7,out,100,',');
-						Log("Hack: %s (*%s) uzywa jakiegos prywatnego hacku! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
+						Log("Hack: %s (*%s) is using some private hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
 						ptCurrentClient->LPDetected=true;
 						}
 					}
@@ -852,7 +912,7 @@ void WardenLoop()
 				break;
 				case WARDEN_ERROR_RESPONSE:
 					{
-							Log("ERROR : %s(*%s) - limit bledow zostal przekroczony, gracz zostanie usuniety z petli.(Counter = %d)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->CheckCounter);
+							Log("ERROR: %s (*%s) - error count has been exceeded, player is being removed from loop.(Counter = %d)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->CheckCounter);
 							ptCurrentClient->NextCheckTime = 0xFFFFFFFF;
 							ptCurrentClient->WardenStatus = WARDEN_NOTHING;		
 							RemoveWardenPacket(ptCurrentClient);

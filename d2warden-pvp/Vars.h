@@ -31,6 +31,7 @@ extern std::string ClansURL;
 extern std::string ConfigFile;
 extern std::string UpdateURL;
 extern std::string GSName;
+extern std::list<std::string> Admins;
 extern std::map<std::string,BYTE> ColorSet;
 
 extern bool Warden_Enable;

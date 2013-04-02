@@ -80,6 +80,10 @@ UNLOCK
 LogToFile("RealmStats.txt",1,"Dumping end (%d) ms...",GetTickCount()-Time);
 Sleep(DumpInterval * 1000);
 }
+#ifdef _ENGLISH_LOGS
+Log("End of dump thread!");
+#else
 Log("Koniec watku zrzutu!");
-	return 0;
+#endif
+return 0;
 }
