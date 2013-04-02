@@ -60,7 +60,7 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 	ASSERT(pGame)
 		if(pVictim)
 			if(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5) bDruid = true;
-	 
+	if(pVictim)
 	if(!D2COMMON_isInShapeForm(pVictim) || !bDruid) {
 	COMBAT_Free(pGame,pVictim);
 	D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
@@ -83,6 +83,7 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 		return;
 	}
 
+	if(pVictim)
 	if(!pVictim->pInventory || !D2COMMON_GetCursorItem(pVictim->pInventory)) {
 		int eMode = 1;
 		Room1* pRoom = D2COMMON_GetUnitRoom(pVictim);
@@ -221,6 +222,7 @@ void LRost::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszy
 	if(pClientList->InitStatus) {
 		LRoster * pRoster = LRost::Find(ptGame,pClientList->CharName);
 		if(!pRoster) continue;
+
 		RosterPacket pVKInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)1,(BYTE)pRoster->Kills};
 		RosterPacket pVDInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)2,(BYTE)pRoster->Deaths};
 		RosterPacket pVAInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)3,(BYTE)pRoster->Assists};

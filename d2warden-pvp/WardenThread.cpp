@@ -17,12 +17,13 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 {
 	if(!InitializeCriticalSectionAndSpinCount(&hWarden.WardenLock, 4000))
 	{
-		Log("Brak pamieci na alokacje sekcji krytycznej!");
+		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
 		return -1;
 	}
 	if(!InitializeCriticalSectionAndSpinCount(&LOG_CS, 4000))
 	{
-		Log("Brak pamieci na alokacje sekcji krytycznej!");
+		DeleteCriticalSection(&hWarden.WardenLock);
+		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
 		return -1;
 	}
 
@@ -32,8 +33,9 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	Warden_Init();
 	if (Warden_Enable == false)
 	{
+		DeleteCriticalSection(&LOG_CS);
 		DeleteCriticalSection(&hWarden.WardenLock);
-		Log("Blad podczas inicjalizacji. Warden wylaczony.");
+		LogNoLock("Blad podczas inicjalizacji. Warden wylaczony.");
 		return -1;
 	}
 	Log("Dostepna pamiec wystarczy na %d klientow.", hWarden.Clients.max_size());
@@ -51,7 +53,7 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	LOCK
 	hWarden.Clients.clear();
 	UNLOCK
-	Log("Koniec watku glownego!");
+	LogNoLock("Koniec watku glownego!");
 	DeleteCriticalSection(&LOG_CS);
 	return 0; 
 }
@@ -65,21 +67,21 @@ case DLL_PROCESS_ATTACH:
 	hEvent = CreateEvent(NULL, TRUE, FALSE, "WARDEN_END");
 	if(!hEvent)
 		{ 
-		Log("Nie moge zainicjowac eventu. Blad %d!", errno); 
+		LogNoLock("Nie moge zainicjowac eventu. Blad %d!", errno); 
 		return FALSE;
 		}
 
 	if(!WardenThread) WardenThread = (HANDLE)_beginthreadex(0,0,&d2warden_thread,0,0,&Id);
 	if(!WardenThread)
 		{ 
-		Log("Nie moge zainicjowac watku. Blad %d!", errno); 
+		LogNoLock("Nie moge zainicjowac watku. Blad %d!", errno); 
 		return FALSE;
 		}
 	}
 break;
 case DLL_PROCESS_DETACH:
 	{
-	Log("Trwa zamykanie watkow...");
+	LogNoLock("Trwa zamykanie watkow...");
 	SetEvent(hEvent);
 	WaitForSingleObject(WardenThread,5000);
 	WaitForSingleObject(DumpHandle,5000);

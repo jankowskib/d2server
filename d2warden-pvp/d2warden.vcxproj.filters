@@ -18,9 +18,6 @@
     <Filter Include="Source Files\EngineFixes">
       <UniqueIdentifier>{0a05c524-2c3c-47b9-8538-efe7c9a9c06a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Misc">
-      <UniqueIdentifier>{09fd842c-4c3a-4f27-ada6-1350d26f2a4f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ModuLes">
       <UniqueIdentifier>{4b3a83e3-de42-40c0-b448-624e68f3cf2d}</UniqueIdentifier>
     </Filter>
@@ -29,6 +26,9 @@
     </Filter>
     <Filter Include="Header Files\Misc">
       <UniqueIdentifier>{d1fddb50-99c3-49bd-a71a-3fa65463718a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Misc">
+      <UniqueIdentifier>{09fd842c-4c3a-4f27-ada6-1350d26f2a4f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

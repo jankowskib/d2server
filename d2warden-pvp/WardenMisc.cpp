@@ -968,6 +968,32 @@ void Log(char *format,...)
 	LeaveCriticalSection(&LOG_CS);
 };
 
+void LogNoLock(char *format,...)
+{
+	va_list arguments;
+	va_start(arguments, format);
+	int len = _vscprintf(format, arguments ) + 1;
+	char * text = new char[len];
+	vsprintf_s(text, len, format, arguments);
+	va_end(arguments);
+
+	SYSTEMTIME t;
+	char timebuf[256];
+	GetLocalTime(&t);
+	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
+
+	FILE *fp = 0;
+	fopen_s(&fp,"d2warden.log","a+");
+	if(!fp) { 	LeaveCriticalSection(&LOG_CS); return; }
+	fseek(fp,0,SEEK_END);
+	fwrite(timebuf,strlen(timebuf),1,fp);
+	fwrite(text,strlen(text),1,fp);
+	fwrite("\n",1,1,fp);
+	fclose(fp);
+
+	delete[] text;
+};
+
 void Debug(char *format,...)
 {
 	va_list arguments;

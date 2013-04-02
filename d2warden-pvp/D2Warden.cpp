@@ -31,7 +31,6 @@
 #include "LItems.h"
 #include "LWorldEvent.h"
 #include <boost/tokenizer.hpp>
-#include "soapARLiveBroadcastBindingProxy.h"
 
 #include <shellapi.h>
 #include <urlmon.h>
