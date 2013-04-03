@@ -1,15 +1,26 @@
-//////////////////////////////////////////////////////////////////////
-//
-// marsgod - <marsgod@263.sina.com>
-// lolet - <thug1337@gmail.com>
-//
-//////////////////////////////////////////////////////////////////////
+/* ==========================================================
+ * d2warden
+ * https://github.com/lolet/d2warden
+ * ==========================================================
+ * Copyright 2008 marsgod
+ *			 2013 lolet
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
 
-//#pragma comment(lib, "wsock32.lib")
 
 #include "stdafx.h"
 
-//#include <winsock.h>
 #include "global.h"
 #include "MD5.h"
 #include "rc4.h"
