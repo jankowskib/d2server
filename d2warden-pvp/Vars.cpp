@@ -32,6 +32,7 @@ unsigned char *MOD_Enrypted = 0;
 BYTE Max_Players;
 int ExpRange;
 int DmgRekord;
+BYTE AllowLoggin;
 BYTE AllowTourMode;
 BYTE AllowVanilla;
 BYTE AllowGU;

@@ -56,8 +56,7 @@ int ClientID = pUnit->pPlayerData->pClientData->ClientID;
 		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#icreate <icode> <iquality [4]> <count [1]>"); return false;}
 		char StrCode[5] = {0};
 		bool isGold = false;
-		strcpy_s(StrCode,5,str);
-		StrCode[3]=' ';
+		strncpy_s(StrCode,5,str,4);
 		int ICode = TransCode(StrCode);
 		if(ICode == ' dlg') isGold = true;
 		int Idx = 0;
@@ -193,8 +192,7 @@ int ClientID = pUnit->pPlayerData->pClientData->ClientID;
 		char * code = strtok_s(NULL," ",&t);
 		if(!code) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#irem <charname> <itemcode>"); UNLOCK return false;}
 		char StrCode[5] = {0};
-		strcpy_s(StrCode,5,code);
-		StrCode[3]=' ';
+		strncpy_s(StrCode,5,str,4);
 		int ICode = TransCode(StrCode);
 		int Idx = 0;
 		if(!D2COMMON_GetItemIdx(ICode,&Idx))  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Cannot get item idx"); UNLOCK return false;}
@@ -237,8 +235,7 @@ int ClientID = pUnit->pPlayerData->pClientData->ClientID;
 		str = strtok_s(NULL," ",&t);
 		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type item code (3 chars aqv = arrows)"); return false;}
 		char StrCode[5] = {0};
-		strcpy_s(StrCode,5,str);
-		StrCode[3]=' ';
+		strncpy_s(StrCode,5,str,4);
 		int ICode = TransCode(StrCode);
 		int Idx = 0;
 		int iQual = 2;

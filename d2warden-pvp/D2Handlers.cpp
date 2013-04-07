@@ -161,128 +161,6 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 //LRost::SendKills(Data->ptGame);
 //LRost::SendDeaths(Data->ptGame);
 
-if(ptGame, ptGame->dwGameState!=1)
-{
-Inventory* ptInv = ptPlayer->pInventory;
-if(ptInv)
-{
-UnitAny* ptItem = D2COMMON_GetCursorItem(ptInv);
-if(ptItem)
-if(ptItem->pItemData->QualityNo==ITEM_QUALITY_TEMPERED) {D2COMMON_FlushItem(ptInv,ptItem); D2GAME_DeleteUnit(ptGame,ptItem); D2COMMON_SetCursorItem(ptInv, 0);} 
-
-for(UnitAny* i = D2COMMON_GetFirstItem(ptInv); i; i = D2COMMON_GetNextItem(i))
-{
-if(!D2COMMON_UnitIsItem(i)) continue;
-DWORD dwItemCode = D2COMMON_GetItemCode(i);
-if(i->pItemData->QualityNo==ITEM_QUALITY_TEMPERED || dwItemCode == ' 5pm')  
-{ 
-BYTE aPacket[] = {0x0A,0x04,0,0,0,0}; *(DWORD*)&aPacket[2]=i->dwUnitId;
-if(pClient->InitStatus) D2GAME_SendPacket(pClient,aPacket,6);
-D2COMMON_FlushItem(ptInv,i);
-D2GAME_DeleteUnit(ptGame,i); i =  D2COMMON_GetFirstItem(ptInv);
-}
-if(!i) break;
-}
-}
-}
-else
-{
-Inventory* ptInv = ptPlayer->pInventory;
-if(ptInv)
-for(UnitAny* i = D2COMMON_GetFirstItem(ptInv); i; i = D2COMMON_GetNextItem(i))
-{
-if(!D2COMMON_UnitIsItem(i)) continue;
-DWORD dwItemCode = D2COMMON_GetItemCode(i);
-if((i->pItemData->QualityNo==ITEM_QUALITY_TEMPERED && D2COMMON_GetStatSigned(i,194,0)>0) && (dwItemCode == ' cma' || dwItemCode == ' aw7'))  
-{ 
-BYTE aPacket[] = {0x0A,0x04,0,0,0,0}; *(DWORD*)&aPacket[2]=i->dwUnitId;
-if(pClient->InitStatus) D2GAME_SendPacket(pClient,aPacket,6);
-D2COMMON_FlushItem(ptInv,i);
-D2GAME_DeleteUnit(ptGame,i); i =  D2COMMON_GetFirstItem(ptInv);
-}
-if(!i) break;
-}
-}
-
-Debug("Usuwam stare kolorowe itemy...");
-//Usun stare itemy..
-Inventory *pInv = ptPlayer->pInventory;
-if(pInv)
-for(UnitAny* i = D2COMMON_GetFirstItem(pInv); i; i = D2COMMON_GetNextItem(i))
-{
-if(!D2COMMON_UnitIsItem(i)) continue;
-if(i->pItemData->QualityNo==ITEM_QUALITY_UNIQUE && D2COMMON_GetStatSigned(i,183,0) == 0 && i->pItemData->szPlayerName[0]) {
-	
-	if((D2COMMON_GetUnitMaxLife(i) >> 8) >= 60)
-	if(D2COMMON_GetStatSigned(i,STAT_SOCKETS,0) == 2)
-	if(D2COMMON_GetStatSigned(i,STAT_FASTERCAST,0) == 20 || D2COMMON_GetStatSigned(i,STAT_FASTERRUNWALK,0) == 30) { //CIRCS
-	D2COMMON_SetItemQuality(i,ITEM_QUALITY_RARE);
-	i->pItemData->RarePrefix=123;
-	i->pItemData->RareSutfix=123;
-	int Idx = 0;
-	D2COMMON_GetItemIdx(' 3ic',&Idx);
-	i->dwClassId=Idx;
-	}
-
-	BYTE aPacket[] = {0x0A,0x04,0,0,0,0}; *(DWORD*)&aPacket[2]=i->dwUnitId;
-	if(pClient->InitStatus) D2GAME_SendPacket(pClient,aPacket,6);
-	D2COMMON_FlushItem(pInv,i);
-	D2GAME_DeleteUnit(ptGame,i); i =  D2COMMON_GetFirstItem(pInv);
-	}
-else if(i->pItemData->QualityNo==ITEM_QUALITY_UNIQUE && D2COMMON_GetStatSigned(i,183,0) == 0 && !i->pItemData->szPlayerName[0])
-{
-if(i->pItemData->FileIndex != 266 && D2COMMON_GetStatSigned(i,81,0)) { // WF's KNOCKBACK 	
-	i->pItemData->FileIndex = 266;
-	continue;
-} 
-if(i->pItemData->FileIndex != 281 && D2COMMON_GetItemCode(i) == ' fma' && D2COMMON_GetStatSigned(i,STAT_FASTERRUNWALK,0) == 30) { // TITANS
-	i->pItemData->FileIndex = 281;
-	continue;
-} 
-if(D2COMMON_GetStatSigned(i,STAT_SOCKETS,0) == 4  && (D2COMMON_GetUnitMaxLife(i) >> 8) == 100) { // Armor 4 sox 100 life
-	BYTE aPacket[] = {0x0A,0x04,0,0,0,0}; *(DWORD*)&aPacket[2]=i->dwUnitId;
-	if(pClient->InitStatus) D2GAME_SendPacket(pClient,aPacket,6);
-	D2COMMON_FlushItem(pInv,i);
-	D2GAME_DeleteUnit(ptGame,i); i =  D2COMMON_GetFirstItem(pInv);
-	continue;
-}
-if(i->pItemData->FileIndex != 253 && D2COMMON_GetStatSigned(i,STAT_DAMAGEREDUCTION,0)>=35 && (D2COMMON_GetUnitMaxLife(i) >> 8) < 60) { //STORM's 35 DR
-	i->pItemData->FileIndex = 253;
-	int Idx = 0;
-	D2COMMON_GetItemIdx(' tiu',&Idx);
-	i->dwClassId=Idx;
-	continue;
-	}
-if(i->pItemData->FileIndex == 253 && D2COMMON_GetStatSigned(i,STAT_DAMAGEREDUCTION,0)>=30 && (D2COMMON_GetUnitMaxLife(i) >> 8) >= 60) { //STORM'shaft
-	BYTE aPacket[] = {0x0A,0x04,0,0,0,0}; *(DWORD*)&aPacket[2]=i->dwUnitId;
-	if(pClient->InitStatus) D2GAME_SendPacket(pClient,aPacket,6);
-	D2COMMON_FlushItem(pInv,i);
-	D2GAME_DeleteUnit(ptGame,i); i =  D2COMMON_GetFirstItem(pInv);
-	continue;
-	}
-if((D2COMMON_GetUnitMaxLife(i) >> 8) >= 60)
-if(D2COMMON_GetStatSigned(i,STAT_SOCKETS,0) == 2)
-if(D2COMMON_GetStatSigned(i,STAT_FASTERCAST,0) == 20 || D2COMMON_GetStatSigned(i,STAT_FASTERRUNWALK,0) == 30) { //CIRCS
-	D2COMMON_SetItemQuality(i,ITEM_QUALITY_RARE);
-	i->pItemData->RarePrefix=123;
-	i->pItemData->RareSutfix=123;
-	int Idx = 0;
-	D2COMMON_GetItemIdx(' 3ic',&Idx);
-	i->dwClassId=Idx;
-	continue;
-}
-}
-else if(i->pItemData->QualityNo==ITEM_QUALITY_MAGIC && D2COMMON_GetStatSigned(i,183,0) == 0 && !i->pItemData->szPlayerName[0]) //NEW ADDED
-{
-	if(D2COMMON_GetStatSigned(i,STAT_SOCKETS,0) == 4  && (D2COMMON_GetUnitMaxLife(i) >> 8) == 100 && !i->pItemData->MagicPrefix[0]) { // Armor 4 sox 100 life
-	i->pItemData->MagicPrefix[0] =  420;
-	i->pItemData->MagicSutfix[0] =  320;
-	continue;
-}
-}
-if(!i) break;
-}
-
 ExEvent pEvent;
 ::memset(&pEvent,0,sizeof(ExEvent));
 pEvent.P_A6=0xA6;
@@ -503,6 +381,7 @@ case 0x1A: //EQUIP CHECK
 case 0x1D:
 case 0x16:
 	{
+	break;
 // 1a   9   Equip item         1a [DWORD id] [WORD position] 00 00
 DWORD ItemID = 0;
 DWORD Socket = D2NET_GetClient(ClientID);
@@ -877,7 +756,7 @@ strncpy_s(Msg,255,(char*)ThePacket+3,-1);
 Msg[255] = 0;
 BYTE * aPacket = 0;
 
-LogToFile("GameLog.txt",true,"%s\t%s\t%s\t%s",pGame->GameName,pUnit->pPlayerData->pClientData->AccountName,szName,Msg);
+if(AllowLoggin) LogToFile("GameLog.txt",true,"%s\t%s\t%s\t%s",pGame->GameName,pUnit->pPlayerData->pClientData->AccountName,szName,Msg);
 
 if(nNameLen>12)
 {
@@ -1175,7 +1054,7 @@ if(ClientID==NULL) return TRUE;
 		if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
 		str = strtok_s(NULL," ",&t);
-		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type charname!"); return false;}
+		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#kick <*account> or #kick [charname]!"); return false;}
 		list<WardenClient>::iterator psUnit =  hWarden.Clients.end();
 		if(str[0]== '*') {
 		str++;
@@ -1278,7 +1157,7 @@ if(ClientID==NULL) return TRUE;
 		UnitAny* aUnit = pUnit;
 		if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE; 
 		str = strtok_s(NULL," ",&t);
-		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type level Id!"); return false;}
+		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#move <levelid> [account]"); return false;}
 		int LvlId = atoi(str);
 		str = strtok_s(NULL," ",&t);
 		if(str) {

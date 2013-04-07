@@ -75,7 +75,7 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
 	{
 		WardenLoop();
-		Sleep(1);
+		Sleep(100);
 	}
 
 	delete[] MOD_Enrypted; 

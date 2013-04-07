@@ -43,6 +43,7 @@ extern BYTE AllowGU;
 extern BYTE AllowNLWW;
 extern BYTE AllowHB;
 extern BYTE AllowTourMode;
+extern BYTE AllowLoggin;
 extern BYTE EnableSeed;
 extern BYTE AllowD2Ex;
 extern BYTE DetectTrick;

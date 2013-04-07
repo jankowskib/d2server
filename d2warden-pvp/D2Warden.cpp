@@ -125,6 +125,7 @@ void Warden_Config()
 	AllowGU = GetPrivateProfileInt("Warden","AllowGU",0,ConfigFile.c_str());
 	AllowHB = GetPrivateProfileInt("Warden","AllowHB",1,ConfigFile.c_str());
 	AllowNLWW = GetPrivateProfileInt("Warden","AllowNLWW",0,ConfigFile.c_str());
+	AllowLoggin = GetPrivateProfileInt("Warden","LogChat",1,ConfigFile.c_str());
 	DumpInterval = GetPrivateProfileInt("Warden","ResDumpInterval",0,ConfigFile.c_str());
 	Max_Players = GetPrivateProfileInt("Warden","MaxPlayers",8,ConfigFile.c_str());
 	MoveToTown = GetPrivateProfileInt("Warden","MoveToTown",1,ConfigFile.c_str());
@@ -363,9 +364,9 @@ Log("Ustalam dozwolona liczbe graczy w grze na %d", Max_Players);
 int NEU_NODE = Max_Players + 3;
 //NODES
 #ifdef _ENGLISH_LOGS
-	Log("Przeprogramowuje Nodes'y...");
-#else
 	Log("Reconfiguring nodes...");
+#else
+	Log("Przeprogramowuje Nodes'y...");
 #endif
 	PatchGS(0x90,GetDllOffset("D2Game.dll",0x2341D),0x90909090,9,"NodesEX: Ai Temp Fix");
 	
@@ -886,6 +887,7 @@ void WardenLoop()
 					}
 					break;
 						}
+					begin:
 						ptCurrentClient->CheckCounter++;
 						if(ptCurrentClient->CheckCounter==1 && !ptCurrentClient->MyIp.empty()) ptCurrentClient->CheckCounter++;
 						if(ptCurrentClient->CheckCounter==2 && ptCurrentClient->AnimData) ptCurrentClient->CheckCounter++;
@@ -901,7 +903,16 @@ void WardenLoop()
 						if(ptCurrentClient->CheckCounter==12 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
 						if(ptCurrentClient->CheckCounter==13 && ptCurrentClient->LPDetected) ptCurrentClient->CheckCounter++;
 						if(ptCurrentClient->CheckCounter>13) ptCurrentClient->CheckCounter=0;
-						ptCurrentClient->NextCheckTime = GetTickCount() +100;
+						if(ptCurrentClient->CheckCounter == 0 && !DetectTrick && !ptCurrentClient->MyIp.empty()
+							&& ptCurrentClient->AnimData && ptCurrentClient->AnimData2 && ptCurrentClient->TMCDetected
+							&& ptCurrentClient->StingDetected && ptCurrentClient->WtfDetected && ptCurrentClient->RCVDetected
+							&& ptCurrentClient->ptSkillsTxt  && ptCurrentClient->GMDetected && ptCurrentClient->LPDetected)
+						{
+							ptCurrentClient->NextCheckTime = 0xFFFFFFFF;
+							ptCurrentClient->WardenStatus = WARDEN_NOTHING;		
+						}
+						else if(ptCurrentClient->CheckCounter == 0 && !DetectTrick) goto begin;
+						ptCurrentClient->NextCheckTime = GetTickCount() +300;
 						ptCurrentClient->WardenStatus=WARDEN_SEND_CHECK;
 						}
 						else
@@ -909,16 +920,16 @@ void WardenLoop()
 						ptCurrentClient->ErrorCount++;
 						if(ptCurrentClient->ErrorCount>10) ptCurrentClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
 						else ptCurrentClient->WardenStatus=WARDEN_SEND_CHECK;
-						ptCurrentClient->NextCheckTime =GetTickCount() +100;
+						ptCurrentClient->NextCheckTime =GetTickCount() + 300;
 						}
 					}
 					else
-					ptCurrentClient->NextCheckTime = GetTickCount() +100;
+					ptCurrentClient->NextCheckTime = GetTickCount() + 300;
 					}
 				break;
 				case WARDEN_NOTHING:
 					{
-					Sleep(10);
+					Sleep(1);
 					}
 				break;
 				case WARDEN_ERROR_RESPONSE:
