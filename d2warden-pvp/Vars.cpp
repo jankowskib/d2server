@@ -18,7 +18,13 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "Vars.h"
+
+//DWORD D2Funcs::D2NET_SendPacket(DWORD a,DWORD b,BYTE* c,DWORD d)
+//{ 
+//
+//	DEBUGMSG("S->C[%d] 0x%x, %d",b, c[0], d);
+//	return DEBUG_D2Funcs::D2NET_SendPacket(a,b,c,d);
+//}
 
 int WardenUpTime;
 hWarden_Struct hWarden;
@@ -45,13 +51,14 @@ BYTE EnableSeed;
 BYTE AllowD2Ex;
 BYTE AllowNLWW;
 BYTE DetectTrick;
-std::string ClansURL;
-std::string ConfigFile;
-std::string UpdateURL;
-std::string DmgOwner;
-std::string GSName;
-std::map<std::string,BYTE> ColorSet;
-std::list<std::string> Admins;
+string ClansURL;
+string ConfigFile;
+string UpdateURL;
+string DmgOwner;
+string GSName;
+map<string,BYTE> ColorSet;
+list<string> Admins;
+vector<DWORD> Pointers;
 
 bool Warden_Enable;
 Vote * sVote = 0;

@@ -17,12 +17,8 @@
  * limitations under the License.
  * ========================================================== */
 
-#ifndef D2NODS_H__
-#define D2NODS_H__
-
-
-
-#include "D2Structs.h"
+#ifndef D2NODES_H__
+#define D2NODES_H__
 
 void __fastcall NODES_Free(Game *ptGame);
 void __fastcall NODES_AddAsParentNode(Game *ptGame, UnitAny *ptUnit, UnitNode *ptNode, int NodeIdx);

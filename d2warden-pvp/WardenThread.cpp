@@ -18,15 +18,10 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "WardenThread.h"
-
 #define _DEFINE_PTRS
 #include "D2Ptrs.h"
-#undef _DEFINE_PTRS
 
 #include "D2Warden.h"
-#include "WardenMisc.h"
-#include "Vars.h"
 #include "process.h"
 
 static HANDLE WardenThread = 0;
@@ -46,8 +41,7 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 		return -1;
 	}
 
-
-	DefineOffsets();
+	//DefineOffsets();
 
 	Warden_Init();
 	if (Warden_Enable == false)
@@ -71,7 +65,6 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 
 
 	WardenUpTime = GetTickCount();
-
 	while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
 	{
 		WardenLoop();
@@ -90,6 +83,7 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	DeleteCriticalSection(&LOG_CS);
 	return 0; 
 }
+
 
 DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 {

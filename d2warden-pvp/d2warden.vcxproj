@@ -58,17 +58,19 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D2WARDEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <CompileAs>CompileAsCpp</CompileAs>
-      <StringPooling>true</StringPooling>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <StringPooling>false</StringPooling>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
       <CompileAsManaged>false</CompileAsManaged>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)d2warden.dll</OutputFile>
@@ -100,7 +102,7 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;D2WARDEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -108,13 +110,13 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -125,8 +127,8 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
     <Link>
       <OutputFile>$(TargetPath)</OutputFile>
       <ModuleDefinitionFile>d2warden.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <GenerateMapFile>false</GenerateMapFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
       <MapExports>false</MapExports>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -156,18 +158,12 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
-    <ClCompile Include="D2Ptrs.cpp">
-      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
-      <EnableFiberSafeOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EnableFiberSafeOptimizations>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</WholeProgramOptimization>
-    </ClCompile>
+    <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
     <ClCompile Include="D2Warden.cpp" />
     <ClCompile Include="ExMemory.cpp" />
     <ClCompile Include="LEvents.cpp" />
-    <ClCompile Include="LItems.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-    </ClCompile>
+    <ClCompile Include="LItems.cpp" />
     <ClCompile Include="LMonsters.cpp" />
     <ClCompile Include="LQuests.cpp" />
     <ClCompile Include="LRoster.cpp" />
@@ -176,7 +172,7 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
     <ClCompile Include="NodesEx.cpp" />
     <ClCompile Include="PartyExp.cpp" />
     <ClCompile Include="RC4.cpp" />
-    <ClCompile Include="Spectator.cpp" />
+    <ClCompile Include="LSpectator.cpp" />
     <ClCompile Include="StatDumpThread.cpp" />
     <ClCompile Include="stdafx.cpp">
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</MultiProcessorCompilation>
@@ -189,6 +185,7 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
     <ClCompile Include="WardenThread.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</WholeProgramOptimization>
+      <EnableFiberSafeOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</EnableFiberSafeOptimizations>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -223,14 +220,14 @@ ping -n 5 127.0.0.1 &gt;NUL</Command>
     <ClInclude Include="LWorldEvent.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="NodesEx.h" />
+    <ClInclude Include="Offset.h" />
     <ClInclude Include="PartyExp.h" />
     <ClInclude Include="RC4.h" />
-    <ClInclude Include="Spectator.h" />
+    <ClInclude Include="LSpectator.h" />
     <ClInclude Include="StatDumpThread.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Vars.h" />
     <ClInclude Include="WardenMisc.h" />
-    <ClInclude Include="WardenThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

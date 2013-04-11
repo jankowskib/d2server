@@ -19,9 +19,6 @@
 
 #ifndef __EXMEMORY_H__
 #define __EXMEMORY_H__
-#include <cstdio>
-
-using namespace std;
 
 namespace ExMemory
 {

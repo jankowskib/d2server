@@ -20,27 +20,22 @@
 #include "stdafx.h"
 #include "LEvents.h"
 #include "LRoster.h"
-#include "D2Ptrs.h"
-#include "D2Stubs.h"
-#include "WardenMisc.h"
-#include "Vars.h"
-#include <sstream>
 
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 {
-	Debug("OnBroadcastEvent %d",pEvent->MsgType);
+	DEBUGMSG("OnBroadcastEvent %d",pEvent->MsgType);
 	if(pGame) {
 		if(pGame->bFestivalMode == 1)
 			if(pEvent->MsgType == 0 || pEvent->MsgType == 1 || pEvent->MsgType == 3) // Leave msgs 
 			{
-				Debug("DEBUG: Szukam struktury ClientData z nazwa %s",pEvent->Name1);
+				DEBUGMSG("DEBUG: Szukam struktury ClientData z nazwa %s",pEvent->Name1);
 
 				ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
 				if(pClient) {
 					if(pClient->pPlayerUnit->pPlayerData->isPlaying == 0)  return;
 					DoRoundEndStuff(pGame, pClient->pPlayerUnit);
 				}
-				else Debug("Nie znalazlem struktury WardenClient w %s",__FUNCTION__);
+				else DEBUGMSG("Nie znalazlem struktury WardenClient w %s",__FUNCTION__);
 			}
 			if(pEvent->MsgType == 2) // Join packet
 			{
@@ -61,7 +56,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 
 void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok przed wywolaniem, WardenClient = Victim
 {
-	Debug("DEBUG: Robie DoRoundEndStuff");
+	DEBUGMSG("DEBUG: Robie DoRoundEndStuff");
 	if(!pGame || !pUnit) return;
 
 	ostringstream str; 
@@ -69,7 +64,7 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 
 	short P1Out = 0,P2Out = 0;
 	int P1ID = 0, P2ID = 0;
-	int vPID = D2GAME_GetPartyID(pUnit);
+	int vPID = D2Funcs::D2GAME_GetPartyID(pUnit);
 
 	if(pGame->nPlaying == 0) return;
 
@@ -78,11 +73,11 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 		if(pClient->InitStatus != 4) continue;
 		
 		if(pClient->pPlayerUnit->pPlayerData->isPlaying == 1) {
-			Room1* pRoom = D2COMMON_GetUnitRoom(pClient->pPlayerUnit);
+			Room1* pRoom = D2Funcs::D2COMMON_GetUnitRoom(pClient->pPlayerUnit);
 			if(!pRoom) continue;
-			if(D2COMMON_GetLevelNoByRoom(pRoom) != D2COMMON_GetTownLevel(pClient->pPlayerUnit->dwAct))
+			if(D2Funcs::D2COMMON_GetLevelNoByRoom(pRoom) != D2Funcs::D2COMMON_GetTownLevel(pClient->pPlayerUnit->dwAct))
 			{
-			int pId = D2GAME_GetPartyID(pClient->pPlayerUnit);
+			int pId = D2Funcs::D2GAME_GetPartyID(pClient->pPlayerUnit);
 			if(pId != -1 && P1ID == 0) P1ID = pId;
 			else if(pId != -1 && P1ID && pId != P1ID && P2ID == 0) P2ID = pId;
 
@@ -94,7 +89,7 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 		}
 	}
 
-	Debug("Party %d Out = %d, Party %d Out = %d,  Victim Party Id = %d ", P1ID, P1Out,  P2ID, P2Out,  vPID);
+	DEBUGMSG("Party %d Out = %d, Party %d Out = %d,  Victim Party Id = %d ", P1ID, P1Out,  P2ID, P2Out,  vPID);
 
 	if((P1ID == 0) || (P1Out == 0 || P2Out == 0)) {
 		for(ClientData* pClient = pGame->pClientList; pClient; pClient = pClient->ptPrevious)
@@ -105,10 +100,10 @@ void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok
 			if(pClient->pPlayerUnit->pPlayerData->isPlaying == 1)
 			if(pClient->pPlayerUnit->dwMode != PLAYER_MODE_DEAD && pClient->pPlayerUnit->dwMode != PLAYER_MODE_DEATH)
 			{
-				int aLevel = D2COMMON_GetTownLevel(pClient->pPlayerUnit->dwAct);
-				int aCurrLevel = D2COMMON_GetLevelNoByRoom(pClient->pPlayerUnit->pPath->pRoom1);
+				int aLevel = D2Funcs::D2COMMON_GetTownLevel(pClient->pPlayerUnit->dwAct);
+				int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(pClient->pPlayerUnit->pPath->pRoom1);
 				if(aCurrLevel!=aLevel)
-					D2GAME_MoveUnitToLevelId(pClient->pPlayerUnit,aLevel,pGame);
+					D2Funcs::D2GAME_MoveUnitToLevelId(pClient->pPlayerUnit,aLevel,pGame);
 			}
 
 		}

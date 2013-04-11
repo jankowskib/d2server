@@ -18,13 +18,7 @@
  * ========================================================== */
 
 #include "stdafx.h"
-
 #include "NodesEx.h"
-#include "D2Structs.h"
-#include "D2Ptrs.h"
-#include "D2Stubs.h"
-#include "Vars.h"
-
 
 
 void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild)  // 0xEDF00
@@ -46,7 +40,7 @@ int NEU_NODE = Max_Players + 3;
 
           if (ptGame->nClients <= Max_Players && z < Max_Players)
           {
-              UnitNode* ptUNode = (UnitNode *)FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
+              UnitNode* ptUNode = (UnitNode *)D2Funcs::FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
               if ( ptUNode )
               {
                 ptUNode->ptUnit = 0;
@@ -100,7 +94,7 @@ int NEU_NODE = Max_Players + 3;
                 ptGame->pNewNodes[aNodeIdx] = pNode->pChildNode;
                 UnitNode* pChild = pNode->pChildNode;
                 if (pChild) pChild->pParentNode = 0;
-                FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
+                D2Funcs::FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
 				ptUnit->dwNodeIdx = NEU_NODE;
                 return;
               }
@@ -127,7 +121,7 @@ int NEU_NODE = Max_Players + 3;
             pNode->pParentNode->pChildNode = pNode->pChildNode;
             UnitNode* pChild = pNode->pChildNode;
             if (pChild) pChild->pParentNode = pNode->pParentNode;
-            FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
+            D2Funcs::FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
             ptUnit->dwNodeIdx = NEU_NODE;
 }
 
@@ -150,7 +144,7 @@ int NEU_NODE = Max_Players + 3;
 			for(UnitNode* pChildNode = pNode->pChildNode; pChildNode; pNode = pChildNode)
             {
               if (pNode->ptUnit)  pNode->ptUnit->dwNodeIdx = NEU_NODE;
-			  FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
+			  D2Funcs::FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
             }
 		  }
 		  ptGame->pNewNodes[aNodeIdx] = 0;
@@ -184,7 +178,7 @@ int NEU_NODE = Max_Players + 3;
 
               pCurrentNode = ptGame->pNewNodes[NodeIdx];
 
-              pParentNode = (UnitNode *)FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__ , __LINE__ , 0);
+              pParentNode = (UnitNode *)D2Funcs::FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__ , __LINE__ , 0);
               if ( pParentNode )
               {
                 pParentNode->ptUnit = 0;
@@ -220,7 +214,7 @@ int NEU_NODE = Max_Players + 3;
             {
               if ( pCurrentNode->ptUnit )
               {
-                UnitNode * pParentNode = (UnitNode *)FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
+                UnitNode * pParentNode = (UnitNode *)D2Funcs::FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
                 if ( pParentNode )
                 {
                   pParentNode->ptUnit = 0;
@@ -267,10 +261,10 @@ __declspec(naked) UnitAny *__stdcall NODES_NormalCheck(Game *ptGame, UnitAny *pt
   MOV EBP,DWORD PTR SS:[ESP+0x28]
   JNZ L016
   PUSH __LINE__
-  CALL FOG_GetErrorData
+  CALL D2Funcs::FOG_GetErrorData
   PUSH EAX
   PUSH 0
-  CALL FOG_Error
+  CALL D2Funcs::FOG_Error
   ADD ESP,0x0C
   PUSH -1
   CALL exit
@@ -295,7 +289,7 @@ L031:
   CMP EAX,EBX
   JE L038
   PUSH EAX
-  CALL D2COMMON_GetUnitX
+  CALL D2Funcs::D2COMMON_GetUnitX
   MOV DWORD PTR SS:[ESP+0x1C],EAX
   JMP L043
 L038:
@@ -318,7 +312,7 @@ L050:
   CMP EAX,EBX
   JE L056
   PUSH EAX
-  CALL D2COMMON_GetUnitY
+  CALL D2Funcs::D2COMMON_GetUnitY
   JMP L060
 L056:
   MOV DWORD PTR SS:[ESP+0x18],EBX
@@ -357,7 +351,7 @@ L065:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_II
+  CALL D2Ptrs::D2GAME_NodesUnk_II
   JMP L092
 L090:
   MOV EBX,DWORD PTR SS:[ESP+0x3C]
@@ -378,7 +372,7 @@ L096:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_II
+  CALL D2Ptrs::D2GAME_NodesUnk_II
   JMP L092
 L108:
   MOV EBX,DWORD PTR SS:[ESP+0x3C]
@@ -396,10 +390,10 @@ L109:
   JMP L065
 L120:
   PUSH __LINE__
-  CALL FOG_GetErrorData
+  CALL D2Funcs::FOG_GetErrorData
   PUSH EAX
   PUSH 0
-  CALL FOG_Error
+  CALL D2Funcs::FOG_Error
   ADD ESP,0x0C
   PUSH -1
   CALL exit
@@ -415,7 +409,7 @@ L131:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_II
+  CALL D2Ptrs::D2GAME_NodesUnk_II
   CMP DWORD PTR SS:[ESP+0x10],EAX
   JGE L143
   MOV DWORD PTR SS:[ESP+0x10],EAX
@@ -441,7 +435,7 @@ L153:
   MOV EAX,DWORD PTR SS:[ESP+0x3C]
   PUSH EBP
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_II
+  CALL D2Ptrs::D2GAME_NodesUnk_II
   CMP EBX,EAX
   JGE L165
   MOV EBX,EAX
@@ -457,29 +451,29 @@ L165:
   MOV ECX,DWORD PTR SS:[ESP+0x20]
   PUSH EDX
   PUSH ECX
-  CALL D2GAME_GetDistanceFromXY_I
+  CALL D2Ptrs::D2GAME_GetDistanceFromXY_I
   CMP EAX,0x5
   JGE L203
   PUSH EDI
   MOV EDI,DWORD PTR SS:[ESP+0x1C]
   PUSH EDI
   PUSH EBP
-  CALL D2COMMON_isUnitInMeleeRange
+  CALL D2Funcs::D2COMMON_isUnitInMeleeRange
   TEST EAX,EAX
   JNZ L203
   MOV ESI,[EBP+0x2C]
   PUSH EDI
   PUSH ESI
-  CALL D2COMMON_SetPathTarget
+  CALL D2Funcs::D2COMMON_SetPathTarget
   PUSH 2
   PUSH ESI
-  CALL D2COMMON_SetPathType
+  CALL D2Funcs::D2COMMON_SetPathType
   PUSH 0
   PUSH EBP
   PUSH ESI
-  CALL D2COMMON_AssignPath
+  CALL D2Funcs::D2COMMON_AssignPath
   PUSH ESI
-  CALL D2COMMON_GetPathUNK
+  CALL D2Funcs::D2COMMON_GetPathUNK
   TEST EAX,EAX
   JNZ L203
   MOV EDX,DWORD PTR SS:[ESP+0x40]
@@ -516,10 +510,10 @@ __declspec(naked) UnitAny *__stdcall NODES_BaalCheck(Game *ptGame, UnitAny *ptUn
   MOV EBP,DWORD PTR SS:[ESP+0x28]
   JNZ L016
   PUSH __LINE__
-  CALL FOG_GetErrorData
+  CALL D2Funcs::FOG_GetErrorData
   PUSH EAX
   PUSH 0
-  CALL FOG_Error
+  CALL D2Funcs::FOG_Error
   ADD ESP,0x0C
   PUSH -1
   CALL exit
@@ -544,7 +538,7 @@ L031:
   CMP EAX,EBX
   JE L038
   PUSH EAX
-  CALL D2COMMON_GetUnitX
+  CALL D2Funcs::D2COMMON_GetUnitX
   MOV DWORD PTR SS:[ESP+0x1C],EAX
   JMP L043
 L038:
@@ -567,7 +561,7 @@ L050:
   CMP EAX,EBX
   JE L056
   PUSH EAX
-  CALL D2COMMON_GetUnitY
+  CALL D2Funcs::D2COMMON_GetUnitY
   JMP L060
 L056:
   MOV DWORD PTR SS:[ESP+0x18],EBX
@@ -606,7 +600,7 @@ L065:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_I
+  CALL D2Ptrs::D2GAME_NodesUnk_I
   JMP L092
 L090:
   MOV EBX,DWORD PTR SS:[ESP+0x3C]
@@ -627,7 +621,7 @@ L096:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_I
+  CALL D2Ptrs::D2GAME_NodesUnk_I
   JMP L092
 L108:
   MOV EBX,DWORD PTR SS:[ESP+0x3C]
@@ -645,10 +639,10 @@ L109:
   JMP L065
 L120:
   PUSH __LINE__
-  CALL FOG_GetErrorData
+  CALL D2Funcs::FOG_GetErrorData
   PUSH EAX
   PUSH 0
-  CALL FOG_Error
+  CALL D2Funcs::FOG_Error
   ADD ESP,0x0C
   PUSH -1
   CALL exit
@@ -664,7 +658,7 @@ L131:
   PUSH EBP
   MOV EAX,EBX
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_I
+  CALL D2Ptrs::D2GAME_NodesUnk_I
   CMP DWORD PTR SS:[ESP+0x10],EAX
   JGE L143
   MOV DWORD PTR SS:[ESP+0x10],EAX
@@ -690,7 +684,7 @@ L153:
   MOV EAX,DWORD PTR SS:[ESP+0x3C]
   PUSH EBP
   MOV ECX,ESI
-  CALL D2GAME_NodesUnk_I
+  CALL D2Ptrs::D2GAME_NodesUnk_I
   CMP EBX,EAX
   JGE L165
   MOV EBX,EAX
@@ -706,29 +700,29 @@ L165:
   MOV ECX,DWORD PTR SS:[ESP+0x20]
   PUSH EDX
   PUSH ECX
-  CALL D2GAME_GetDistanceFromXY_I
+  CALL D2Ptrs::D2GAME_GetDistanceFromXY_I
   CMP EAX,0x5
   JGE L203
   PUSH EDI
   MOV EDI,DWORD PTR SS:[ESP+0x1C]
   PUSH EDI
   PUSH EBP
-  CALL D2COMMON_isUnitInMeleeRange
+  CALL D2Funcs::D2COMMON_isUnitInMeleeRange
   TEST EAX,EAX
   JNZ L203
   MOV ESI,[EBP+0x2C]
   PUSH EDI
   PUSH ESI
-  CALL D2COMMON_SetPathTarget
+  CALL D2Funcs::D2COMMON_SetPathTarget
   PUSH 2
   PUSH ESI
-  CALL D2COMMON_SetPathType
+  CALL D2Funcs::D2COMMON_SetPathType
   PUSH 0
   PUSH EBP
   PUSH ESI
-  CALL D2COMMON_AssignPath
+  CALL D2Funcs::D2COMMON_AssignPath
   PUSH ESI
-  CALL D2COMMON_GetPathUNK
+  CALL D2Funcs::D2COMMON_GetPathUNK
   TEST EAX,EAX
   JNZ L203
   MOV EDX,DWORD PTR SS:[ESP+0x40]
@@ -795,8 +789,8 @@ L203:
 //
 //	  if(ptUnit->pPath)
 //	  {
-//	  UnitX = D2GAME_GetUnitX(ptUnit);
-//	  UnitY = D2GAME_GetUnitY(ptUnit);
+//	  UnitX = D2Funcs::D2GAME_GetUnitX(ptUnit);
+//	  UnitY = D2Funcs::D2GAME_GetUnitY(ptUnit);
 //	  }
 //	  else
 //	  {
@@ -827,7 +821,7 @@ L203:
 //      }
 //      else
 //      {
-//        v15 = D2GAME_NodesUnk(pNodeUnit, aZero, ptUnit); //Something with Baal Ai
+//        v15 = D2Funcs::D2GAME_NodesUnk(pNodeUnit, aZero, ptUnit); //Something with Baal Ai
 //      }
 //
 //      while ( 1 )
@@ -840,7 +834,7 @@ L203:
 //        pNode = pNode->pChildNode;
 //        ++v29;
 //        if ( !pNode ) break;
-//        v15 = D2GAME_NodesUnk(pNode->ptUnit, aZero, ptUnit);
+//        v15 = D2Funcs::D2GAME_NodesUnk(pNode->ptUnit, aZero, ptUnit);
 //      }
 //    }
 //    pNode = v34[1];
@@ -853,7 +847,7 @@ L203:
 //    UnitAny* pNodeUnit = pNode->ptUnit;
 //    if ( ActNo == LOBYTE(pNodeUnit->dwAct) )
 //    {
-//      v21 = D2GAME_NodesUnk(pNodeUnit, aZero, ptUnit);
+//      v21 = D2Funcs::D2GAME_NodesUnk(pNodeUnit, aZero, ptUnit);
 //      if (v21 > 0 )
 //      {
 //        v28 = v21;
@@ -872,7 +866,7 @@ L203:
 //      v24 = v23->ptUnit;
 //      if ( ActNo == LOBYTE(v23->ptUnit->dwAct) )
 //      {
-//        v25 = D2GAME_NodesUnk(v24, aZero, ptUnit);
+//        v25 = D2Funcs::D2GAME_NodesUnk(v24, aZero, ptUnit);
 //        if ( v22 < v25 )
 //        {
 //          v22 = v25;
@@ -884,15 +878,15 @@ L203:
 //    while ( v23 );
 //    if ( v36 )
 //    {
-//      if ( D2GAME_GetDistanceFromXY(v36, UnitX, v31) < 5 )
+//      if ( D2Funcs::D2GAME_GetDistanceFromXY(v36, UnitX, v31) < 5 )
 //      {
-//        if ( !D2COMMON_isUnitInMeleeRange(ptUnit, v30, 0) )
+//        if ( !D2Funcs::D2COMMON_isUnitInMeleeRange(ptUnit, v30, 0) )
 //        {
 //          v26 = ptUnit->pPath;
-//          D2COMMON_SetPathTarget(ptUnit->pPath, v30);
-//          D2COMMON_SetPathType(v26, 2);
-//          D2COMMON_AssignPath(v26, ptUnit, 0);
-//          if ( !D2COMMON_GetPathUNK(v26) )
+//          D2Funcs::D2COMMON_SetPathTarget(ptUnit->pPath, v30);
+//          D2Funcs::D2COMMON_SetPathType(v26, 2);
+//          D2Funcs::D2COMMON_AssignPath(v26, ptUnit, 0);
+//          if ( !D2Funcs::D2COMMON_GetPathUNK(v26) )
 //          {
 //            v30 = v36;
 //            v28 = v22;

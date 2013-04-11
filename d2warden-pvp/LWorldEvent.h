@@ -20,9 +20,6 @@
 #ifndef D2WE_H__
 #define D2WE_H__
 
-#include "D2Structs.h"
-#include <sstream>
-
 bool WE_isKey(UnitAny* ptItem);
 void WE_UpdateCounter(int Value);
 void WE_GenerateNextDC();

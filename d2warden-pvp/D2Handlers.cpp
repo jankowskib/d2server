@@ -18,30 +18,24 @@
  * ========================================================== */
 
 #include "stdafx.h"
-
 #include "D2Handlers.h"
-#include "Build.h"
+
 #include "D2Warden.h"
-#include "RC4.h"
-#include "D2Ptrs.h"
-#include "Vars.h"
-#include "WardenMisc.h"
-#include "D2Structs.h"
-#include "D2Stubs.h"
-#include "Spectator.h"
+#include "LSpectator.h"
 #include "LRoster.h"
 #include "LItems.h"
 #include "LEvents.h"
 #include "LMonsters.h"
 #include "LWorldEvent.h"
-#include <boost\random.hpp>
+
+#include "Build.h"
 
 map<string,int> Dane;
 
 void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDamage)
 {
 	if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER) {
-		if(D2COMMON_GetStatSigned(ptVictim,STAT_HP,0) <=0)
+		if(D2Funcs::D2COMMON_GetStatSigned(ptVictim,STAT_HP,0) <=0)
 		{ 
 			int Dmg = (int)ptDamage->DamageTotal >> 8;
 			if(Dmg>50000) return;
@@ -69,7 +63,7 @@ void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDama
 
 
 			if((GetTickCount() - ptVictim->pPlayerData->LastDamageTick < 5000) && ptVictim->pPlayerData->LastDamageId !=0 && ptVictim->pPlayerData->LastDamageId != ptKiller->dwUnitId) {
-				UnitAny* pAssister = D2GAME_FindUnit(ptKiller->pGame,ptVictim->pPlayerData->LastDamageId,UNIT_PLAYER);
+				UnitAny* pAssister = D2Funcs::D2GAME_FindUnit(ptKiller->pGame,ptVictim->pPlayerData->LastDamageId,UNIT_PLAYER);
 				if(pAssister) {
 					LRost::UpdateRoster(ptKiller->pGame,pAssister->pPlayerData->szName,3);
 					LRoster * AssRoster = LRost::Find(ptKiller->pGame,pAssister->pPlayerData->szName);
@@ -82,7 +76,7 @@ void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDama
 			ptVictim->pPlayerData->LastDamageTick = 0;
 		}
 		else {
-			int Percent = ((((int)ptDamage->DamageTotal >> 8) * 100) / (D2COMMON_GetStatSigned(ptVictim,STAT_MAXHP,0) >>8));
+			int Percent = ((((int)ptDamage->DamageTotal >> 8) * 100) / (D2Funcs::D2COMMON_GetStatSigned(ptVictim,STAT_MAXHP,0) >>8));
 			if(ptVictim->pPlayerData->LastDamageTick &&
 				(GetTickCount() - ptVictim->pPlayerData->LastDamageTick < 5000)) ptVictim->pPlayerData->LastDamage+= Percent; else	ptVictim->pPlayerData->LastDamage = Percent;
 			ptVictim->pPlayerData->LastDamageId = ptKiller->dwUnitId;
@@ -101,9 +95,9 @@ int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Ro
 	int aX, aY, aLevel;
 	Room1* aRoom;
 
-	aLevel = D2COMMON_GetTownLevel(pUnit->dwAct);
-	aRoom = D2COMMON_GetRoomXYByLevel(pRoom->pAct,aLevel,0,&aX,&aY,2);
-	return D2GAME_CreateCorpse(pGame,pUnit,aX,aY,aRoom);
+	aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
+	aRoom = D2Funcs::D2COMMON_GetRoomXYByLevel(pRoom->pAct,aLevel,0,&aX,&aY,2);
+	return D2Funcs::D2GAME_CreateCorpse(pGame,pUnit,aX,aY,aRoom);
 
 }
 
@@ -111,7 +105,7 @@ int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Ro
 int __stdcall GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage)
 {
 //if(pPlayer->pGame, pPlayer->pGame->dwGameState!=1)
-//return D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
+//return D2Funcs::D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
 //else
 return 0;
 }
@@ -131,7 +125,7 @@ if(i==63) { ptVendor=0; break;}
 
 if(ptVendor)
 {
-	DWORD iCode = D2COMMON_GetItemCode(ptItem);
+	DWORD iCode = D2Funcs::D2COMMON_GetItemCode(ptItem);
 	//WORLD EVENT
 	if(EnableWE && WE_isKey(ptItem))
 	{
@@ -171,7 +165,7 @@ pEvent.MsgType=3;
 	else
 	pEvent.PacketLen=15;
 
-	D2GAME_SendPacket(pClient, (BYTE*)&pEvent,pEvent.PacketLen);
+	D2Funcs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent,pEvent.PacketLen);
 
 	if(strlen(ptGame->GameDesc)>0)
 	{	
@@ -188,7 +182,7 @@ pEvent.MsgType=3;
 
 	unsigned char RC4_KEY_0X66[16],RC4_KEY_0XAE[16];
 
-	Debug("NOWYKLIENT: Probuje dodac gracza %s !",pClient->CharName);
+	DEBUGMSG("NOWYKLIENT: Probuje dodac gracza %s !",pClient->CharName);
 	if(Dane.count(pClient->CharName)) {
 	WardenClient NewClientData;
 	memset(&NewClientData,0,sizeof(WardenClient));
@@ -216,7 +210,7 @@ pEvent.MsgType=3;
 		Log("NOWYKLIENT: Liczba klientów w petli %d wieksza niz 200, czy to napewno nie wyciek pamieci?",hWarden.Clients.size());
 #endif
 	}
-	Debug("Gracz %s dodany!",pClient->CharName);
+	DEBUGMSG("Gracz %s dodany!",pClient->CharName);
 	}
 	else
 	{
@@ -253,29 +247,29 @@ if(ptKiller->dwType) return;
 
 void __fastcall OnNPCHeal(UnitAny* pUnit)
 {
-StatList* pList = D2COMMON_GetStateStatList(pUnit,1); // FREEZE
+StatList* pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,1); // FREEZE
 if(pList)
 {
-	D2COMMON_RemoveStatList(pUnit,pList);
-	D2COMMON_FreeStatList(pList);
+	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs::D2COMMON_FreeStatList(pList);
 }
-pList = D2COMMON_GetStateStatList(pUnit,2); // PSN
+pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,2); // PSN
 if(pList)
 {
-	D2COMMON_RemoveStatList(pUnit,pList);
-	D2COMMON_FreeStatList(pList);
+	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs::D2COMMON_FreeStatList(pList);
 }
-pList = D2COMMON_GetStateStatList(pUnit,54); // UNINTERUPTABLE
+pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,54); // UNINTERUPTABLE
 if(pList)
 {
-	D2COMMON_RemoveStatList(pUnit,pList);
-	D2COMMON_FreeStatList(pList);
+	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs::D2COMMON_FreeStatList(pList);
 }
-pList = D2COMMON_GetStateStatList(pUnit,87); // SLOW MISSILE
+pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,87); // SLOW MISSILE
 if(pList)
 {
-	D2COMMON_RemoveStatList(pUnit,pList);
-	D2COMMON_FreeStatList(pList);
+	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs::D2COMMON_FreeStatList(pList);
 }
 
 if(pUnit->pGame, pUnit->pGame->dwGameState==1) //FFA MODE
@@ -363,9 +357,9 @@ Act* __stdcall OnActLoad (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGa
 if(MySeed) 
 {
 pGame->InitSeed=MySeed;
-return D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+return D2Funcs::D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
 }
-return D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+return D2Funcs::D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
 }
 
 
@@ -384,21 +378,21 @@ case 0x16:
 	break;
 // 1a   9   Equip item         1a [DWORD id] [WORD position] 00 00
 DWORD ItemID = 0;
-DWORD Socket = D2NET_GetClient(ClientID);
+DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
 if(!Socket) break;
-Game* pGame = D2GAME_GetGameByNetSocket(Socket);
+Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
 if(!pGame) break;
 ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-if(!ptClientData ) { D2GAME_LeaveCriticalSection(pGame); break; }
+if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 
 if(ThePacket[0]==0x16)
 ItemID = *(DWORD*)&ThePacket[5];
 else
 ItemID = *(DWORD*)&ThePacket[1];
-UnitAny* ptItem = D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
+UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 		if(ptItem)
 		{
-			if(!ptItem->pItemData->dwItemFlags.bPersonalized) { D2GAME_LeaveCriticalSection(pGame); break;}
+			if(!ptItem->pItemData->dwItemFlags.bPersonalized) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break;}
 
 			if(!isAnAdmin(ptClientData->AccountName))
 			if(ptClientData->AccountName!=ptItem->pItemData->szPlayerName) 
@@ -407,29 +401,29 @@ UnitAny* ptItem = D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 			*(DWORD*)&ThePacket[1]=0;
 			}
 		}
-	D2GAME_LeaveCriticalSection(pGame);
+	D2Funcs::D2GAME_LeaveCriticalSection(pGame);
 	}
 	break;
 case 0x1F://STASH HACK
 	{
 //GC 78:   0x1F SwapContainerItem; SubjectUID: 28; ObjectUID: 29; X: 5; Y: 0
 //GC 78:   17   1f [1c 00 00 00] [1d 00 00 00] [05 00 00 00] [00 00 00 00]
-DWORD Socket = D2NET_GetClient(ClientID);
+DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
 if(!Socket) break;
-Game* pGame = D2GAME_GetGameByNetSocket(Socket);
+Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
 if(!pGame) break;
 ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-if(!ptClientData ) { D2GAME_LeaveCriticalSection(pGame); break; }
+if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 
-	int LvlNo = D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
-	if(LvlNo == 0) { D2GAME_LeaveCriticalSection(pGame); break; }
-	int ActNo = D2COMMON_GetActNoByLevelNo(LvlNo);
-	if(LvlNo == D2COMMON_GetTownLevel(ActNo)) { D2GAME_LeaveCriticalSection(pGame); break; }
+	int LvlNo = D2Funcs::D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
+	if(LvlNo == 0) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+	int ActNo = D2Funcs::D2COMMON_GetActNoByLevelNo(LvlNo);
+	if(LvlNo == D2Funcs::D2COMMON_GetTownLevel(ActNo)) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 	DWORD ItemID = *(DWORD*)&ThePacket[5];
-	UnitAny* ptItem = D2GAME_FindUnit(ptClientData->pGame,ItemID,UNIT_ITEM);
-	if(!ptItem) { D2GAME_LeaveCriticalSection(pGame); break; }
+	UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,UNIT_ITEM);
+	if(!ptItem) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 	if(ptItem->pItemData->InvPage==4) Log("HACK: %s (*%s) opened stash being out of town [STASH HACK]!",ptClientData->CharName,ptClientData->AccountName);
-	D2GAME_LeaveCriticalSection(pGame); 
+	D2Funcs::D2GAME_LeaveCriticalSection(pGame); 
 	}
 	break;
 }
@@ -446,13 +440,13 @@ if(!ptGame) return 3;
 if(ptPlayer->dwType != UNIT_PLAYER) return 3;
 if(ptPacket->UnitType>5) return 3;
 
-InRange = D2GAME_isUnitInRange(ptGame,ptPacket->UnitId,ptPacket->UnitType,ptPlayer,50);
+InRange = D2Funcs::D2GAME_isUnitInRange(ptGame,ptPacket->UnitId,ptPacket->UnitType,ptPlayer,50);
 if(InRange == 2) return 2;
 if(InRange == 3) return 3;
 
-Skill * ptSkill = (ptPacket->Header == 6 || ptPacket->Header == 7 || ptPacket->Header == 9 || ptPacket->Header == 0xA) ? D2COMMON_GetLeftSkill(ptPlayer) : D2COMMON_GetRightSkill(ptPlayer);
+Skill * ptSkill = (ptPacket->Header == 6 || ptPacket->Header == 7 || ptPacket->Header == 9 || ptPacket->Header == 0xA) ? D2Funcs::D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs::D2COMMON_GetRightSkill(ptPlayer);
 if(!ptSkill) return 3;
-int SkillId = D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
+int SkillId = D2Funcs::D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
 
 	PlayerData* pPlayerData = ptPlayer->pPlayerData;
 	if(!pPlayerData) return 2;
@@ -484,10 +478,10 @@ if(SkillId == 151 && !AllowNLWW) {
 		}
 
 
-int nPierceIdx = D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
+int nPierceIdx = D2Funcs::D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
+D2Funcs::D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
 
-D2GAME_CastSkillOnUnit(ptPlayer,ptSkill,ptGame,ptPacket->UnitType,ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10 ) ? 1 : 0);
+D2Funcs::D2GAME_CastSkillOnUnit(ptPlayer,ptSkill,ptGame,ptPacket->UnitType,ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10 ) ? 1 : 0);
 return 0;
 }
 
@@ -500,8 +494,8 @@ static int AttackCount;
 	if(!ptGame) return 3;
 	if(ptPlayer->dwType != UNIT_PLAYER) return 3;
 
-	WORD UnitX = D2GAME_GetUnitX(ptPlayer);
-	WORD UnitY = D2GAME_GetUnitY(ptPlayer);
+	WORD UnitX = D2Funcs::D2GAME_GetUnitX(ptPlayer);
+	WORD UnitY = D2Funcs::D2GAME_GetUnitY(ptPlayer);
 
 	int xOffset = UnitX - ptPacket->xPos;
 	if(xOffset<0) xOffset = -xOffset;
@@ -519,9 +513,9 @@ static int AttackCount;
 	if(InRange)
 	{
 		pPlayerData->GameFrame = ptGame->GameFrame;
-		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2COMMON_GetLeftSkill(ptPlayer) : D2COMMON_GetRightSkill(ptPlayer);
+		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2Funcs::D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs::D2COMMON_GetRightSkill(ptPlayer);
 		if(!ptSkill) return 3;
-		int SkillId = D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
+		int SkillId = D2Funcs::D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
 		
 		if(TeleChars[ptPlayer->dwClassId]==FALSE && ptPlayer->pGame->dwGameState==0 && SkillId == 0x36)
 		{
@@ -534,8 +528,8 @@ static int AttackCount;
 		return 0;
 		}
 
-		int nPierceIdx = D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-		D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
+		int nPierceIdx = D2Funcs::D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
+		D2Funcs::D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
 
 		if(ptGame->bFestivalMode && !pPlayerData->CanAttack && !isSafeSkill(SkillId)) {
 		if(AttackCount == 0) {
@@ -546,7 +540,7 @@ static int AttackCount;
 		return 0;
 		}
 
-		D2GAME_CastSkill(ptPlayer,ptSkill,ptGame,ptPacket->xPos,ptPacket->yPos);
+		D2Funcs::D2GAME_CastSkill(ptPlayer,ptSkill,ptGame,ptPacket->xPos,ptPacket->yPos);
 
 		if(!DetectTrick) return 0;
 
@@ -586,7 +580,7 @@ static int AttackCount;
 				hReassign.yPos = UnitY;
 				hReassign.Reassign = 1;
 
-				D2GAME_SendPacket(pClient,(BYTE*)&hReassign,11);
+				D2Funcs::D2GAME_SendPacket(pClient,(BYTE*)&hReassign,11);
 			}
 		}
 		return 1;
@@ -791,7 +785,7 @@ else
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus==4) D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus==4) D2Funcs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -912,7 +906,7 @@ if(ClientID==NULL) return TRUE;
 		else
 		pEvent.PacketLen=15;
 	
-		D2GAME_SendPacket(pUnit->pPlayerData->pClientData, (BYTE*)&pEvent,pEvent.PacketLen);
+		D2Funcs::D2GAME_SendPacket(pUnit->pPlayerData->pClientData, (BYTE*)&pEvent,pEvent.PacketLen);
 		return false;
 		}
 		if(_stricmp(str,"#map")==0)
@@ -926,8 +920,8 @@ if(ClientID==NULL) return TRUE;
 		{
 		if(!pUnit->pGame->bFestivalMode) return true;
 
-		int aLevel = D2COMMON_GetTownLevel(pUnit->dwAct);
-		int aCurrLevel = D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
+		int aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
+		int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 		if(aCurrLevel==aLevel)
 		{
 		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Najpierw opusc miasto!" : "Leave town first!");
@@ -952,7 +946,7 @@ if(ClientID==NULL) return TRUE;
 			{
 				if(pMem->dwUnitId == pUnit->dwUnitId)  InParty = true;
 
-				UnitAny* pMate = D2GAME_FindUnit(pUnit->pGame,pMem->dwUnitId,UNIT_PLAYER);
+				UnitAny* pMate = D2Funcs::D2GAME_FindUnit(pUnit->pGame,pMem->dwUnitId,UNIT_PLAYER);
 				if(pMate) {
 				pakiet << pMate->pPlayerData->szName << '#' << pMate->pPlayerData->pClientData->AccountName << '#' << ConvertClass(pMate->dwClassId) << ':';
 				}
@@ -1018,10 +1012,10 @@ if(ClientID==NULL) return TRUE;
 		{
 			if(AllowGU)
 			{
-				int aLevel = D2COMMON_GetTownLevel(pUnit->dwAct);
-				int aCurrLevel = D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
+				int aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
+				int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 				if(aCurrLevel!=aLevel)
-					D2GAME_MoveUnitToLevelId(pUnit,aLevel,pUnit->pGame);
+					D2Funcs::D2GAME_MoveUnitToLevelId(pUnit,aLevel,pUnit->pGame);
 			}
 			if(pUnit->pGame->bFestivalMode == 1)
 				if(pUnit->pPlayerData->isPlaying) {
@@ -1093,52 +1087,52 @@ if(ClientID==NULL) return TRUE;
 
 			if(!pDestUnit) return false;
 
-			int sFR =   D2COMMON_GetStatSigned(pDestUnit,STAT_FIRERESIST,0);
-			int sCR =   D2COMMON_GetStatSigned(pDestUnit,STAT_COLDRESIST,0);
-			int sLR =   D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGRESIST,0);
-			int sPR =   D2COMMON_GetStatSigned(pDestUnit,STAT_POISONRESIST,0);
+			int sFR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FIRERESIST,0);
+			int sCR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_COLDRESIST,0);
+			int sLR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGRESIST,0);
+			int sPR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_POISONRESIST,0);
 			
-			int sDR = D2COMMON_GetStatSigned(pDestUnit,STAT_DAMAGEREDUCTION,0);
+			int sDR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_DAMAGEREDUCTION,0);
 
-			int sFCR =  D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERCAST,0);
-			int sFHR =  D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERHITRECOVERY,0);
-			int sIAS =	D2COMMON_GetStatSigned(pDestUnit,STAT_IAS,0);
-			int sFRW =  D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERRUNWALK,0);
-			int sDS  =  D2COMMON_GetStatSigned(pDestUnit,STAT_DEADLYSTRIKE,0);
-			int sOW =	D2COMMON_GetStatSigned(pDestUnit,STAT_OPENWOUNDS,0);
-			int sCB =	D2COMMON_GetStatSigned(pDestUnit,STAT_CRUSHINGBLOW,0);
+			int sFCR =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERCAST,0);
+			int sFHR =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERHITRECOVERY,0);
+			int sIAS =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_IAS,0);
+			int sFRW =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERRUNWALK,0);
+			int sDS  =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_DEADLYSTRIKE,0);
+			int sOW =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_OPENWOUNDS,0);
+			int sCB =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_CRUSHINGBLOW,0);
 
-			int sCABS = D2COMMON_GetStatSigned(pDestUnit,STAT_COLDABSORBPERCENT,0);
-			int sLABS = D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGABSORBPERCENT,0);
-			int sFABS = D2COMMON_GetStatSigned(pDestUnit,STAT_FIREABSORBPERCENT,0);
+			int sCABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_COLDABSORBPERCENT,0);
+			int sLABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGABSORBPERCENT,0);
+			int sFABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FIREABSORBPERCENT,0);
 			
-			int sMFR = D2COMMON_GetStatSigned(pDestUnit,STAT_MAXFIRERESIST,0) +75;
-			int sMCR = D2COMMON_GetStatSigned(pDestUnit,STAT_MAXCOLDRESIST,0) +75;
-			int sMLR = D2COMMON_GetStatSigned(pDestUnit,STAT_MAXLIGHTNINGRESIST,0)+75;
-			int sMPR = D2COMMON_GetStatSigned(pDestUnit,STAT_MAXPOISONRESIST,0)+75;
+			int sMFR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXFIRERESIST,0) +75;
+			int sMCR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXCOLDRESIST,0) +75;
+			int sMLR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXLIGHTNINGRESIST,0)+75;
+			int sMPR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXPOISONRESIST,0)+75;
 
-			int sMF = D2COMMON_GetStatSigned(pDestUnit,STAT_MAGICFIND,0);
-			int aLife = D2COMMON_GetUnitMaxLife(pDestUnit) >>8;
-			int aMana = D2COMMON_GetUnitMaxMana(pDestUnit) >>8;
+			int sMF = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAGICFIND,0);
+			int aLife = D2Funcs::D2COMMON_GetUnitMaxLife(pDestUnit) >>8;
+			int aMana = D2Funcs::D2COMMON_GetUnitMaxMana(pDestUnit) >>8;
 
-			int sREP =   D2COMMON_GetStatSigned(pDestUnit,STAT_HPREGEN,0);
+			int sREP =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_HPREGEN,0);
 
-			if(D2COMMON_GetUnitState(pDestUnit,83))  //Nat res
+			if(D2Funcs::D2COMMON_GetUnitState(pDestUnit,83))  //Nat res
 			{
-			Skill* pSkill = D2COMMON_GetSkillById(pDestUnit,153,-1);
+			Skill* pSkill = D2Funcs::D2COMMON_GetSkillById(pDestUnit,153,-1);
 				if(pSkill)
 				{
-				int SkillLvl = D2COMMON_GetSkillLevel(pDestUnit,pSkill,1);
-				int ResBonus = D2COMMON_EvaluateSkill(pDestUnit,3442,153,SkillLvl);
+				int SkillLvl = D2Funcs::D2COMMON_GetSkillLevel(pDestUnit,pSkill,1);
+				int ResBonus = D2Funcs::D2COMMON_EvaluateSkill(pDestUnit,3442,153,SkillLvl);
 				sFR-=ResBonus;
 				sCR-=ResBonus;
 				sLR-=ResBonus;
 				sPR-=ResBonus;
 				}
 			}
-			if(D2COMMON_GetUnitState(pDestUnit,8)) //Salv
+			if(D2Funcs::D2COMMON_GetUnitState(pDestUnit,8)) //Salv
 			{
-				StatList * Stats = D2COMMON_GetStateStatList(pDestUnit,8);
+				StatList * Stats = D2Funcs::D2COMMON_GetStateStatList(pDestUnit,8);
 				int ResBonus = Stats->Stats.pStat->dwStatValue;
 				sFR-=ResBonus;
 				sCR-=ResBonus;
@@ -1171,7 +1165,7 @@ if(ClientID==NULL) return TRUE;
 		if(!LvlId) return false;
 		if(LvlId>136) return false;
 		SendMsgToClient(aUnit->pPlayerData->pClientData,"Moving '%s' to level '%d'...",aUnit->pPlayerData->szName,LvlId);
-		D2GAME_MoveUnitToLevelId(aUnit,LvlId,aUnit->pGame);
+		D2Funcs::D2GAME_MoveUnitToLevelId(aUnit,LvlId,aUnit->pGame);
 		return false;
 		}
 

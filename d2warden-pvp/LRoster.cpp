@@ -18,14 +18,9 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "LRoster.h"
-#include "D2Structs.h"
-#include "D2Ptrs.h"
-#include "D2Stubs.h"
-#include "Vars.h"
-#include "LEvents.h"
-#include <sstream>
 
+#include "LRoster.h"
+#include "LEvents.h"
 
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile)
 {
@@ -33,7 +28,7 @@ void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMis
 	if(pDefender->dwType != UNIT_PLAYER) return;
 	if(!pDefender->pPlayerData) return;
 	if(!pMissile) return;
-	pDefender->pPlayerData->LastHitSkillId = D2COMMON_GetMissileSkillId(pMissile);
+	pDefender->pPlayerData->LastHitSkillId = D2Funcs::D2COMMON_GetMissileSkillId(pMissile);
 	
 }
  
@@ -55,7 +50,7 @@ void COMBAT_Free(Game* pGame, UnitAny* pUnit)
           pDiffCombat->ptNext = pNext;
         else
           pUnit->ptCombat = pNext;
-        FOG_FreeServerMemory(pGame->pMemPool, pCombat, __FILE__, __LINE__, 0);
+        D2Funcs::FOG_FreeServerMemory(pGame->pMemPool, pCombat, __FILE__, __LINE__, 0);
       }
       pCombat = pNext;
     }
@@ -80,44 +75,44 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 		if(pVictim)
 			if(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5) bDruid = true;
 	if(pVictim)
-	if(!D2COMMON_isInShapeForm(pVictim) || !bDruid) {
+	if(!D2Funcs::D2COMMON_isInShapeForm(pVictim) || !bDruid) {
 	COMBAT_Free(pGame,pVictim);
-	D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
+	D2Funcs::D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
 
 	ClientData* pClient = 0;
 	if(pVictim)
 		if(pVictim->dwType == UNIT_PLAYER) pClient = pVictim->pPlayerData->pClientData;
 	if(pClient) pClient->PlayerStatus |= 8;
-	D2GAME_StopSequence(pVictim);
-	D2GAME_RemoveBuffs(pGame,pVictim);
-	D2GAME_DeleteTimers(pGame,pVictim);
-	D2GAME_ResetTimers(pGame,pVictim);
+	D2Funcs::D2GAME_StopSequence(pVictim);
+	D2Funcs::D2GAME_RemoveBuffs(pGame,pVictim);
+	D2Funcs::D2GAME_DeleteTimers(pGame,pVictim);
+	D2Funcs::D2GAME_ResetTimers(pGame,pVictim);
 
 		if(pKiller && pVictim) { 
 		OnDeath(pKiller,pVictim,pGame);
 		}
 		
-		if(!D2COMMON_GetUnitState(pVictim,playerbody))  pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
-		D2GAME_RemoveInteraction(pGame,pVictim);
+		if(!D2Funcs::D2COMMON_GetUnitState(pVictim,playerbody))  pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
+		D2Funcs::D2GAME_RemoveInteraction(pGame,pVictim);
 		return;
 	}
 
 	if(pVictim)
-	if(!pVictim->pInventory || !D2COMMON_GetCursorItem(pVictim->pInventory)) {
+	if(!pVictim->pInventory || !D2Funcs::D2COMMON_GetCursorItem(pVictim->pInventory)) {
 		int eMode = 1;
-		Room1* pRoom = D2COMMON_GetUnitRoom(pVictim);
-		if(pRoom) D2COMMON_isRoomInTown(pRoom) ? eMode = PLAYER_MODE_STAND_INTOWN : eMode = PLAYER_MODE_STAND_OUTTOWN;
-		D2GAME_DeleteTimers(pGame,pVictim);
+		Room1* pRoom = D2Funcs::D2COMMON_GetUnitRoom(pVictim);
+		if(pRoom) D2Funcs::D2COMMON_isRoomInTown(pRoom) ? eMode = PLAYER_MODE_STAND_INTOWN : eMode = PLAYER_MODE_STAND_OUTTOWN;
+		D2Funcs::D2GAME_DeleteTimers(pGame,pVictim);
 		COMBAT_Free(pGame,pVictim);
-		D2COMMON_ChangeCurrentMode(pVictim,eMode);
-		D2COMMON_ResetFlag(pVictim, 0);
+		D2Funcs::D2COMMON_ChangeCurrentMode(pVictim,eMode);
+		D2Funcs::D2COMMON_ResetFlag(pVictim, 0);
 	}
 }
 
 void __fastcall OnGameDestroy(Game* ptGame)
 {
 	LRost::Clear(ptGame);
-	Debug("Zamykam gre %s", ptGame->GameName);
+	DEBUGMSG("Zamykam gre %s", ptGame->GameName);
 }
 
 void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
@@ -132,7 +127,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 
 	if(ptKiller->dwType==UNIT_MONSTER)
 	{
-		UnitAny* ptParent = D2GAME_FindUnit(ptGame,ptKiller->pMonsterData->pAiGeneral->OwnerGUIDEq,ptKiller->pMonsterData->pAiGeneral->eOwnerTypeEq);
+		UnitAny* ptParent = D2Funcs::D2GAME_FindUnit(ptGame,ptKiller->pMonsterData->pAiGeneral->OwnerGUIDEq,ptKiller->pMonsterData->pAiGeneral->eOwnerTypeEq);
 		if(ptParent)
 			if(ptParent->dwType==UNIT_PLAYER)
 				ptKiller = ptParent;
@@ -171,7 +166,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 			}
 		}
 
-		int InRange = D2GAME_isUnitInRange(ptGame,ptVictim->dwUnitId,UNIT_PLAYER,ptKiller,51);
+		int InRange = D2Funcs::D2GAME_isUnitInRange(ptGame,ptVictim->dwUnitId,UNIT_PLAYER,ptKiller,51);
 
 		if(InRange) {  
 			SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_IMPRESSIVE, 3, -1, 150, "SNAJPER!", "SNIPER!");
@@ -179,14 +174,16 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 			//BroadcastMsg(ptKiller->pGame,"%s zdobywa osiagniecie 'Snajper'",ptKiller->pPlayerData->pClientData->AccountName);
 		}
 	int SkillId = 0;
-	Skill* pSkill = D2COMMON_GetCurrentSkill(ptKiller);
+	Skill* pSkill = D2Funcs::D2COMMON_GetCurrentSkill(ptKiller);
 	if(pSkill) SkillId = isMeleeSkill(pSkill->pTxt->wSkillId) ? pSkill->pTxt->wSkillId : 0;
-	if(SkillId) {
-	if(SkillId == D2S_JAB || SkillId == D2S_STRAFE) {
-			SendExEvent(ptKiller->pPlayerData->pClientData, COL_PURPLE, D2EX_HUMILATION, 3, -1, 150, "LOL!", "LOL!");
-			BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,3,"data\\D2Ex\\Blobs");
-	}
-	}
+		if(SkillId)
+		{
+			if(SkillId == D2S_JAB || SkillId == D2S_STRAFE)
+			{
+				SendExEvent(ptKiller->pPlayerData->pClientData, COL_PURPLE, D2EX_HUMILATION, 3, -1, 150, "LOL!", "LOL!");
+				BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,3,"data\\D2Ex\\Blobs");
+			}
+		}
 	}
 
 		
@@ -204,7 +201,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 		}
 
 		//int SkillId = 0;
-		//Skill* pSkill = D2COMMON_GetCurrentSkill(ptKiller);
+		//Skill* pSkill = D2Funcs::D2COMMON_GetCurrentSkill(ptKiller);
 		//if(pSkill) SkillId = isMeleeSkill(pSkill->pTxt->wSkillId) ? pSkill->pTxt->wSkillId : 0;
 
 		//if(!SkillId)
@@ -214,7 +211,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 		//}
 		//if(!SkillId)
 		//{
-		//Skill* pSkill = D2COMMON_GetCurrentSkill(ptKiller);
+		//Skill* pSkill = D2Funcs::D2COMMON_GetCurrentSkill(ptKiller);
 		//if(pSkill) SkillId =  pSkill->pTxt->wSkillId;
 		//}
 		//ostringstream MsgEng; MsgEng << ptVictim->pPlayerData->szName  << " was slain by " << ptKiller->pPlayerData->szName << " (" << ConvertSkill(SkillId).c_str() << ')';
@@ -246,9 +243,9 @@ void LRost::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszy
 		RosterPacket pVDInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)2,(BYTE)pRoster->Deaths};
 		RosterPacket pVAInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)3,(BYTE)pRoster->Assists};
 
-		D2GAME_SendPacket(ptClient,(BYTE*)&pVKInfo,7);
-		D2GAME_SendPacket(ptClient,(BYTE*)&pVDInfo,7);
-		D2GAME_SendPacket(ptClient,(BYTE*)&pVAInfo,7);
+		D2Funcs::D2GAME_SendPacket(ptClient,(BYTE*)&pVKInfo,7);
+		D2Funcs::D2GAME_SendPacket(ptClient,(BYTE*)&pVDInfo,7);
+		D2Funcs::D2GAME_SendPacket(ptClient,(BYTE*)&pVAInfo,7);
 		}
 	}
 }
@@ -264,9 +261,9 @@ void LRost::SyncClient(Game *ptGame, DWORD UnitId, LRoster* pRoster) // Wysyla r
 	for(ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
 	{
 	if(pClientList->InitStatus == 4) {
-		D2GAME_SendPacket(pClientList,(BYTE*)&pVKInfo,7);
-		D2GAME_SendPacket(pClientList,(BYTE*)&pVDInfo,7);
-		D2GAME_SendPacket(pClientList,(BYTE*)&pVAInfo,7);
+		D2Funcs::D2GAME_SendPacket(pClientList,(BYTE*)&pVKInfo,7);
+		D2Funcs::D2GAME_SendPacket(pClientList,(BYTE*)&pVDInfo,7);
+		D2Funcs::D2GAME_SendPacket(pClientList,(BYTE*)&pVAInfo,7);
 		}
 	}
 }

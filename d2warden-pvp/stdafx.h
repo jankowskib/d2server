@@ -16,10 +16,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ========================================================== */
-
-#define WIN32_LEAN_AND_MEAN
-#include "Windows.h"
-
 #define _ENGLISH_LOGS
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+using namespace std;
+
 #include <string>
+#include <vector>
+#include <sstream>
+
+#include <list>
+#include <map>
+
 #include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/random.hpp>
+#include <shellapi.h>
+#include <urlmon.h>
+#include <math.h>
+
+#include "D2Structs.h"
+#include "D2Stubs.h"
+#include "Vars.h"
+
+#include "WardenMisc.h"
+#include "D2Ptrs.h"
+#include "Offset.h"
+
+#include "RC4.h"
+

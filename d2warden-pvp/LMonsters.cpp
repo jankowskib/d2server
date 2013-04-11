@@ -19,10 +19,6 @@
 
 #include "stdafx.h"
 #include "LMonsters.h"
-#include "D2Ptrs.h"
-#include "D2Stubs.h"
-#include "Vars.h"
-#include "WardenMisc.h"
 
 bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 {
@@ -77,10 +73,10 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		for(int i = 0; i<10; i++)
 		{
 
-		aRoom =	D2GAME_FindFreeCoords(&Pos,aRoom,&Out,1);
+		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,1);
 		if(!aRoom) {SendMsgToClient(pUnit->pPlayerData->pClientData,"FindFreeCoords failed!"); break;}
 
-		ptMonster = D2GAME_SpawnMonster(No,1,psUnit->ptPlayer->pGame,aRoom,Out.x,Out.y,-1,0);
+		ptMonster = D2Funcs::D2GAME_SpawnMonster(No,1,psUnit->ptPlayer->pGame,aRoom,Out.x,Out.y,-1,0);
 		if(ptMonster) break;
 
 		if(i % 2) Pos.x = Out.x + (rand() % 4); else  Pos.x = Out.x - (rand() % 4);
@@ -88,7 +84,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		}
 		if(!ptMonster) {SendMsgToClient(pUnit->pPlayerData->pClientData,"Error limit exceeded!"); break;}
 
-		SendMsgToClient(pUnit->pPlayerData->pClientData,"#%d Monster spawned, HP = %d",z+1, D2COMMON_GetUnitMaxLife(ptMonster) >> 8);	
+		SendMsgToClient(pUnit->pPlayerData->pClientData,"#%d Monster spawned, HP = %d",z+1, D2Funcs::D2COMMON_GetUnitMaxLife(ptMonster) >> 8);	
 		}
 		UNLOCK
 		return false;
@@ -116,9 +112,9 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		if(SkillNo>356)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-356"); UNLOCK return false;}
 		
 
-		D2COMMON_AddSkillToUnit(ptMonster, SkillNo, 99, 1 , __FILE__, __LINE__);
-		D2COMMON_RefreshSkills(ptMonster);
-		D2GAME_SetMonSkill(ptMonster,0,SkillNo,-1);
+		D2Funcs::D2COMMON_AddSkillToUnit(ptMonster, SkillNo, 99, 1 , __FILE__, __LINE__);
+		D2Funcs::D2COMMON_RefreshSkills(ptMonster);
+		D2Funcs::D2GAME_SetMonSkill(ptMonster,0,SkillNo,-1);
 		UNLOCK
 		return false;
 		}

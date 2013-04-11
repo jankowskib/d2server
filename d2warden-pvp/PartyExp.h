@@ -20,9 +20,7 @@
 #ifndef D2PARTYEXP_H__
 #define D2PARTYEXP_H__
 
-#include "D2Structs.h"
-
-int D2GAME_nPlayersFormula();
+int nPlayersFormula();
 int __inline GetRange(int X1, int Y1, int X2, int Y2) { return ((X1-X2)*(X1-X2) + (Y1-Y2)*(Y1-Y2)); }
 SubParty* GetSubPartyById(Game *pGame, short PartyId);
 void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPartyExp); // oryginalna funkcja 0x6FC9A280

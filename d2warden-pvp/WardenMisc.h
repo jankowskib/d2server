@@ -20,13 +20,6 @@
 #ifndef __WARDENMISC_H_
 #define __WARDENMISC_H_
 
-#include "D2Warden.h"
-#include "D2Structs.h"
-#include <vector>
-
-using namespace std;
-
-
 short CalculateDistance(short x1, short y1, short x2, short y2);
 void ClearSayGoFlag(Game* pGame);
 void ClearCanAttackFlag(Game* pGame);

@@ -35,13 +35,7 @@
     <ClCompile Include="D2Handlers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D2Ptrs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="D2Stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Spectator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StatDumpThread.cpp">
@@ -95,6 +89,12 @@
     <ClCompile Include="ExMemory.cpp">
       <Filter>Source Files\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="LSpectator.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
+    <ClCompile Include="Offset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -112,9 +112,6 @@
     <ClInclude Include="D2Warden.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Spectator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StatDumpThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -122,9 +119,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WardenMisc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WardenThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Build.h">
@@ -175,6 +169,12 @@
     <ClInclude Include="ExMemory.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
+    <ClInclude Include="LSpectator.h">
+      <Filter>Header Files\ModuLes</Filter>
+    </ClInclude>
+    <ClInclude Include="Offset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="HashGameSeed.asm">
@@ -183,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="d2warden.def">
-      <Filter>Source Files\Misc</Filter>
+      <Filter>_BUILD</Filter>
     </None>
   </ItemGroup>
 </Project>

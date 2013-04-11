@@ -18,9 +18,8 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "D2Ptrs.h"
 
-DWORD GetDllOffset(char *dll, int offset)
+DWORD GetDllOffset(const char *dll, int offset)
 {
 	HMODULE hmod = GetModuleHandle(dll);
 	if (!hmod)
@@ -35,7 +34,7 @@ DWORD GetDllOffset(char *dll, int offset)
 DWORD GetDllOffset(int num)
 {
 //	char buffer [512];
-	static char *dlls[] = {"D2Client.DLL", "D2Common.DLL", "D2Gfx.DLL", "D2Lang.DLL", 
+	const char *dlls[] = {"D2Client.DLL", "D2Common.DLL", "D2Gfx.DLL", "D2Lang.DLL", 
 			       "D2Win.DLL", "D2Net.DLL", "D2Game.DLL", "D2Launch.DLL", "Fog.DLL", "BNClient.DLL",
 					"Storm.DLL", "D2Cmp.DLL", "D2Multi.DLL"};
 //	sprintf_s(buffer, "%s : %d", dlls[num&0xff], GetDllOffset(dlls[num&0xff], num>>8));
@@ -44,6 +43,7 @@ DWORD GetDllOffset(int num)
 
 void DefineOffsets()
 {
+	LogNoLock("Defining %d pointers...",((DWORD*)&_D2PTRS_END - (DWORD*)&_D2PTRS_START)/4);
 	DWORD *p = (DWORD *)&_D2PTRS_START;
 	do *p = GetDllOffset(*p);
 		while(++p <= (DWORD *)&_D2PTRS_END);

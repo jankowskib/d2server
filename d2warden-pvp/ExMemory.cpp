@@ -18,12 +18,7 @@
  * ========================================================== */
 
 #include "stdafx.h"
-
 #include "ExMemory.h"
-#include "WardenMisc.h"
-#include "Vars.h"
-#include <map>
-//#include <string>
 
 struct MemInfo
 {

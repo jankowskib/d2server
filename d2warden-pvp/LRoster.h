@@ -20,8 +20,6 @@
 #ifndef LROSTER_H__
 #define LROSTER_H__
 
-#include "D2Structs.h"
-
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile);
 void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame);
 void __fastcall OnGameDestroy(Game* ptGame);

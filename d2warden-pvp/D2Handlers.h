@@ -20,11 +20,6 @@
 #ifndef D2HANDS_H__
 #define D2HANDS_H__
 
-#include "D2Structs.h"
-#include <map>
-
-using namespace std; 
-
 DWORD __fastcall OnClickLoc(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
 DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen);
 

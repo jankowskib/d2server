@@ -21,32 +21,27 @@
 
 #include "stdafx.h"
 
-#include "global.h"
-#include "MD5.h"
-#include "rc4.h"
-#include "process.h"
-
-#include "D2Ptrs.h"
-#include "D2Stubs.h"
-#include "D2Structs.h"
 #include "D2Warden.h"
-#include "WardenMisc.h"
-#include "Vars.h"
 #include "D2Handlers.h"
 #include "StatDumpThread.h"
-#include "Build.h"
+
 #include "NodesEx.h"
 #include "PartyExp.h"
 #include "ExMemory.h"
 #include "LQuests.h"
 #include "LItems.h"
 #include "LWorldEvent.h"
-#include <boost/tokenizer.hpp>
 
-#include <shellapi.h>
-#include <urlmon.h>
+#include "global.h"
+#include "MD5.h"
+#include "process.h"
+
+#include "Build.h"
+
 #pragma comment(lib, "urlmon.lib")
 
+static boost::mt19937 rng;
+static boost::uniform_int<int> dist(300, 10000);
 
 void RemoveWardenPacket(list<WardenClient>::iterator ptCurrentClient)
 {
@@ -57,6 +52,7 @@ void RemoveWardenPacket(list<WardenClient>::iterator ptCurrentClient)
 		delete ptCurrentClient->pWardenPackets;
 		ptCurrentClient->pWardenPackets = 0;
 		ptCurrentClient->pWardenPackets_ReceiveTime = 0;
+		ptCurrentClient->pWardenPacket_SendTime = 0;
 		}
 //	UNLOCK
 
@@ -79,8 +75,8 @@ DWORD SendPartOfMOD2Client(DWORD ClientID,unsigned char *RC4_KEY,DWORD MOD_Posit
 	MyMod[5] = (unsigned char)(ModLen>>8);
 	memcpy(&MyMod[6],MOD_Enrypted+MOD_Position,ModLen);
 	rc4_crypt(RC4_KEY,&MyMod[3],ModLen+3);
-	D2NET_SendPacket(1,ClientID,MyMod,ModLen+6);
-	//D2GAME_SendPacket(ptClient,MyMod,ModLen+6);
+	D2Funcs::D2NET_SendPacket(1,ClientID,MyMod,ModLen+6);
+	//D2Funcs::D2GAME_SendPacket(ptClient,MyMod,ModLen+6);
 	return ModLen+MOD_Position;
 };
 
@@ -224,44 +220,46 @@ void Warden_Config()
 
 void Warden_Init()
 {
-
 char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 unsigned char RC4_Key[17]="WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
 char Maiev[10] = "MAIEV.MOD";
 FILE * fp = 0;
 int i = 0;
-/*
-UNUSED
-	PatchGS(CALL,(DWORD)D2GAME_LifeLeech_P,(DWORD)D2GAME_OnLifeLeech_STUB,6,"Life Leech");
-	PatchGS(CALL,(DWORD)D2GAME_ManaLeech_P,(DWORD)D2GAME_OnManaLeech_STUB,6,"Mana Leech");
-	
-	PatchGS(0x90,(DWORD)D2GAME_Corpse_P,0,10,"Disable Corpse");
-	PatchGS(CALL,(DWORD)D2GAME_GetUnitX_P,(DWORD)D2COMMON_GetUnitX,5,"TargetX fix");
-	PatchGS(CALL,(DWORD)D2GAME_GetUnitY_P,(DWORD)D2COMMON_GetUnitY,5,"TargetY fix");
-*/
+
 #define JUMP 0xE9
 #define CALL 0xE8
+#define NOP 0x90
+/*
+UNUSED
+	PatchGS(CALL,(DWORD)D2Ptrs::D2GAME_LifeLeech_P,(DWORD)D2Stubs::D2GAME_OnLifeLeech_STUB,6,"Life Leech");
+	PatchGS(CALL,(DWORD)D2Stubs::D2GAME_ManaLeech_P,(DWORD)D2Ptrs::D2GAME_OnManaLeech_STUB,6,"Mana Leech");
+	
+	PatchGS(NOP,(DWORD)D2Ptrs::D2GAME_Corpse_P,0,10,"Disable Corpse");
+	PatchGS(CALL,(DWORD)D2Ptrs::D2GAME_GetUnitX_P,(DWORD)D2Stubs::D2COMMON_GetUnitX,5,"TargetX fix");
+	PatchGS(CALL,(DWORD)D2Ptrs::D2GAME_GetUnitY_P,(DWORD)D2Stubs::D2COMMON_GetUnitY,5,"TargetY fix");
+*/
+
 #ifdef _ENGLISH_LOGS
-	Log("Warden ver. 1.5a BUILD %d by Lolet has started. Compiled on %s, %s",__BUILDNO__,__DATE__,__TIME__);
+	Log("Warden ver. 1.6 build %d by Lolet has started. Compiled on %s, %s",__BUILDNO__,__DATE__,__TIME__);
 #else
-	Log("Warden ver. 1.5 BUILD %d by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,__DATE__,__TIME__);
+	Log("Warden ver. 1.6 build %d by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,__DATE__,__TIME__);
 #endif
 	Warden_Config();
 //        HDR    ADDR                         FUNC                          SIZE    DESC
-	//PatchGS(0,(DWORD)&p_D2GAME_PacketTable[0x66].Callback,(DWORD)d2warden_0X66Handler,4,"On Warden Packet");
-	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x703D0),(DWORD)D2GAME_OnJoinGame_STUB,5,"Join Game Handler");
-	//PatchGS(CALL,GetDllOffset("D2Game.dll",0x7A6CE),(DWORD)D2GAME_SetDRCap_STUB,5,"DR Cap");
+	//PatchGS(0,(DWORD)&D2Vars::D2GAME_PacketTable[0x66].Callback,(DWORD)d2warden_0X66Handler,4,"On Warden Packet");
+	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x703D0),(DWORD)D2Stubs::D2GAME_OnJoinGame_STUB,5,"Join Game Handler");
+	//PatchGS(CALL,GetDllOffset("D2Game.dll",0x7A6CE),(DWORD)D2Stubs::D2GAME_SetDRCap_STUB,5,"DR Cap");
 //#ifdef _DEBUG
 //	PatchGS(0x68,GetDllOffset("D2Client.dll",0x5E7CD),1,5,"TCP/IP Delay fix");
-//	PatchGS(CALL,GetDllOffset("D2Game.dll",0xE832E),(DWORD)D2GAME_ParseCreatePackets_STUB,5,"ParseCreatePackets");
+//	PatchGS(CALL,GetDllOffset("D2Game.dll",0xE832E),(DWORD)D2Stubs::D2GAME_ParseCreatePackets_STUB,5,"ParseCreatePackets");
 //	PatchGS(0,GetDllOffset("D2Client.dll",0xBE919),0xEB,1,"AE Packet Fixture");
 //#endif
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7D66D),(DWORD)D2GAME_LastHitIntercept_STUB,5,"LastHitIntercept");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x99130),(DWORD)D2GAME_OnCreateDamage_STUB,6,"OnDamageCreation");
-	PatchGS(CALL,GetDllOffset("D2Net.dll",0x62AD),(DWORD)D2NET_ReceivePacket_STUB,5,"Client Packet Wrapper");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7D66D),(DWORD)D2Stubs::D2GAME_LastHitIntercept_STUB,5,"LastHitIntercept");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x99130),(DWORD)D2Stubs::D2GAME_OnCreateDamage_STUB,6,"OnDamageCreation");
+	PatchGS(CALL,GetDllOffset("D2Net.dll",0x62AD),(DWORD)D2Stubs::D2NET_ReceivePacket_STUB,5,"Client Packet Wrapper");
 	if(AllowD2Ex) {
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2C1E0),(DWORD)OnD2ExPacket,5,"D2Ex Connect");
-	p_D2NET_ToSrvPacketSizes[0x0B]=5;
+	D2Vars::D2NET_ToSrvPacketSizes[0x0B]=5;
 	} 
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x617B5),(DWORD)OnActLoad,5,"Act Load");
 	if(MoveToTown)
@@ -275,22 +273,22 @@ UNUSED
 	PatchGS(0xEB,GetDllOffset("D2Game.dll",0xD26C3),0,1,"Ear drop on death");
 	}
 
-	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x41972),(DWORD)D2GAME_OnPlayerModeChange_I,5,"Player mode intercept");
+	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x41972),(DWORD)D2Stubs::D2GAME_OnPlayerModeChange_I,5,"Player mode intercept");
 
 	if(StrBugFix)
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x2D34F),(DWORD)D2GAME_SendStatToOther,5,"Str/dex bug fix");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x2D34F),(DWORD)D2Stubs::D2GAME_SendStatToOther_STUB,5,"Str/dex bug fix");
 
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2E670),(DWORD)D2GAME_Chat_STUB,6,"Chat Wrapper");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x90171),(DWORD)D2GAME_NPCHeal_STUB,61,"NPC Slow Missile Heal");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x32048),(DWORD)D2GAME_Ressurect_STUB,39,"Ressurect Fix");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x43067),(DWORD)D2GAME_DeathMsg_STUB,5,"Roster Wrapper");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7E326),(DWORD)D2GAME_OnMonsterDeath_STUB,9,"On Monster Death");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2E670),(DWORD)D2Stubs::D2GAME_Chat_STUB,6,"Chat Wrapper");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x90171),(DWORD)D2Stubs::D2GAME_NPCHeal_STUB,61,"NPC Slow Missile Heal");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x32048),(DWORD)D2Stubs::D2GAME_Ressurect_STUB,39,"Ressurect Fix");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x43067),(DWORD)D2Stubs::D2GAME_DeathMsg_STUB,5,"Roster Wrapper");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7E326),(DWORD)D2Stubs::D2GAME_OnMonsterDeath_STUB,9,"On Monster Death");
 
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x89680),(DWORD)D2GAME_SendKillsNULL_STUB,6,"Null Original S->C 0x66");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0xE7A1A),(DWORD)D2GAME_GameDestroy_STUB,5,"Game Destroy Wrapper");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x89680),(DWORD)D2Stubs::D2GAME_SendKillsNULL_STUB,6,"Null Original S->C 0x66");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0xE7A1A),(DWORD)D2Stubs::D2GAME_GameDestroy_STUB,5,"Game Destroy Wrapper");
 
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xC6A32),(DWORD)D2GAME_GameEnter_STUB,6, "Add ClientToGame Wrapper"); //0ld = 0xE76D6, The newest = 0xE76E4
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2DC90),(DWORD)D2GAME_OnEventSend_STUB,5, "Player Events Wrapper");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xC6A32),(DWORD)D2Stubs::D2GAME_GameEnter_STUB,6, "Add ClientToGame Wrapper"); //0ld = 0xE76D6, The newest = 0xE76E4
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2DC90),(DWORD)D2Stubs::D2GAME_OnEventSend_STUB,5, "Player Events Wrapper");
 	
 
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2BE20),(DWORD)d2warden_0X66Handler,5,"0x66 Warden Packet Wrapper");
@@ -312,12 +310,12 @@ UNUSED
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2F7F0),(DWORD)OnClickUnit,6,"0x11 Wrapper");
 	//-----------
 
-	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0xE6F00),(DWORD)D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");
+	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0xE6F00),(DWORD)D2Stubs::D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");
 
 	if(FFAMode)
 	{
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x909EF),(DWORD)D2GAME_PermStore_STUB,5, "Perm Store Stub");
-	PatchGS(CALL,GetDllOffset("D2Game.dll",0x928FC),(DWORD)D2GAME_PermStore_STUB,5, "Perm Store Stub");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x909EF),(DWORD)D2Stubs::D2GAME_PermStore_STUB,5, "Perm Store Stub");
+	PatchGS(CALL,GetDllOffset("D2Game.dll",0x928FC),(DWORD)D2Stubs::D2GAME_PermStore_STUB,5, "Perm Store Stub");
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x913CA),(DWORD)GetItemCost,5,"Item Cost Stub");
 	}
 
@@ -330,9 +328,9 @@ UNUSED
 	PatchGS(0,GetDllOffset("D2Game.dll",0x7E248),0x5690,2,"Party Share Fix Prepare");
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x7E24A),(DWORD)ExpShare_NEW,5, "Party Share Fix");
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0xBD5B7),GetDllOffset("D2Game.dll",0xBD310),5,"Exp Increase Fix");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xBD310),(DWORD)D2GAME_nPlayersFormula,5,"Exp Increase Fix 2");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xBD310),(DWORD)nPlayersFormula,5,"Exp Increase Fix 2");
 
-	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x7EBF0),(DWORD)D2GAME_GetPlayers_STUB,5,"Max Players Change");
+	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x7EBF0),(DWORD)D2Stubs::D2GAME_GetPlayers_STUB,5,"Max Players Change");
 
 	//MISC FIXES
 	PatchGS(0,GetDllOffset("D2Game.dll",0x424E6),7,1,"Decresae Corpse number");  //NEW
@@ -340,13 +338,13 @@ UNUSED
 	PatchGS(0,GetDllOffset("D2Game.dll",0xFBF5C + 20),0,1,"Null Lower Resist");
 	PatchGS(0,GetDllOffset("D2Game.dll",0xD156A),0xEB,1,"Cows' drop fix");
 	PatchGS(CALL,GetDllOffset("D2Game.dll",0x368C2),(DWORD)QUESTS_CowLevelOpenPortal,5,"Cow Level Quest Override");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x4BC83),(DWORD)QUESTS_OnUseItem_STUB,5,"Respec");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x4BC83),(DWORD)D2Stubs::D2GAME_OnUseItem_STUB,5,"Respec");
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEBD50),(DWORD)DAMAGE_FireEnchanted,6,"Fire Enchanted Fix");
 	PatchGS(CALL,GetDllOffset("D2Common.dll",0x41B6D),(DWORD)DYES_DrawItem,5,"Colour Item Intercept IV");
 	PatchGS(CALL,GetDllOffset("D2Common.dll",0x418DC),(DWORD)DYES_DrawItem,5,"Colour Item Intercept V");
-	p_D2GAME_pSpell[12].SpellPrepareFunc=&DYES_Prepare;
-	p_D2GAME_pSpell[12].SpellDoFunc=&DYES_Colorize;
-	p_D2GAME_pSpell[13].SpellDoFunc=&WE_Spawn;
+	D2Vars::D2GAME_pSpell[12].SpellPrepareFunc=&DYES_Prepare;
+	D2Vars::D2GAME_pSpell[12].SpellDoFunc=&DYES_Colorize;
+	D2Vars::D2GAME_pSpell[13].SpellDoFunc=&WE_Spawn;
 
 	//PatchGS(CALL,GetDllOffset("D2Game.dll",0xD159B),(DWORD)ITEMS_AddKillerId,5,"Tresure Class Create Hndlr");
 	
@@ -373,13 +371,13 @@ int NEU_NODE = Max_Players + 3;
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2A790),(DWORD)NODES_BaalCheck,7,"NodesEX: Baal Ai"); // bylo 0x2BB75
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x80AA0),(DWORD)NODES_NormalCheck,7,"NodesEX: Diablo Ai");
 
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDF00),(DWORD)D2GAME_AssignNode_STUB,6,"NodesEX: Alloc 16-players nodes");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDD70),(DWORD)D2GAME_FreeNode_STUB,6,"NodesEX: Free 16-players nodes");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDC90),(DWORD)D2GAME_FreeChildNode_STUB,8,"NodesEX: Free Child of 16-players nodes");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDF00),(DWORD)D2Stubs::D2GAME_AssignNode_STUB,6,"NodesEX: Alloc 16-players nodes");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDD70),(DWORD)D2Stubs::D2GAME_FreeNode_STUB,6,"NodesEX: Free 16-players nodes");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDC90),(DWORD)D2Stubs::D2GAME_FreeChildNode_STUB,8,"NodesEX: Free Child of 16-players nodes");
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDC50),(DWORD)NODES_GetUnitNode,6,"NodesEX: Get Unit Node");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDDE0),(DWORD)D2GAME_SetUnitsNode_STUB,6,"NodesEX: Set Unit Node As Parent (Monsters)");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDE70),(DWORD)D2GAME_SetNodeParented_STUB,6,"NodesEX: Set Unit Node As Parent (Players)");
-	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDFC0),(DWORD)D2GAME_FreeNodes_STUB,5,"NodesEX: Free all nodes");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDDE0),(DWORD)D2Stubs::D2GAME_SetUnitsNode_STUB,6,"NodesEX: Set Unit Node As Parent (Monsters)");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDE70),(DWORD)D2Stubs::D2GAME_SetNodeParented_STUB,6,"NodesEX: Set Unit Node As Parent (Players)");
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xEDFC0),(DWORD)D2Stubs::D2GAME_FreeNodes_STUB,5,"NodesEX: Free all nodes");
 
 	PatchGS(0,GetDllOffset("D2Game.dll",0xC2BCB),0x1E00,4,"NodesEX: Change node offset I");
 	PatchGS(0,GetDllOffset("D2Game.dll",0xC2BD1),0x1E00,4,"NodesEX: Change node offset II");
@@ -562,6 +560,8 @@ int NEU_NODE = Max_Players + 3;
 	AE_Packet00[38] = (unsigned char)((MOD_Length / 65536) % 256);
 	AE_Packet00[39] = (unsigned char)((MOD_Length / 16777216) % 256);
 	
+	rng.seed(static_cast<unsigned> (std::time(0)));
+
 	Warden_Enable = true;
 
 #ifdef _ENGLISH_LOGS
@@ -592,29 +592,28 @@ int NEU_NODE = Max_Players + 3;
 void WardenLoop()
 {
 	unsigned char WardenCMD0_local[38] = {0};
+	static boost::variate_generator<boost::mt19937&, boost::uniform_int<int>>random(rng, dist);
 
 	LOCK //Zablokuj inne w¹tki
 
 	for(list<WardenClient>::iterator ptCurrentClient = hWarden.Clients.begin(); ptCurrentClient !=hWarden.Clients.end();)
 	{
 	DWORD CurrentTick = GetTickCount();
-	DWORD NetClient = D2NET_GetClient(ptCurrentClient->ClientID);
+	if (ptCurrentClient->NextCheckTime > CurrentTick && ptCurrentClient->WardenStatus != WARDEN_NOTHING) 
+	{
+		++ptCurrentClient;
+		continue;
+	}
+	DEBUGMSG("Checking client %s", ptCurrentClient->AccountName.c_str());
+	DWORD NetClient = D2Funcs::D2NET_GetClient(ptCurrentClient->ClientID);
 
 		if(!NetClient)
 		{
-		Debug("DEBUG: Usuwam klienta %d!, ilosc klientow w petli %d, Powód: %s",ptCurrentClient->ClientID,hWarden.Clients.size()-1,!NetClient ? "CheckValidClient == false" : ptCurrentClient->WardenStatus == WARDEN_NOTHING ? "WardenStatus == NOTHING" : "ErrorCount>5");
+		DEBUGMSG("DEBUG: Usuwam klienta %d!, ilosc klientow w petli %d, Powód: %s",ptCurrentClient->ClientID,hWarden.Clients.size()-1,!NetClient ? "CheckValidClient == false" : ptCurrentClient->WardenStatus == WARDEN_NOTHING ? "WardenStatus == NOTHING" : "ErrorCount>5");
 		RemoveWardenPacket(ptCurrentClient);
 		ptCurrentClient = hWarden.Clients.erase(ptCurrentClient);
 		continue;
 		}
-
-
-		if (ptCurrentClient->NextCheckTime > CurrentTick) 
-			{
-			++ptCurrentClient;
-			continue;
-			}
-
 
 			switch (ptCurrentClient->WardenStatus)
 			{
@@ -622,7 +621,7 @@ void WardenLoop()
 					{
 						memcpy(WardenCMD0_local,&AE_Packet00[3],37);
 						rc4_crypt(ptCurrentClient->RC4_KEY_0XAE,&AE_Packet00[3],37);
-						D2NET_SendPacket(0,ptCurrentClient->ClientID,AE_Packet00,sizeof(AE_Packet00));
+						D2Funcs::D2NET_SendPacket(0,ptCurrentClient->ClientID,AE_Packet00,sizeof(AE_Packet00));
 						memcpy(&AE_Packet00[3],WardenCMD0_local,37);	
 						ptCurrentClient->WardenStatus = WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT;
 						ptCurrentClient->NextCheckTime = CurrentTick+500;
@@ -651,7 +650,7 @@ void WardenLoop()
 						if (ptCurrentClient->pWardenPackets->ThePacket[0] == 1)
 						{
 							RemoveWardenPacket(ptCurrentClient);
-							ptCurrentClient->WardenStatus = WARDEN_SEND_CHECK;
+							ptCurrentClient->WardenStatus = WARDEN_SEND_REQUEST;
 							ptCurrentClient->NextCheckTime = CurrentTick;
 							break;
 						}
@@ -708,7 +707,7 @@ void WardenLoop()
 								else
 								if (ptCurrentClient->pWardenPackets->ThePacket[0] == 1)
 								{
-								ptCurrentClient->WardenStatus = WARDEN_SEND_CHECK;
+								ptCurrentClient->WardenStatus = WARDEN_SEND_REQUEST;
 								ptCurrentClient->ErrorCount=0; // Nastepne 5 szans, jako ze udalo ci sie sciagnac modul
 								ptCurrentClient->NextCheckTime = CurrentTick;
 								RemoveWardenPacket(ptCurrentClient);
@@ -728,203 +727,222 @@ void WardenLoop()
 							}
 					}
 					break;
-				case WARDEN_SEND_CHECK:	
+				case WARDEN_SEND_REQUEST:	
 					{
 					RemoveWardenPacket(ptCurrentClient);
 					switch(ptCurrentClient->CheckCounter) //1.11b
 					{
-					//case 0 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B418,"D2Client.dll",0x0011B414);break;//MouseX/MouseY
-					//case 1 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B418,"D2Client.dll",0x0011B414);break;//MouseX/MouseY
-					//case 2 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x1040C0,16*4);break;
-					case 0 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B414,8,"D2Client.dll",0x1040C0,16*4); break;
-					case 1 : SendPtrRequest(ptCurrentClient,"bnclient.dll",0x1D330,16);break; //RedVex
-					case 2 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x341404,4);break; //TMC
-					case 3 : SendPtrRequest(ptCurrentClient,ptCurrentClient->AnimData,4);break; //TMC
-					case 4 : SendPtrRequest(ptCurrentClient,ptCurrentClient->AnimData2,16);break; //TMC
-					case 5 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x521D1,6);break; //Sting's MH
-					case 6 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x66DC5,5);break; //WtfPk
-					case 7 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0xBDFB1,5);break; //OnPacketRecv
-					case 8: SendPtrRequest(ptCurrentClient,"D2Common.dll",0xA1328,4);break; //Get SkillsTxt
-					case 9: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*54),8);break; //Get Teleport Record
-					case 10: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*59),8);break; //Get Blizzard Record
-					case 11: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*47),8);break; //Get Fireball Record
-					case 12: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*22),8);break; //Get Guided Arrow Record
-					case 13: SendPtrRequest(ptCurrentClient,"D2Client.dll",0x32B40,7);break; //GameLoop
+						//case 0 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B418,"D2Client.dll",0x0011B414);break;//MouseX/MouseY
+						//case 1 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B418,"D2Client.dll",0x0011B414);break;//MouseX/MouseY
+						//case 2 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x1040C0,16*4);break;
+						case 0 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x0011B414,8,"D2Client.dll",0x1040C0,16*4); break;
+						case 1 : SendPtrRequest(ptCurrentClient,"bnclient.dll",0x1D330,16);break; //RedVex
+						case 2 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x341404,4);break; //TMC
+						case 3 : SendPtrRequest(ptCurrentClient,ptCurrentClient->AnimData,4);break; //TMC
+						case 4 : SendPtrRequest(ptCurrentClient,ptCurrentClient->AnimData2,16);break; //TMC
+						case 5 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x521D1,6);break; //Sting's MH
+						case 6 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0x66DC5,5);break; //WtfPk
+						case 7 : SendPtrRequest(ptCurrentClient,"D2Client.dll",0xBDFB1,5);break; //OnPacketRecv
+						case 8 : SendPtrRequest(ptCurrentClient,"D2Common.dll",0xA1328,4);break; //Get SkillsTxt
+						case 9 : SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*54),8);break; //Get Teleport Record
+						case 10: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*59),8);break; //Get Blizzard Record
+						case 11: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*47),8);break; //Get Fireball Record
+						case 12: SendPtrRequest(ptCurrentClient,ptCurrentClient->ptSkillsTxt + (0x23C*22),8);break; //Get Guided Arrow Record
+						case 13: SendPtrRequest(ptCurrentClient,"D2Client.dll",0x32B40,7);break; //GameLoop
 					}
-					ptCurrentClient->WardenStatus=WARDEN_RECEIVE_CHECK;
+					ptCurrentClient->WardenStatus = WARDEN_RECEIVE_CHECK;
 					ptCurrentClient->NextCheckTime = CurrentTick;
+					ptCurrentClient->pWardenPacket_SendTime = CurrentTick;
 					}
 				break;
 				case WARDEN_RECEIVE_CHECK:
 					{
-				if(ptCurrentClient->pWardenPackets)
-				{
-				if(ptCurrentClient->pWardenPackets->PacketLen>=7)
-				{
-				switch(ptCurrentClient->CheckCounter)
-				{
-				case 0:
-					{
-					ptCurrentClient->MouseXPosition=*(WORD*)&(ptCurrentClient->pWardenPackets->ThePacket[12]);
-					ptCurrentClient->MouseYPosition=*(WORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
-					memcpy(ptCurrentClient->UIModes,ptCurrentClient->pWardenPackets->ThePacket+17,4*16);
-					if(ptCurrentClient->MouseXPosition>800 || ptCurrentClient->MouseYPosition>600)
-					Log("Hack: %s (*%s) has mouse in abnormal position (X='%d', Y='%d')!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->MouseXPosition,ptCurrentClient->MouseYPosition);
-					ptCurrentClient->UIModesTime=GetTickCount();
-					}  
-				break; 			
-					//case 2:
-					//{
-					//memcpy(ptCurrentClient->UIModes,ptCurrentClient->pWardenPackets->ThePacket+8,4*16);
-					//ptCurrentClient->UIModesTime=GetTickCount();
-					//}
-					//break;
-				case 1: 
-					{
-					ptCurrentClient->MyIp.assign((char*)&ptCurrentClient->pWardenPackets->ThePacket[8]);
-					if(ptCurrentClient->MyIp == "127.0.0.1")
-					Log("Hack: %s (*%s) is using RedVex (IP='%s')!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->MyIp.c_str());
-					}
-					break;
-					case 2:
-					{
-					ptCurrentClient->AnimData=*(DWORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
-					}
-					break;
-					case 3:
-					{
-					ptCurrentClient->AnimData2=*(DWORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
-					}
-				   break;
-					case 4:	
-					{
-					const BYTE TMCBP[]={0x36,0x00,0x00,0x00,0x30,0x49,0x4E,0x55,0x48,0x54,0x48,0x00,0x01,0x00,0x00,0x00};
-					const BYTE TMCOK[]={0x36,0x00,0x00,0x00,0x4C,0x31,0x4F,0x50,0x48,0x54,0x48,0x00,0x02,0x00,0x00,0x00};
+						if(ptCurrentClient->pWardenPackets)
+						{
+							if(ptCurrentClient->pWardenPackets->PacketLen>=7)
+							{
+								switch(ptCurrentClient->CheckCounter)
+								{
+								case 0:
+									{
+										ptCurrentClient->MouseXPosition=*(WORD*)&(ptCurrentClient->pWardenPackets->ThePacket[12]);
+										ptCurrentClient->MouseYPosition=*(WORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
+										memcpy(ptCurrentClient->UIModes,ptCurrentClient->pWardenPackets->ThePacket+17,4*16);
+										if(ptCurrentClient->MouseXPosition>800 || ptCurrentClient->MouseYPosition>600)
+											Log("Hack: %s (*%s) has mouse in abnormal position (X='%d', Y='%d')!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->MouseXPosition,ptCurrentClient->MouseYPosition);
+										ptCurrentClient->UIModesTime=GetTickCount();
+									}  
+									break; 			
+									//case 2:
+									//{
+									//memcpy(ptCurrentClient->UIModes,ptCurrentClient->pWardenPackets->ThePacket+8,4*16);
+									//ptCurrentClient->UIModesTime=GetTickCount();
+									//}
+									//break;
+								case 1: 
+									{
+										ptCurrentClient->MyIp.assign((char*)&ptCurrentClient->pWardenPackets->ThePacket[8]);
+										if(ptCurrentClient->MyIp == "127.0.0.1")
+											Log("Hack: %s (*%s) is using RedVex (IP='%s')!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ptCurrentClient->MyIp.c_str());
+									}
+									break;
+								case 2:
+									{
+										ptCurrentClient->AnimData=*(DWORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
+									}
+									break;
+								case 3:
+									{
+										ptCurrentClient->AnimData2=*(DWORD*)&(ptCurrentClient->pWardenPackets->ThePacket[8]);
+									}
+									break;
+								case 4:	
+									{
+										const BYTE TMCBP[]={0x36,0x00,0x00,0x00,0x30,0x49,0x4E,0x55,0x48,0x54,0x48,0x00,0x01,0x00,0x00,0x00};
+										const BYTE TMCOK[]={0x36,0x00,0x00,0x00,0x4C,0x31,0x4F,0x50,0x48,0x54,0x48,0x00,0x02,0x00,0x00,0x00};
 
-					if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,TMCBP,16)==0)
-					{
-						char out[100];
-					 ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,16,out,50,',');
-						Log("Hack: %s (*%s) is using TMC BP (%s)!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
-					}
-				//else 
-				//if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,TMCOK,16)!=0)
-				//{
-				//char out[100];
-				//ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,16,out,50,',');
-				//Log("Hack: %s (*%s) MAY use some private TMC (%s)!",ptCurrentClient->CharName,ptCurrentClient->AccountName,out);
-				//}
-					ptCurrentClient->TMCDetected=true;
-					}
-					break;
-					case 5:
-					{
-					BYTE MH[]={0x90,0x90,0x90,0x90,0x90,0x90};
-					if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,MH,6)==0)
-					{
-					Log("Hack: %s (*%s) is using Sting's MapHack!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str());
-					ptCurrentClient->StingDetected=true;
-					}
-					}
-					break;
-					case 6:
-					{
-					BYTE WTF[]={0x5B,0x59,0xC2,0x04,0x00};
-					if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,WTF,5)!=0)
-					{
-						char out[50];
-					  ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,5,out,50,',');
-						Log("Hack: %s (*%s) is using WtfPk/MH hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
-						ptCurrentClient->WtfDetected=true;
-						}
-					}
-					break;
-					case 7:
-					{
-					BYTE RCV[]={0xE8,0xAA,0xF1,0xF4,0xFF};
-						if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,RCV,5)!=0)
-						{
-						char out[50];
-						 ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,5,out,50,',');
-						Log("Hack: %s (*%s) is using Packet Intercepter hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
-						ptCurrentClient->RCVDetected=true;
-						}
-					}
-					break;
-					case 8:
-					{
-					ptCurrentClient->ptSkillsTxt= *(DWORD*)(ptCurrentClient->pWardenPackets->ThePacket+8);
-					}
-					break;
-					case 9:
-					case 10:
-					case 11:
-					case 12:
-					{
-						SkillsTxt* pRec = (SkillsTxt*)(ptCurrentClient->pWardenPackets->ThePacket+8);
-						SkillsTxt* pSrvTxt = *p_D2COMMON_SkillTxt;
+										if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,TMCBP,16)==0)
+										{
+											char out[100];
+											ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,16,out,50,',');
+											Log("Hack: %s (*%s) is using TMC BP (%s)!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
+										}
+										//else 
+										//if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,TMCOK,16)!=0)
+										//{
+										//char out[100];
+										//ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,16,out,50,',');
+										//Log("Hack: %s (*%s) MAY use some private TMC (%s)!",ptCurrentClient->CharName,ptCurrentClient->AccountName,out);
+										//}
+										ptCurrentClient->TMCDetected=true;
+									}
+									break;
+								case 5:
+									{
+										BYTE MH[]={0x90,0x90,0x90,0x90,0x90,0x90};
+										if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,MH,6)==0)
+										{
+											Log("Hack: %s (*%s) is using Sting's MapHack!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str());
+											ptCurrentClient->StingDetected=true;
+										}
+									}
+									break;
+								case 6:
+									{
+										BYTE WTF[]={0x5B,0x59,0xC2,0x04,0x00};
+										if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,WTF,5)!=0)
+										{
+											char out[50];
+											ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,5,out,50,',');
+											Log("Hack: %s (*%s) is using WtfPk/MH hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
+											ptCurrentClient->WtfDetected=true;
+										}
+									}
+									break;
+								case 7:
+									{
+										BYTE RCV[]={0xE8,0xAA,0xF1,0xF4,0xFF};
+										if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,RCV,5)!=0)
+										{
+											char out[50];
+											ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,5,out,50,',');
+											Log("Hack: %s (*%s) is using Packet Intercepter hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
+											ptCurrentClient->RCVDetected=true;
+										}
+									}
+									break;
+								case 8:
+									{
+										ptCurrentClient->ptSkillsTxt= *(DWORD*)(ptCurrentClient->pWardenPackets->ThePacket+8);
+									}
+									break;
+								case 9:
+								case 10:
+								case 11:
+								case 12:
+									{
+										SkillsTxt* pRec = (SkillsTxt*)(ptCurrentClient->pWardenPackets->ThePacket+8);
+										SkillsTxt* pSrvTxt = *D2Vars::D2COMMON_SkillTxt;
 
-						if(pSrvTxt[pRec->wSkillId].dwFlags.bLeftSkill != pRec->dwFlags.bLeftSkill ||
-						pSrvTxt[pRec->wSkillId].dwFlags.bInTown != pRec->dwFlags.bInTown ||
-						pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyXY != pRec->dwFlags.bSearchEnemyXY ||
-						pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyNear != pRec->dwFlags.bSearchEnemyNear ||
-						pSrvTxt[pRec->wSkillId].dwFlags.bSearchOpenXY != pRec->dwFlags.bSearchOpenXY)
-						Log("Hack: %s (*%s) modification of Skills.Txt: Skill %s, Flags : LeftSkill %d InTown %d, bSearchEnemyXY %d, bSearchEnemyNear %d, bSearchOpenXY %d",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ConvertSkill(pRec->wSkillId).c_str(),pRec->dwFlags.bLeftSkill,pRec->dwFlags.bInTown,pRec->dwFlags.bSearchEnemyXY, pRec->dwFlags.bSearchEnemyNear, pRec->dwFlags.bSearchOpenXY);
-						if(ptCurrentClient->CheckCounter==12) ptCurrentClient->GMDetected=true;
-					}
-					break;
-					case 13:
-					{
-						//6FAE2B40  83 EC 20 89 4C 24 0C     ƒì ‰L$.
-						BYTE LP[] = {0x83,0xEC,0x20,0x89,0x4C,0x24,0x0C};
-						if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,LP,7)!=0)
-						{
-						char out[100];
-						ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,7,out,100,',');
-						Log("Hack: %s (*%s) is using some private hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
-						ptCurrentClient->LPDetected=true;
-						}
-					}
-					break;
-						}
-					begin:
-						ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==1 && !ptCurrentClient->MyIp.empty()) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==2 && ptCurrentClient->AnimData) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==3 && ptCurrentClient->AnimData2) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==4 && ptCurrentClient->TMCDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==5 && ptCurrentClient->StingDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==6 && ptCurrentClient->WtfDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==7 && ptCurrentClient->RCVDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==8 && ptCurrentClient->ptSkillsTxt) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==9 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==10 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==11 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==12 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter==13 && ptCurrentClient->LPDetected) ptCurrentClient->CheckCounter++;
-						if(ptCurrentClient->CheckCounter>13) ptCurrentClient->CheckCounter=0;
-						if(ptCurrentClient->CheckCounter == 0 && !DetectTrick && !ptCurrentClient->MyIp.empty()
-							&& ptCurrentClient->AnimData && ptCurrentClient->AnimData2 && ptCurrentClient->TMCDetected
-							&& ptCurrentClient->StingDetected && ptCurrentClient->WtfDetected && ptCurrentClient->RCVDetected
-							&& ptCurrentClient->ptSkillsTxt  && ptCurrentClient->GMDetected && ptCurrentClient->LPDetected)
-						{
-							ptCurrentClient->NextCheckTime = 0xFFFFFFFF;
-							ptCurrentClient->WardenStatus = WARDEN_NOTHING;		
-						}
-						else if(ptCurrentClient->CheckCounter == 0 && !DetectTrick) goto begin;
-						ptCurrentClient->NextCheckTime = GetTickCount() +300;
-						ptCurrentClient->WardenStatus=WARDEN_SEND_CHECK;
+										if(pSrvTxt[pRec->wSkillId].dwFlags.bLeftSkill != pRec->dwFlags.bLeftSkill ||
+											pSrvTxt[pRec->wSkillId].dwFlags.bInTown != pRec->dwFlags.bInTown ||
+											pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyXY != pRec->dwFlags.bSearchEnemyXY ||
+											pSrvTxt[pRec->wSkillId].dwFlags.bSearchEnemyNear != pRec->dwFlags.bSearchEnemyNear ||
+											pSrvTxt[pRec->wSkillId].dwFlags.bSearchOpenXY != pRec->dwFlags.bSearchOpenXY)
+											Log("Hack: %s (*%s) modification of Skills.Txt: Skill %s, Flags : LeftSkill %d InTown %d, bSearchEnemyXY %d, bSearchEnemyNear %d, bSearchOpenXY %d",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),ConvertSkill(pRec->wSkillId).c_str(),pRec->dwFlags.bLeftSkill,pRec->dwFlags.bInTown,pRec->dwFlags.bSearchEnemyXY, pRec->dwFlags.bSearchEnemyNear, pRec->dwFlags.bSearchOpenXY);
+										if(ptCurrentClient->CheckCounter == 12) ptCurrentClient->GMDetected=true;
+									}
+									break;
+								case 13:
+									{
+										//6FAE2B40  83 EC 20 89 4C 24 0C     ƒì ‰L$.
+										BYTE LP[] = {0x83,0xEC,0x20,0x89,0x4C,0x24,0x0C};
+										if(memcmp(ptCurrentClient->pWardenPackets->ThePacket+8,LP,7)!=0)
+										{
+											char out[100];
+											ConvertBytesToHexString(ptCurrentClient->pWardenPackets->ThePacket+8,7,out,100,',');
+											Log("Hack: %s (*%s) is using some private hack! (%s)",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str(),out);
+											ptCurrentClient->LPDetected=true;
+										}
+									}
+									break;
+								}
+begin:
+								ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==1 && !ptCurrentClient->MyIp.empty()) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==2 && ptCurrentClient->AnimData) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==3 && ptCurrentClient->AnimData2) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==4 && ptCurrentClient->TMCDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==5 && ptCurrentClient->StingDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==6 && ptCurrentClient->WtfDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==7 && ptCurrentClient->RCVDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==8 && ptCurrentClient->ptSkillsTxt) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==9 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==10 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==11 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==12 && ptCurrentClient->GMDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter==13 && ptCurrentClient->LPDetected) ptCurrentClient->CheckCounter++;
+								if(ptCurrentClient->CheckCounter>13) ptCurrentClient->CheckCounter=0;
+								if(ptCurrentClient->CheckCounter == 0 && !DetectTrick && !ptCurrentClient->MyIp.empty()
+									&& ptCurrentClient->AnimData && ptCurrentClient->AnimData2 && ptCurrentClient->TMCDetected
+									&& ptCurrentClient->StingDetected && ptCurrentClient->WtfDetected && ptCurrentClient->RCVDetected
+									&& ptCurrentClient->ptSkillsTxt  && ptCurrentClient->GMDetected && ptCurrentClient->LPDetected)
+								{
+									ptCurrentClient->NextCheckTime = 0xFFFFFFFF;
+									ptCurrentClient->WardenStatus = WARDEN_NOTHING;		
+								}
+								else if(ptCurrentClient->CheckCounter == 0 && !DetectTrick)
+									goto begin;
+								ptCurrentClient->NextCheckTime = GetTickCount() + random();
+								ptCurrentClient->WardenStatus=WARDEN_SEND_REQUEST;
+								ptCurrentClient->ErrorCount=0;
+							}
+							else
+							{
+								ptCurrentClient->ErrorCount++;
+								if(ptCurrentClient->ErrorCount>10) ptCurrentClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
+									else ptCurrentClient->WardenStatus=WARDEN_SEND_REQUEST;
+								ptCurrentClient->NextCheckTime =GetTickCount() + random();
+								Debug("Next check for %s in %.2f secs",ptCurrentClient->AccountName.c_str(),(ptCurrentClient->NextCheckTime - GetTickCount()) / 1000);
+							}
 						}
 						else
 						{
-						ptCurrentClient->ErrorCount++;
-						if(ptCurrentClient->ErrorCount>10) ptCurrentClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
-						else ptCurrentClient->WardenStatus=WARDEN_SEND_CHECK;
-						ptCurrentClient->NextCheckTime =GetTickCount() + 300;
-						}
-					}
-					else
-					ptCurrentClient->NextCheckTime = GetTickCount() + 300;
+							if(CurrentTick - ptCurrentClient->pWardenPacket_SendTime < 4000)
+								ptCurrentClient->NextCheckTime = GetTickCount() + 10;
+							else
+							{
+								if(!ptCurrentClient->WardenBlocked && ptCurrentClient->ErrorCount > 5)
+								{
+									Log("Hack: %s (*%s) is blocking warden request!",ptCurrentClient->CharName.c_str(),ptCurrentClient->AccountName.c_str());
+									ptCurrentClient->WardenBlocked = true;
+								}
+								ptCurrentClient->ErrorCount++;
+								if(ptCurrentClient->ErrorCount > 10) ptCurrentClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
+									else ptCurrentClient->WardenStatus = WARDEN_SEND_REQUEST;
+								ptCurrentClient->NextCheckTime = GetTickCount() + random();
+							}
+						}					
 					}
 				break;
 				case WARDEN_NOTHING:

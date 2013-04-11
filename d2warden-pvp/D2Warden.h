@@ -28,49 +28,17 @@
 #define WARDEN_DOWNLOAD_MOD	2
 #define WARDEN_ERROR_RESPONSE	3
 #define WARDEN_WAITING_DOWNLOAD_END 4
-#define WARDEN_SEND_CHECK 5
+#define WARDEN_SEND_REQUEST 5
 #define WARDEN_RECEIVE_CHECK 6
 #define WARDEN_NOTHING 7
 
 #define NEVER	0xFF
 
-#define MAXERRORCOUNT 5
+#define MAXERRORCOUNT 10
 
 #define LOG_HACK 0
 #define LOG_INFO 1
 #define LOG_DEBUG 2
-
-struct WardenClient;
-
-#include "D2Structs.h"
-#include <list>
-
-using namespace std;
-
-
-struct Vote
-{
-	int Votes;
-	int Score;
-	WardenClient* pVoter;
-	DWORD Time;
-	DWORD ThreadID;
-};
-
-struct Spec
-{
-	UnitAny* MyUnit;
-	UnitAny* SpecUnit;
-	DWORD RequesterID;
-	DWORD SpecID;
-};
-
-struct WEITem
-{
-	DWORD ItemCode[20];
-	DWORD FileIdx[20];
-	BYTE ItemQuality[7];
-};
 
 struct WardenPacket
 {
@@ -78,7 +46,6 @@ struct WardenPacket
 	DWORD PacketLen;
 	BYTE *ThePacket;
 };
-
 
 struct WardenClient
 {
@@ -105,7 +72,7 @@ struct WardenClient
 	BYTE NewPatch;
 	BYTE DebugTrick;
 
-
+	DWORD pWardenPacket_SendTime;
 	DWORD pWardenPackets_ReceiveTime;
     WardenPacket* pWardenPackets;
 	DWORD MOD_Position;
@@ -130,6 +97,7 @@ struct WardenClient
 	BYTE RCVDetected;
 	BYTE GMDetected;
 	BYTE LPDetected;
+	BYTE WardenBlocked;
 };
 
 
@@ -139,13 +107,35 @@ struct hWarden_Struct
 	list<WardenClient> Clients;
 };
 
+struct Vote
+{
+	int Votes;
+	int Score;
+	WardenClient* pVoter;
+	DWORD Time;
+	DWORD ThreadID;
+};
+
+struct Spec
+{
+	UnitAny* MyUnit;
+	UnitAny* SpecUnit;
+	DWORD RequesterID;
+	DWORD SpecID;
+};
+
+struct WEITem
+{
+	DWORD ItemCode[20];
+	DWORD FileIdx[20];
+	BYTE ItemQuality[7];
+};
+
 extern "C" void  __fastcall HashGameSeed(unsigned char *pt_0XAE_RC4_KEY, unsigned char *pt_0X66_RC4_KEY, unsigned char * TheGameSeed, unsigned int TheLength);
 extern "C" void  __fastcall Double_MD5(DWORD *Mod_Length, DWORD unk, unsigned char *ptResult);
 
 void WardenLoop();
 void Warden_Init();
 void Warden_Config();
-
-
 
 #endif

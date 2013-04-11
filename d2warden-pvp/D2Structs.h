@@ -19,8 +19,7 @@
 
 #ifndef D2STRUCTS_H__
 #define D2STRUCTS_H__
-
-#include "stdafx.h"
+#include "D2Consts.h"
 
 struct UnitAny;
 struct ptClientData;
@@ -56,9 +55,6 @@ struct PlayerTrade;
 struct Timer;
 struct TimerList;
 struct TimerQuene;
-
-#include "D2Consts.h"
-#include <map>
 
 struct LRoster
 {

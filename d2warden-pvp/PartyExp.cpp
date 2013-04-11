@@ -20,13 +20,6 @@
 #include "stdafx.h"
 #include "PartyExp.h"
 
-#include "D2Ptrs.h"
-#include "Vars.h"
-#include "WardenMisc.h"
-#include "D2Structs.h"
-#include "D2Stubs.h"
-
-
 
 //int __fastcall EXPERIENCE_CalculateDecay(int nAttackerLevel, int nDefenderLevel)
 //{
@@ -74,7 +67,7 @@ int __fastcall EXPFormula(int nPlayers)
 	return 50 * (nPlayers - 1);
 }
 
-__declspec(naked) int D2GAME_nPlayersFormula()
+__declspec(naked) int nPlayersFormula()
 {
 	__asm
 	{
@@ -88,8 +81,6 @@ __declspec(naked) int D2GAME_nPlayersFormula()
 	}
 }
 
-
-
 void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPartyExp)
 {
 	if(pPartyMember && !((pPartyMember->dwFlags) & 0x00010000))
@@ -98,11 +89,11 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 		{
 
 			UnitAny* pMonster = pnPartyExp->pMonster;
-			int mX = D2GAME_GetUnitX(pMonster);
-			int mY = D2GAME_GetUnitY(pMonster);
+			int mX = D2Funcs::D2GAME_GetUnitX(pMonster);
+			int mY = D2Funcs::D2GAME_GetUnitY(pMonster);
 
-			int pX = D2GAME_GetUnitX(pPartyMember);
-			int pY = D2GAME_GetUnitY(pPartyMember);
+			int pX = D2Funcs::D2GAME_GetUnitX(pPartyMember);
+			int pY = D2Funcs::D2GAME_GetUnitY(pPartyMember);
 
 			if(GetRange(pX,pY,mX,mY)>ExpRange) return;
 
@@ -112,7 +103,7 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 			D2ERROR("nMember>Max_Players")
 			}
 			pnPartyExp->pPartyMembers[nMembers] = pPartyMember;
-			pnPartyExp->PartyLevels[nMembers] =  D2COMMON_GetStatSigned(pPartyMember,STAT_LEVEL,0);
+			pnPartyExp->PartyLevels[nMembers] =  D2Funcs::D2COMMON_GetStatSigned(pPartyMember,STAT_LEVEL,0);
 			pnPartyExp->LvlSum += pnPartyExp->PartyLevels[nMembers];
 			pnPartyExp->nMembers++;
 			return;
@@ -124,18 +115,18 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 
 void AddExp(Game *pGame, UnitAny* pMember, int ExpGained, int ExpLvl)
 {
-			int CurrentExp = D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
+			int CurrentExp = D2Funcs::D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
 			unsigned int NewExp = ExpGained + CurrentExp;
-			int MaxLvl = D2COMMON_GetMaxCLvl(pMember->dwClassId);
-			unsigned int MaxExp = D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
+			int MaxLvl = D2Funcs::D2COMMON_GetMaxCLvl(pMember->dwClassId);
+			unsigned int MaxExp = D2Funcs::D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
 
 			if ( NewExp > MaxExp ) NewExp = MaxExp;
-			D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
-			D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
-				if ( ExpLvl != D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
+			D2Funcs::D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
+			D2Funcs::D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
+				if ( ExpLvl != D2Funcs::D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
 				{
-				D2GAME_LevelAwards(pMember, pGame);
-				D2GAME_ExecuteEvent(pGame, 12, 0, 0);
+				D2Funcs::D2GAME_LevelAwards(pMember, pGame);
+				D2Funcs::D2GAME_ExecuteEvent(pGame, 12, 0, 0);
 				}
 }
 
@@ -144,14 +135,14 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 	PartyExp hPartyExp;
 	::memset(&hPartyExp,0,sizeof(hPartyExp));
 	hPartyExp.pMonster = pMonster;
-	D2GAME_ForEachInParty(pPlayer,pGame,(void (__fastcall*)(Game*,UnitAny*,void*))&ExpCallback,&hPartyExp);
+	D2Funcs::D2GAME_ForEachInParty(pPlayer,pGame,(void (__fastcall*)(Game*,UnitAny*,void*))&ExpCallback,&hPartyExp);
 	if(hPartyExp.nMembers > 0)
 	{
 		if(hPartyExp.LvlSum > 0)
 		{
 			if(hPartyExp.nMembers == 1)
 			{
-				int ExpGained = D2GAME_GetExpGained(PlayerExp,pPlayer,PlayerLvl,pGame,MonsterLvl);
+				int ExpGained = D2Funcs::D2GAME_GetExpGained(PlayerExp,pPlayer,PlayerLvl,pGame,MonsterLvl);
 				AddExp(pGame,pPlayer,ExpGained,PlayerLvl);	
 		//		SendMsgToClient(pPlayer->pPlayerData->pClientData,"ALONE: %s, EXP: %d",pPlayer->pPlayerData->szName,PlayerExp);
 			}
@@ -166,7 +157,7 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 				int nGain = int(float(PLvl) * PExp);
 				UnitAny* pMember = hPartyExp.pPartyMembers[i]; 
 
-				int ExpGained = D2GAME_GetExpGained(nGain,pMember,PLvl,pGame,MonsterLvl);
+				int ExpGained = D2Funcs::D2GAME_GetExpGained(nGain,pMember,PLvl,pGame,MonsterLvl);
 				AddExp(pGame,pMember,ExpGained,PLvl);
 				//SendMsgToClient(pPlayer->pPlayerData->pClientData,"SHARE: %s, EXP: %d,Party EXP %d",pPlayer->pPlayerData->szName,PlayerExp, nGain);
 				}
@@ -180,13 +171,13 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 //{
 //	if(!pPlayer || !pGame || !pMonster) return;
 //	if(pPlayer->dwType) return;
-//	Room1 * aRoom = D2COMMON_GetUnitRoom(pPlayer);
+//	Room1 * aRoom = D2Funcs::D2COMMON_GetUnitRoom(pPlayer);
 //	if(!aRoom) return;
-//	int LevelNo = D2COMMON_GetLevelNoByRoom(aRoom);
-//	short TeamId = D2GAME_GetPartyID(pPlayer,pGame);
+//	int LevelNo = D2Funcs::D2COMMON_GetLevelNoByRoom(aRoom);
+//	short TeamId = D2Funcs::D2GAME_GetPartyID(pPlayer,pGame);
 //
-//	int mX = D2GAME_GetUnitX(pMonster);
-//	int mY = D2GAME_GetUnitY(pMonster);
+//	int mX = D2Funcs::D2GAME_GetUnitX(pMonster);
+//	int mY = D2Funcs::D2GAME_GetUnitY(pMonster);
 //
 //	if(TeamId!=-1)
 //	{
@@ -196,10 +187,10 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 //		if(!pParty) return;
 //		for(PartyMembers * i = pParty->ptMembers; i; i = i->ptNext)
 //		{
-//			UnitAny * pMember = D2GAME_FindUnit(pGame,i->dwUnitId,0);
+//			UnitAny * pMember = D2Funcs::D2GAME_FindUnit(pGame,i->dwUnitId,0);
 //			if(!pMember) continue;
 //			nMembers++;
-//			LevelSum+= D2COMMON_GetStatSigned(pMember,STAT_LEVEL,0);
+//			LevelSum+= D2Funcs::D2COMMON_GetStatSigned(pMember,STAT_LEVEL,0);
 //		}
 //
 //		if(nMembers == 0) return;
@@ -207,37 +198,37 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 //
 //		for(PartyMembers * i = pParty->ptMembers; i; i = i->ptNext)
 //		{
-//			UnitAny * pMember = D2GAME_FindUnit(pGame,i->dwUnitId,0);
+//			UnitAny * pMember = D2Funcs::D2GAME_FindUnit(pGame,i->dwUnitId,0);
 //			if(!pMember) continue;
-//			Room1 * aPartyRoom = D2COMMON_GetUnitRoom(pMember);
+//			Room1 * aPartyRoom = D2Funcs::D2COMMON_GetUnitRoom(pMember);
 //				if(!aPartyRoom) continue;
-//			int PartyLevelNo = D2COMMON_GetLevelNoByRoom(aPartyRoom);
+//			int PartyLevelNo = D2Funcs::D2COMMON_GetLevelNoByRoom(aPartyRoom);
 //			if(PartyLevelNo != LevelNo) continue;
 //				
-//			int pX = D2GAME_GetUnitX(pMember);
-//			int pY = D2GAME_GetUnitY(pMember);
+//			int pX = D2Funcs::D2GAME_GetUnitX(pMember);
+//			int pY = D2Funcs::D2GAME_GetUnitY(pMember);
 //			if(GetRange(pX,pY,mX,mY)>ExpRange) continue;	//Nasz zasieg expa
 //			if(pMember->dwMode && pMember->dwMode!=PLAYER_MODE_DEAD)
 //			{
-//			int ExpLvl = D2COMMON_GetStatSigned(pMember,STAT_LEVEL,0);
+//			int ExpLvl = D2Funcs::D2COMMON_GetStatSigned(pMember,STAT_LEVEL,0);
 //			double PExp = (double)(PlayerExp + 89 * PlayerExp * (nMembers - 1)) / 256;
 //			PExp = PExp / (double)LevelSum;
-//			int ExpGained = D2GAME_GetExpGained(PlayerExp+(int)(PExp * ExpLvl),pMember,ExpLvl,pGame,MonsterLvl); // Tu moze byc crash
+//			int ExpGained = D2Funcs::D2GAME_GetExpGained(PlayerExp+(int)(PExp * ExpLvl),pMember,ExpLvl,pGame,MonsterLvl); // Tu moze byc crash
 //		//	Log("TEAM: PlayerExp = %d PExp = %f, LevelSum = %d, nMem = %d, Pexp* ExpLvl = %d, ExpGained = %d",PlayerExp,PExp,LevelSum,nMembers,(int)(PExp*ExpLvl),ExpGained);
 //
-//			int CurrentExp = D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
+//			int CurrentExp = D2Funcs::D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
 //			unsigned int NewExp = ExpGained + CurrentExp;
-//			int MaxLvl = D2COMMON_GetMaxCLvl(pMember->dwClassId);
-//			unsigned int MaxExp = D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
+//			int MaxLvl = D2Funcs::D2COMMON_GetMaxCLvl(pMember->dwClassId);
+//			unsigned int MaxExp = D2Funcs::D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
 //
 //		//	Log("CurrentExp =%d, NewExp = %d, MaxLvl =%d, MaxExp =%u",CurrentExp,NewExp,MaxLvl,MaxExp);
 //			if ( NewExp > MaxExp ) NewExp = MaxExp;
-//			D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
-//			D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
-//				if ( ExpLvl != D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
+//			D2Funcs::D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
+//			D2Funcs::D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
+//				if ( ExpLvl != D2Funcs::D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
 //				{
-//				D2GAME_LevelAwards(pMember, pGame);
-//				D2GAME_ExecuteEvent(pGame, 12, 0, 0);
+//				D2Funcs::D2GAME_LevelAwards(pMember, pGame);
+//				D2Funcs::D2GAME_ExecuteEvent(pGame, 12, 0, 0);
 //				}
 //
 //			}
@@ -246,20 +237,20 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 //	}
 //	else
 //	{
-//			int ExpGained = D2GAME_GetExpGained(PlayerExp, pPlayer,D2COMMON_GetStatSigned(pPlayer,STAT_LEVEL,0),pGame,MonsterLvl); // Tu moze byc crash
+//			int ExpGained = D2Funcs::D2GAME_GetExpGained(PlayerExp, pPlayer,D2Funcs::D2COMMON_GetStatSigned(pPlayer,STAT_LEVEL,0),pGame,MonsterLvl); // Tu moze byc crash
 //
-//			int CurrentExp = D2COMMON_GetBaseStatSigned(pPlayer, STAT_EXP,0);
+//			int CurrentExp = D2Funcs::D2COMMON_GetBaseStatSigned(pPlayer, STAT_EXP,0);
 //			unsigned int NewExp = ExpGained + CurrentExp;
-//			int MaxLvl = D2COMMON_GetMaxCLvl(pPlayer->dwClassId);
-//			unsigned int NextLvlExp = D2COMMON_GetExpToAchiveLvl(pPlayer->dwClassId, MaxLvl - 1);
+//			int MaxLvl = D2Funcs::D2COMMON_GetMaxCLvl(pPlayer->dwClassId);
+//			unsigned int NextLvlExp = D2Funcs::D2COMMON_GetExpToAchiveLvl(pPlayer->dwClassId, MaxLvl - 1);
 //
 //			if ( NewExp > NextLvlExp ) NewExp = NextLvlExp;
-//			D2COMMON_SetStat(pPlayer, 0x1D, ExpGained, 0); // LAST EXP
-//			D2COMMON_SetStat(pPlayer, STAT_EXP, NewExp, 0);
-//				if ( PlayerLvl != D2COMMON_GetNextCLvl(pPlayer->dwClassId, NewExp) )
+//			D2Funcs::D2COMMON_SetStat(pPlayer, 0x1D, ExpGained, 0); // LAST EXP
+//			D2Funcs::D2COMMON_SetStat(pPlayer, STAT_EXP, NewExp, 0);
+//				if ( PlayerLvl != D2Funcs::D2COMMON_GetNextCLvl(pPlayer->dwClassId, NewExp) )
 //				{
-//				D2GAME_LevelAwards(pPlayer, pGame);
-//				D2GAME_ExecuteEvent(pGame, 12, 0, 0);
+//				D2Funcs::D2GAME_LevelAwards(pPlayer, pGame);
+//				D2Funcs::D2GAME_ExecuteEvent(pGame, 12, 0, 0);
 //				}
 //	}
 //
