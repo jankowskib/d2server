@@ -39,8 +39,8 @@ do
 
 	MyUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->RequesterID, UNIT_PLAYER);
 	SpecUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->SpecID, UNIT_PLAYER);
-	if(!MyUnit || !SpecUnit) { LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
-
+	if(!MyUnit) { LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+	if(!SpecUnit) {LeaveCriticalSection(Data->ptGame->ptLock); break; }
 	Sleep(50);
 
 	Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(SpecUnit);
@@ -89,7 +89,8 @@ do
 } while(MyUnit->dwMode==PLAYER_MODE_DEATH || MyUnit->dwMode==PLAYER_MODE_DEAD);
 
 EnterCriticalSection(Data->ptGame->ptLock);
-
+D2Funcs::D2COMMON_ChangeCurrentMode(MyUnit,PLAYER_MODE_STAND_INTOWN);
+D2Funcs::D2COMMON_SetGfxState(MyUnit,D2States::invis,0);
 MyUnit->pPlayerData->isSpecing = 0;
 
 int aLevel = D2Funcs::D2COMMON_GetTownLevel(MyUnit->dwAct);

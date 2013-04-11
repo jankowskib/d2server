@@ -843,10 +843,11 @@ if(ClientID==NULL) return TRUE;
 		if(!psUnit->ptPlayer->pPlayerData->isSpecing && ! pUnit->pPlayerData->isSpecing)
 		{
 		D2Funcs::D2COMMON_ChangeCurrentMode(pUnit,PLAYER_MODE_DEATH);
+		D2Funcs::D2COMMON_SetGfxState(pUnit,D2States::invis,1);
 		pUnit->pPlayerData->isSpecing = 1;
 		_beginthreadex(0,0,&SpecThread,&Data,0,0);
 		}
-		else { SendMsgToClient(pUnit->pPlayerData->pClientData, "You already watching someone!"); }
+		else { SendMsgToClient(pUnit->pPlayerData->pClientData, "You're already watching someone!"); }
 		UNLOCK
 		return false;
 		}
