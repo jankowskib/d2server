@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ========================================================== */
-#pragma optimize ("", off)
+//#pragma optimize ("", off)
 
 #ifdef _DEFINE_PTRS
 enum {DLLNO_D2CLIENT, DLLNO_D2COMMON, DLLNO_D2GFX, DLLNO_D2LANG, DLLNO_D2WIN, DLLNO_D2NET, DLLNO_D2GAME, DLLNO_D2LAUNCH, DLLNO_FOG, DLLNO_BNCLIENT, DLLNO_STORM, DLLNO_D2CMP, DLLNO_D2MULTI};
@@ -24,22 +24,21 @@ enum {DLLNO_D2CLIENT, DLLNO_D2COMMON, DLLNO_D2GFX, DLLNO_D2LANG, DLLNO_D2WIN, DL
 #define DLLOFFSET(a1,b1) ((DLLNO_##a1)|((b1)<<8))
 
 //NOTE :- reference vars buggy 
-#define D2FUNCPTR(d1,v1,t1,t2,o1) typedef t1 d1##_##v1##_t t2;   d1##_##v1##_t *d1##_##v1 = reinterpret_cast<d1##_##v1##_t *>(GetDllOffset(DLLOFFSET(d1,o1)));
-#define D2VARPTR(d1,v1,t1,o1)     typedef t1 d1##_##v1##_t;  d1##_##v1##_t *d1##_##v1 = reinterpret_cast<d1##_##v1##_t *>(GetDllOffset(DLLOFFSET(d1,o1)));
-#define D2ASMPTR(d1,v1,o1)        DWORD d1##_##v1 = GetDllOffset(DLLOFFSET(d1,o1));
+#define D2FUNCPTR(d1,v1,t1,t2,o1) typedef t1 d1##_##v1##_t t2;  namespace D2Funcs { d1##_##v1##_t *d1##_##v1 = (d1##_##v1##_t *) GetDllOffset(DLLOFFSET(d1,o1)); }
+#define D2VARPTR(d1,v1,t1,o1)     typedef t1 d1##_##v1##_t;  namespace D2Vars { d1##_##v1##_t *d1##_##v1 = (d1##_##v1##_t *)GetDllOffset(DLLOFFSET(d1,o1)); }
+#define D2ASMPTR(d1,v1,o1)        namespace D2Ptrs { DWORD d1##_##v1 = GetDllOffset(DLLOFFSET(d1,o1)); }
 
 #else
 
-#define D2FUNCPTR(d1,v1,t1,t2,o1)	typedef t1 d1##_##v1##_t t2; extern d1##_##v1##_t *d1##_##v1;
-#define D2VARPTR(d1,v1,t1,o1)		typedef t1 d1##_##v1##_t; extern d1##_##v1##_t *d1##_##v1;
-#define D2ASMPTR(d1,v1,o1)		    extern  DWORD d1##_##v1;
+#define D2FUNCPTR(d1,v1,t1,t2,o1)	typedef t1 d1##_##v1##_t t2; namespace D2Funcs { extern d1##_##v1##_t *d1##_##v1; }
+#define D2VARPTR(d1,v1,t1,o1)		typedef t1 d1##_##v1##_t; namespace D2Vars { extern d1##_##v1##_t *d1##_##v1; }
+#define D2ASMPTR(d1,v1,o1)		    namespace D2Ptrs { extern  DWORD d1##_##v1; }
 
 #endif
 
 #define _D2PTRS_START D2Funcs::D2GAME_GetGameByNetSocket
 
 //D2GAME ptrs (0x6FC20000)
-namespace D2Funcs {
 D2FUNCPTR(D2GAME, GetGameByNetSocket, Game* __stdcall, (DWORD NetSocket), 0xE49A0)   //Uwaga ! Kazde uzycie zostawia watek w sekcji krytycznej!!!! (godzine siedzialem zeby dojsc ze ta funkcja wywala)
 D2FUNCPTR(D2GAME, Send0X92Packet, void __fastcall,(Game *pGame, UnitAny *pUnit, UnitAny *pUnit2),0x35420)
 D2FUNCPTR(D2GAME, KickCharFromGame, void __stdcall, (DWORD ClientID), -10037)
@@ -197,9 +196,8 @@ D2FUNCPTR(FOG, FreeServerMemory, void __fastcall, (void *pMemPool, void *Mem, ch
 D2FUNCPTR(D2NET, SendPacket, DWORD __stdcall, (DWORD unk1,DWORD ClientID,BYTE *ThePacket,DWORD PacketLen), -10018) // Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
 D2FUNCPTR(D2NET, ReceivePacket, bool __stdcall, (int PacketLen, int _1, BYTE *aPacket),-10020)
 D2FUNCPTR(D2NET, GetClient, DWORD __stdcall, (DWORD ClientID), -10005) //Get NetSocket
-}
 
-namespace D2Ptrs { 
+
 // -- COMMON --
 D2ASMPTR(D2GAME, GameFindUnitFunc_I, 0xBEF80) // DWORD __fastcall (DWORD ptGame, DWORD dwUnitType, DWORD dwUnitId)
 D2ASMPTR(D2GAME, GetGameByClientID_I, 0xE4A30)   //WARNING: Every use remains thread in CRITICAL_SECTION!
@@ -302,10 +300,8 @@ D2ASMPTR(D2GAME, RemoveBuffs_I,0x41670)
 D2ASMPTR(D2GAME, ResetTimers_I,0xC1230)
 D2ASMPTR(D2GAME, RemoveInteraction_I,0x7FA00)
 D2ASMPTR(D2NET, ReceivePacket_I, -10029) //wrong (its get packet size is ok)
-}
 
-namespace D2Vars 
-{ 
+
 D2VARPTR(D2GAME, PacketTable, PacketTbl, 0xFA7C0)
 D2VARPTR(D2GAME, pSpell, pSpellTbl, 0x105098)
 
@@ -314,7 +310,6 @@ D2VARPTR(D2NET, ToSrvPacketSizes, int ,0xABD8)
 D2VARPTR(D2COMMON, SkillTxt, SkillsTxt*, 0xA1328)
 D2VARPTR(D2COMMON, SkillDescTxt, BYTE*, 0xA131C)
 D2VARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11170)
-}
 
 #define _D2PTRS_END D2Vars::D2COMMON_sgptDataTables
 //087CB0
@@ -334,5 +329,5 @@ D2VARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11170)
 #undef D2ASMPTR
 #undef D2VARPTR
 
-#pragma optimize ("", on)
+//#pragma optimize ("", on)
 

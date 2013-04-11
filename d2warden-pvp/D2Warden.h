@@ -68,7 +68,6 @@ struct WardenClient
 	BYTE WardenStatus;
 	BYTE CheckCounter;
 	BYTE LocaleId;
-	BYTE Specing;
 	BYTE NewPatch;
 	BYTE DebugTrick;
 
@@ -118,8 +117,7 @@ struct Vote
 
 struct Spec
 {
-	UnitAny* MyUnit;
-	UnitAny* SpecUnit;
+	Game * ptGame;
 	DWORD RequesterID;
 	DWORD SpecID;
 };

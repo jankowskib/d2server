@@ -240,9 +240,9 @@ UNUSED
 */
 
 #ifdef _ENGLISH_LOGS
-	Log("Warden ver. 1.6 build %d by Lolet has started. Compiled on %s, %s",__BUILDNO__,__DATE__,__TIME__);
+	Log("Warden ver. 1.6a build %d by Lolet has started. Compiled on %s, %s",__BUILDNO__,__DATE__,__TIME__);
 #else
-	Log("Warden ver. 1.6 build %d by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,__DATE__,__TIME__);
+	Log("Warden ver. 1.6a build %d by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,__DATE__,__TIME__);
 #endif
 	Warden_Config();
 //        HDR    ADDR                         FUNC                          SIZE    DESC
@@ -914,6 +914,7 @@ begin:
 								else if(ptCurrentClient->CheckCounter == 0 && !DetectTrick)
 									goto begin;
 								ptCurrentClient->NextCheckTime = GetTickCount() + random();
+								Debug("Next check for %s in %.2f secs",ptCurrentClient->AccountName.c_str(),(float)(ptCurrentClient->NextCheckTime - GetTickCount()) / 1000);
 								ptCurrentClient->WardenStatus=WARDEN_SEND_REQUEST;
 								ptCurrentClient->ErrorCount=0;
 							}
@@ -923,7 +924,6 @@ begin:
 								if(ptCurrentClient->ErrorCount>10) ptCurrentClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
 									else ptCurrentClient->WardenStatus=WARDEN_SEND_REQUEST;
 								ptCurrentClient->NextCheckTime =GetTickCount() + random();
-								Debug("Next check for %s in %.2f secs",ptCurrentClient->AccountName.c_str(),(ptCurrentClient->NextCheckTime - GetTickCount()) / 1000);
 							}
 						}
 						else

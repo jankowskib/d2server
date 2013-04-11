@@ -463,6 +463,7 @@ struct PlayerData { //size 0x16C
 	DWORD LastDamage;				//0x184
 	DWORD LastDamageId;				//0x188
 	DWORD LastDamageTick;			//0x18C
+	BYTE isSpecing;					//0x190
 };
 
 struct AiGeneral

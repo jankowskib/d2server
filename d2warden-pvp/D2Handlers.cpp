@@ -27,6 +27,7 @@
 #include "LEvents.h"
 #include "LMonsters.h"
 #include "LWorldEvent.h"
+#include "process.h"
 
 #include "Build.h"
 
@@ -821,6 +822,34 @@ if(ClientID==NULL) return TRUE;
 		//PNo=NewPl;
 		//return false;
 		//}
+		if(_stricmp(str,"#spec")==0)
+		{
+		if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+
+		str = strtok_s(NULL," ",&t);
+		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#spec <*account> or #spec [charname]!"); return false;}
+		list<WardenClient>::iterator psUnit =  hWarden.Clients.end();
+		if(str[0]== '*') {
+		str++;
+		psUnit = GetClientByAcc(str);
+		}
+		else
+		psUnit = GetClientByName(str);
+
+		if(pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Player is not in the same game!"); UNLOCK return false;}
+		if(psUnit == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Wrong charname / Player is not in the game!"); return false;}
+		//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
+		static Spec Data = {psUnit->ptGame, pUnit->dwUnitId, psUnit->ptPlayer->dwUnitId};
+		if(!psUnit->ptPlayer->pPlayerData->isSpecing && ! pUnit->pPlayerData->isSpecing)
+		{
+		D2Funcs::D2COMMON_ChangeCurrentMode(pUnit,PLAYER_MODE_DEATH);
+		pUnit->pPlayerData->isSpecing = 1;
+		_beginthreadex(0,0,&SpecThread,&Data,0,0);
+		}
+		else { SendMsgToClient(pUnit->pPlayerData->pClientData, "You already watching someone!"); }
+		UNLOCK
+		return false;
+		}
 		if(_stricmp(str,"#cheer")==0)
 		{
 		if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;

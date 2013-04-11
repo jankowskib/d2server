@@ -22,69 +22,79 @@
 
 #include "D2Warden.h"
 
-//
-//DWORD WINAPI SpecThread(void* Params)
-//{
-//Spec * Data = (Spec*)Params;
-//
-//while(Data->MyUnit->dwMode==PLAYER_MODE_DEATH || Data->MyUnit->dwMode==PLAYER_MODE_DEAD)
-//{
-//Sleep(50);
-//		WardenClient *ptRequestClient = GetClientByID(Data->RequesterID);
-//		WardenClient *ptSpecClient = GetClientByID(Data->SpecID);
-//		
-//		if(!ptSpecClient && !ptRequestClient) { delete Data; return 0;}
-//		if(!ptSpecClient && ptRequestClient) { ptRequestClient->Specing=false; break; }
-//		if(!ptRequestClient) { delete Data; return 0;}
-//
-//		Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(Data->SpecUnit);
-//		Room1* mRoom = D2Funcs::D2COMMON_GetUnitRoom(Data->MyUnit);
-//
-//		if(!aRoom || !mRoom) { delete Data; return 0;}
-//		if(!Data->MyUnit->pPath || !Data->SpecUnit->pPath){ delete Data; return 0;}
-//
-//		int aX = D2Funcs::D2COMMON_GetPathX(Data->SpecUnit->pPath);
-//		int aY = D2Funcs::D2COMMON_GetPathY(Data->SpecUnit->pPath);
-//
-//		BYTE p[5];
-//		::memset(&p,0,5);
-//		*(BYTE*)&p[0] = 0x7E;
-//		*(WORD*)&p[1]=ptSpecClient->MouseXPosition;
-//		*(WORD*)&p[3]=ptSpecClient->MouseYPosition;
-//		D2Funcs::D2GAME_SendPacket(ptRequestClient->ptClientData,(BYTE*)&p,5);
-//
-//		POINT Pos = {aX, aY};
-//		POINT Out = {0,0};
-//
-//		for(int i = 0; i<10; i++)
-//		{
-//		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,0);
-//		if(aRoom && Out.x && Out.y) break;
-//
-//		if(i % 2) Pos.x = Pos.x + (rand() % 4); else  Pos.x = Pos.x - (rand() % 4);
-//		if(i % 2) Pos.y = Pos.y + (rand() % 4); else  Pos.y = Pos.y - (rand() % 4);
-//		}
-//		
-//		if(!Out.x && !Out.y) continue;
-//		
-//		if(!aRoom) continue;
-//		//if(D2Funcs::D2COMMON_ValidateCoord(aRoom,aX,aY,1)) continue;
-//		if(aRoom==mRoom)
-//		{
-//		int mX = D2Funcs::D2COMMON_GetPathX(Data->MyUnit->pPath);
-//		int mY = D2Funcs::D2COMMON_GetPathY(Data->MyUnit->pPath);
-//		int	aRange = ((aX-mX)*(aX-mX)) + ((aY-mY)*(aY-mY));
-//		if(aRange>100) D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y,0, Data->MyUnit->pGame, Data->MyUnit);
-//		}
-//		else
-//		D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, Data->MyUnit->pGame, Data->MyUnit);
-//}
-//			WardenClient *ptRequestClient = GetClientByID(Data->RequesterID);
-//			if(ptRequestClient) ptRequestClient->Specing=false;
-//			int aLevel = D2Funcs::D2COMMON_GetTownLevel(Data->MyUnit->dwAct);
-//			int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(Data->MyUnit->pPath->pRoom1);
-//			if(aCurrLevel!=aLevel)	D2Funcs::D2GAME_MoveUnitToLevelId(Data->MyUnit,aLevel,Data->MyUnit->pGame);
-//
-//delete Data;
-//return 0;
-//}
+
+unsigned int __stdcall SpecThread(void* Params)
+{
+Spec * Data = (Spec*)Params;
+UnitAny *MyUnit;
+UnitAny *SpecUnit;
+if(!Data || !Data->ptGame || !Data->RequesterID || !Data->SpecID) 
+{
+	return 0;
+}
+
+do
+{
+	EnterCriticalSection(Data->ptGame->ptLock);
+
+	MyUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->RequesterID, UNIT_PLAYER);
+	SpecUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->SpecID, UNIT_PLAYER);
+	if(!MyUnit || !SpecUnit) { LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+
+	Sleep(50);
+
+	Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(SpecUnit);
+	Room1* mRoom = D2Funcs::D2COMMON_GetUnitRoom(MyUnit);
+
+	if(!aRoom || !mRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+	if(!MyUnit->pPath || !SpecUnit->pPath){ LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+
+	int aX = D2Funcs::D2COMMON_GetPathX(SpecUnit->pPath);
+	int aY = D2Funcs::D2COMMON_GetPathY(SpecUnit->pPath);
+
+
+	//BYTE p[5];
+	//::memset(&p,0,5);
+	//*(BYTE*)&p[0] = 0x7E;
+	//*(WORD*)&p[1]=SpecUnit->MouseXPosition;
+	//*(WORD*)&p[3]=SpecUnit->MouseYPosition;
+	//D2Funcs::D2GAME_SendPacket(ptRequestClient->ptClientData,(BYTE*)&p,5);
+
+	POINT Pos = {aX, aY};
+	POINT Out = {0,0};
+
+	for(int i = 0; i<10; i++)
+	{
+		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,0);
+		if(aRoom && Out.x && Out.y) break;
+
+		if(i % 2) Pos.x = Pos.x + (rand() % 4); else  Pos.x = Pos.x - (rand() % 4);
+		if(i % 2) Pos.y = Pos.y + (rand() % 4); else  Pos.y = Pos.y - (rand() % 4);
+	}
+
+	if(!Out.x && !Out.y) {	LeaveCriticalSection(Data->ptGame->ptLock); continue; }
+
+	if(!aRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); continue; }
+	//if(D2Funcs::D2COMMON_ValidateCoord(aRoom,aX,aY,1)) continue;
+	if(aRoom==mRoom)
+	{
+		int mX = D2Funcs::D2COMMON_GetPathX(MyUnit->pPath);
+		int mY = D2Funcs::D2COMMON_GetPathY(MyUnit->pPath);
+		int	aRange = ((aX-mX)*(aX-mX)) + ((aY-mY)*(aY-mY));
+		if(aRange>100) D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y,0, MyUnit->pGame, MyUnit);
+	}
+	else
+		D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, MyUnit->pGame, MyUnit);
+	LeaveCriticalSection(Data->ptGame->ptLock); 
+} while(MyUnit->dwMode==PLAYER_MODE_DEATH || MyUnit->dwMode==PLAYER_MODE_DEAD);
+
+EnterCriticalSection(Data->ptGame->ptLock);
+
+MyUnit->pPlayerData->isSpecing = 0;
+
+int aLevel = D2Funcs::D2COMMON_GetTownLevel(MyUnit->dwAct);
+int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(MyUnit->pPath->pRoom1);
+if(aCurrLevel!=aLevel)	D2Funcs::D2GAME_MoveUnitToLevelId(MyUnit,aLevel,Data->ptGame);
+LeaveCriticalSection(Data->ptGame->ptLock); 
+return 0;
+}
