@@ -33,6 +33,7 @@ if(!Data || !Data->ptGame || !Data->RequesterID || !Data->SpecID)
 	return 0;
 }
 
+srand(time(0));
 do
 {
 	EnterCriticalSection(Data->ptGame->ptLock);
@@ -40,14 +41,20 @@ do
 	MyUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->RequesterID, UNIT_PLAYER);
 	SpecUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->SpecID, UNIT_PLAYER);
 	if(!MyUnit) { LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+
+	//D2Funcs::D2COMMON_ChangeCurrentMode(MyUnit,PLAYER_MODE_DEAD);
+	D2Funcs::D2GAME_KillPlayer(Data->ptGame,MyUnit,PLAYER_MODE_DEAD,0);
+	D2Funcs::D2COMMON_SetGfxState(MyUnit, D2States::invis,1);
+	MyUnit->pPlayerData->isSpecing = 1;
+
 	if(!SpecUnit) {LeaveCriticalSection(Data->ptGame->ptLock); break; }
-	Sleep(50);
+	//Sleep(50);
 
 	Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(SpecUnit);
 	Room1* mRoom = D2Funcs::D2COMMON_GetUnitRoom(MyUnit);
 
-	if(!aRoom || !mRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
-	if(!MyUnit->pPath || !SpecUnit->pPath){ LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
+	if(!aRoom || !mRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); break;}
+	if(!MyUnit->pPath || !SpecUnit->pPath){ LeaveCriticalSection(Data->ptGame->ptLock); break;}
 
 	int aX = D2Funcs::D2COMMON_GetPathX(SpecUnit->pPath);
 	int aY = D2Funcs::D2COMMON_GetPathY(SpecUnit->pPath);
@@ -61,9 +68,9 @@ do
 	//D2Funcs::D2GAME_SendPacket(ptRequestClient->ptClientData,(BYTE*)&p,5);
 
 	POINT Pos = {aX, aY};
-	POINT Out = {0,0};
+	POINT Out = {0, 0};
 
-	for(int i = 0; i<10; i++)
+	for(int i = 0; i<10; ++i)
 	{
 		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,0);
 		if(aRoom && Out.x && Out.y) break;
@@ -74,7 +81,7 @@ do
 
 	if(!Out.x && !Out.y) {	LeaveCriticalSection(Data->ptGame->ptLock); continue; }
 
-	if(!aRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); continue; }
+	if(!aRoom) { LeaveCriticalSection(Data->ptGame->ptLock); continue; }
 	//if(D2Funcs::D2COMMON_ValidateCoord(aRoom,aX,aY,1)) continue;
 	if(aRoom==mRoom)
 	{
@@ -86,10 +93,10 @@ do
 	else
 		D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, MyUnit->pGame, MyUnit);
 	LeaveCriticalSection(Data->ptGame->ptLock); 
-} while(MyUnit->dwMode==PLAYER_MODE_DEATH || MyUnit->dwMode==PLAYER_MODE_DEAD);
+} while((MyUnit->dwMode == PLAYER_MODE_DEATH || MyUnit->dwMode == PLAYER_MODE_DEAD) && (SpecUnit->dwMode != PLAYER_MODE_DEATH || SpecUnit->dwMode != PLAYER_MODE_DEAD));
 
 EnterCriticalSection(Data->ptGame->ptLock);
-D2Funcs::D2COMMON_ChangeCurrentMode(MyUnit,PLAYER_MODE_STAND_INTOWN);
+
 D2Funcs::D2COMMON_SetGfxState(MyUnit,D2States::invis,0);
 MyUnit->pPlayerData->isSpecing = 0;
 

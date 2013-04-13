@@ -573,8 +573,8 @@ static int AttackCount;
 			ClientData * pClient = pPlayerData->pClientData;
 			if(pClient)
 			{
-				ReassignPacket hReassign;
-				::memset(&hReassign,0,11);
+				ReassignPacket hReassign = {0};
+				//::memset(&hReassign,0,11);
 				hReassign.Header= 0x15;
 				hReassign.UnitId = ptPlayer->dwUnitId;
 				hReassign.xPos = UnitX;
@@ -826,28 +826,45 @@ if(ClientID==NULL) return TRUE;
 		{
 		if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
-		str = strtok_s(NULL," ",&t);
-		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#spec <*account> or #spec [charname]!"); return false;}
+		str = strtok_s(NULL, " ", &t);
+		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#spec <*account> or #spec [charname]!"); return false; }
 		list<WardenClient>::iterator psUnit =  hWarden.Clients.end();
-		if(str[0]== '*') {
-		str++;
-		psUnit = GetClientByAcc(str);
+		if(str[0]== '*') 
+		{
+			str++;
+			if(!_stricmp(pUnit->pPlayerData->pClientData->AccountName, str)) { SendMsgToClient(pUnit->pPlayerData->pClientData,"You cannot spectator yourself!"); return false; }
+			psUnit = GetClientByAcc(str);
+			if(psUnit != hWarden.Clients.end())
+				if(!_stricmp(pUnit->pPlayerData->pClientData->CharName, str)) 
+				{ 
+					SendMsgToClient(pUnit->pPlayerData->pClientData,"You cannot spectator yourself!"); 
+					UNLOCK 
+					return false; 
+				}
 		}
 		else
-		psUnit = GetClientByName(str);
-
-		if(pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Player is not in the same game!"); UNLOCK return false;}
-		if(psUnit == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Wrong charname / Player is not in the game!"); return false;}
-		//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
-		static Spec Data = {psUnit->ptGame, pUnit->dwUnitId, psUnit->ptPlayer->dwUnitId};
-		if(!psUnit->ptPlayer->pPlayerData->isSpecing && ! pUnit->pPlayerData->isSpecing)
 		{
-		D2Funcs::D2COMMON_ChangeCurrentMode(pUnit,PLAYER_MODE_DEATH);
-		D2Funcs::D2COMMON_SetGfxState(pUnit,D2States::invis,1);
-		pUnit->pPlayerData->isSpecing = 1;
-		_beginthreadex(0,0,&SpecThread,&Data,0,0);
+			if(!_stricmp(pUnit->pPlayerData->pClientData->CharName, str)) { SendMsgToClient(pUnit->pPlayerData->pClientData,"You cannot spectator yourself!"); return false; }
+			psUnit = GetClientByName(str);
 		}
-		else { SendMsgToClient(pUnit->pPlayerData->pClientData, "You're already watching someone!"); }
+
+		if(psUnit == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Wrong charname or player is not in the game!"); return false;}
+		if(pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Player is not in the same game!"); UNLOCK return false;}
+		//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
+		SendMsgToClient(psUnit->ptClientData, "%s started watching you!",pUnit->pPlayerData->pClientData->AccountName);
+		static Spec Data = {0};
+		Data.ptGame = pUnit->pGame;
+		Data.RequesterID = pUnit->dwUnitId;
+		Data.SpecID = psUnit->ptPlayer->dwUnitId;
+
+		if(!psUnit->ptPlayer->pPlayerData->isSpecing && !pUnit->pPlayerData->isSpecing)
+		{
+			_beginthreadex(0, 0, &SpecThread, &Data, 0, 0);
+		}
+		else
+		{
+			SendMsgToClient(pUnit->pPlayerData->pClientData, "You're already watching someone!"); 
+		}
 		UNLOCK
 		return false;
 		}

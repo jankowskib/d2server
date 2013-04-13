@@ -59,7 +59,7 @@ D2FUNCPTR(D2GAME, CopyPortal, UnitAny* __stdcall, (Game *pGame, UnitAny *pSource
 D2FUNCPTR(D2GAME, CreateUnit, UnitAny* __fastcall,(DWORD UnitType, DWORD ClassId, int xPos, int yPos, Game *pGame, Room1 *pRoom1, WORD wFlags, DWORD InitMode, int UnitId), 0xC09E0)
 D2FUNCPTR(D2GAME, SetUnitMode, int __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, int a9), 0x41990)
 D2FUNCPTR(D2GAME, RemoveFromPickedUp, void __stdcall, (UnitAny *pPlayer), 0x44B50)
-
+D2FUNCPTR(D2GAME, KillPlayer, void __fastcall, (Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller), 0x42F20)
 
 //D2COMMON
 D2FUNCPTR(D2COMMON, CreateStatList, StatList* __stdcall, (void *ptMemPool, DWORD dwFlags, DWORD ExpireFrame, DWORD UnitType, DWORD UnitId),-10522)
