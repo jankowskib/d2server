@@ -31,6 +31,7 @@
 #include "LQuests.h"
 #include "LItems.h"
 #include "LWorldEvent.h"
+#include "LSpectator.h"
 
 #include "global.h"
 #include "MD5.h"
@@ -273,6 +274,8 @@ UNUSED
 	PatchGS(0xEB,GetDllOffset("D2Game.dll",0xD26C3),0,1,"Ear drop on death");
 	}
 
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0xBEF80),(DWORD)D2Stubs::D2GAME_FindUnit_STUB,9,"FindUnit Fix");
+
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0x41972),(DWORD)D2Stubs::D2GAME_OnPlayerModeChange_I,5,"Player mode intercept");
 
 	if(StrBugFix)
@@ -309,6 +312,10 @@ UNUSED
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2F850),(DWORD)OnClickUnit,6,"0x10 Wrapper");
 	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2F7F0),(DWORD)OnClickUnit,6,"0x11 Wrapper");
 	//-----------
+
+	//On Run to Location
+
+	PatchGS(JUMP,GetDllOffset("D2Game.dll",0x2EEE0),(DWORD)OnRunToLocation,6,"0x03 Wrapper");
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",0xE6F00),(DWORD)D2Stubs::D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");
 

@@ -2,7 +2,7 @@
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
- * Copyright 2013 lolet
+ * Copyright 2011-2013 Bartosz Jankowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

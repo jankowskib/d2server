@@ -2,7 +2,7 @@
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
- * Copyright 2013 lolet
+ * Copyright 2011-2013 Bartosz Jankowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,86 +23,137 @@
 #include "D2Warden.h"
 
 
-unsigned int __stdcall SpecThread(void* Params)
+DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen)
 {
-Spec * Data = (Spec*)Params;
-UnitAny *MyUnit;
-UnitAny *SpecUnit;
-if(!Data || !Data->ptGame || !Data->RequesterID || !Data->SpecID) 
-{
-	return 0;
+	bool InRange = false;
+	if(PacketLen!=5) return 3; // zwroc hack
+	if(!ptGame) return 3;
+	if(!ptPlayer || ptPlayer->dwType != UNIT_PLAYER) return 3;
+
+	WORD UnitX = D2Funcs::D2GAME_GetUnitX(ptPlayer);
+	WORD UnitY = D2Funcs::D2GAME_GetUnitY(ptPlayer);
+
+	int xOffset = UnitX - ptPacket->xPos;
+	if(xOffset<0) xOffset = -xOffset;
+	int yOffset = UnitY - ptPacket->yPos;
+	if(yOffset<0) yOffset = -yOffset;
+
+	if(yOffset < 50 && xOffset < 50) InRange = true;
+
+	PlayerData* pPlayerData = ptPlayer->pPlayerData;
+	if(!pPlayerData) {
+		Log("Didn't find a PlayerData, function %s, %d",__FUNCTION__,__LINE__);
+		return 2;
+	}
+
+	if(InRange)
+	{
+		for(auto i : Specers)
+		{
+			if(i.second == ptPlayer->dwUnitId) 
+			{
+				UnitAny * ptSpecee = D2Funcs::D2GAME_FindUnit(ptGame, i.first, UNIT_PLAYER);
+				if(!ptSpecee) continue;
+
+				Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(ptPlayer);
+				Room1* mRoom = D2Funcs::D2COMMON_GetUnitRoom(ptSpecee);
+				if(!mRoom || !aRoom) continue;
+
+				POINT Pos = {(ptPacket->xPos + UnitX) / 2, (ptPacket->yPos + UnitY) / 2};
+				POINT Out = {0, 0};
+				
+				aRoom = D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,0);
+				if(aRoom && Out.x && Out.y)
+				{
+					if(aRoom == mRoom)
+					{
+						int mX = D2Funcs::D2COMMON_GetPathX(ptSpecee->pPath);
+						int mY = D2Funcs::D2COMMON_GetPathY(ptSpecee->pPath);
+						int	aRange = ((Pos.x-mX)*(Pos.x-mX)) + ((Pos.y-mY)*(Pos.y-mY));
+						if(aRange>50) D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, 0, ptGame, ptSpecee);
+					}
+					else
+						D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, ptGame, ptSpecee);
+				}
+
+			}
+		}
+
+		pPlayerData->GameFrame = ptGame->GameFrame;		
+		D2Funcs::D2GAME_SetUnitMode(ptGame,ptPlayer,0, PLAYER_MODE_RUN, ptPacket->xPos, ptPacket->yPos, 0);
+		return 0;
+	}
+	else
+	{
+		if((signed int)(ptGame->GameFrame - pPlayerData->GameFrame) > 25)
+		{
+			ClientData * pClient = pPlayerData->pClientData;
+			if(pClient)
+			{
+				ReassignPacket hReassign = {0};
+				hReassign.Header= 0x15;
+				hReassign.UnitId = ptPlayer->dwUnitId;
+				hReassign.xPos = UnitX;
+				hReassign.yPos = UnitY;
+				hReassign.Reassign = 1;
+
+				D2Funcs::D2GAME_SendPacket(pClient,(BYTE*)&hReassign,11);
+			}
+		}
+		return 1;
+	}
+	return 3;
 }
 
-srand(time(0));
+unsigned int __stdcall SpecThread(void* Params)
+{
+Spec * Data = *(Spec**)Params;
+
+if(!Data || !Data->ptGame || !Data->RequesterID || !Data->SpecID) 
+{
+	if(Data) delete Data;
+	return 0;
+}
+	EnterCriticalSection(Data->ptGame->ptLock);
+
+	UnitAny * MyUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->RequesterID, UNIT_PLAYER);
+	UnitAny * SpecUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->SpecID, UNIT_PLAYER);
+
+	if(!MyUnit) 
+	{ 
+		LeaveCriticalSection(Data->ptGame->ptLock);
+		delete Data; 
+		return 0;
+	}
+
+	//D2Funcs::D2GAME_SetPlayerUnitMode(Data->ptGame, MyUnit, 0, PLAYER_MODE_DEAD, 6, -1, 0);
+	D2Funcs::D2COMMON_SetGfxState(MyUnit, D2States::invis, 1);
+	D2Funcs::D2GAME_KillPlayer(Data->ptGame, MyUnit, PLAYER_MODE_DEAD, 0);
+	MyUnit->pPlayerData->isSpecing = 1;
+	Specers[Data->RequesterID] = Data->SpecID;
+
+	LeaveCriticalSection(Data->ptGame->ptLock); 
 do
 {
 	EnterCriticalSection(Data->ptGame->ptLock);
 
 	MyUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->RequesterID, UNIT_PLAYER);
 	SpecUnit = D2Funcs::D2GAME_FindUnit(Data->ptGame, Data->SpecID, UNIT_PLAYER);
-	if(!MyUnit) { LeaveCriticalSection(Data->ptGame->ptLock); return 0;}
-
-	//D2Funcs::D2COMMON_ChangeCurrentMode(MyUnit,PLAYER_MODE_DEAD);
-	D2Funcs::D2GAME_KillPlayer(Data->ptGame,MyUnit,PLAYER_MODE_DEAD,0);
-	D2Funcs::D2COMMON_SetGfxState(MyUnit, D2States::invis,1);
-	MyUnit->pPlayerData->isSpecing = 1;
-
-	if(!SpecUnit) {LeaveCriticalSection(Data->ptGame->ptLock); break; }
-	//Sleep(50);
-
-	Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(SpecUnit);
-	Room1* mRoom = D2Funcs::D2COMMON_GetUnitRoom(MyUnit);
-
-	if(!aRoom || !mRoom) {	LeaveCriticalSection(Data->ptGame->ptLock); break;}
-	if(!MyUnit->pPath || !SpecUnit->pPath){ LeaveCriticalSection(Data->ptGame->ptLock); break;}
-
-	int aX = D2Funcs::D2COMMON_GetPathX(SpecUnit->pPath);
-	int aY = D2Funcs::D2COMMON_GetPathY(SpecUnit->pPath);
-
-
-	//BYTE p[5];
-	//::memset(&p,0,5);
-	//*(BYTE*)&p[0] = 0x7E;
-	//*(WORD*)&p[1]=SpecUnit->MouseXPosition;
-	//*(WORD*)&p[3]=SpecUnit->MouseYPosition;
-	//D2Funcs::D2GAME_SendPacket(ptRequestClient->ptClientData,(BYTE*)&p,5);
-
-	POINT Pos = {aX, aY};
-	POINT Out = {0, 0};
-
-	for(int i = 0; i<10; ++i)
-	{
-		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,0);
-		if(aRoom && Out.x && Out.y) break;
-
-		if(i % 2) Pos.x = Pos.x + (rand() % 4); else  Pos.x = Pos.x - (rand() % 4);
-		if(i % 2) Pos.y = Pos.y + (rand() % 4); else  Pos.y = Pos.y - (rand() % 4);
-	}
-
-	if(!Out.x && !Out.y) {	LeaveCriticalSection(Data->ptGame->ptLock); continue; }
-
-	if(!aRoom) { LeaveCriticalSection(Data->ptGame->ptLock); continue; }
-	//if(D2Funcs::D2COMMON_ValidateCoord(aRoom,aX,aY,1)) continue;
-	if(aRoom==mRoom)
-	{
-		int mX = D2Funcs::D2COMMON_GetPathX(MyUnit->pPath);
-		int mY = D2Funcs::D2COMMON_GetPathY(MyUnit->pPath);
-		int	aRange = ((aX-mX)*(aX-mX)) + ((aY-mY)*(aY-mY));
-		if(aRange>100) D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y,0, MyUnit->pGame, MyUnit);
-	}
-	else
-		D2Funcs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, MyUnit->pGame, MyUnit);
+	if(!MyUnit) { LeaveCriticalSection(Data->ptGame->ptLock); delete Data; return 0;}
+	if(!SpecUnit) { LeaveCriticalSection(Data->ptGame->ptLock); break; }
+	Sleep(50);
 	LeaveCriticalSection(Data->ptGame->ptLock); 
 } while((MyUnit->dwMode == PLAYER_MODE_DEATH || MyUnit->dwMode == PLAYER_MODE_DEAD) && (SpecUnit->dwMode != PLAYER_MODE_DEATH || SpecUnit->dwMode != PLAYER_MODE_DEAD));
 
 EnterCriticalSection(Data->ptGame->ptLock);
-
-D2Funcs::D2COMMON_SetGfxState(MyUnit,D2States::invis,0);
+SendMsgToClient(MyUnit->pPlayerData->pClientData,"Quiting spectator mode..."); 
+D2Funcs::D2COMMON_SetGfxState(MyUnit, D2States::invis, 0);
 MyUnit->pPlayerData->isSpecing = 0;
+Specers.erase(Data->RequesterID);
 
 int aLevel = D2Funcs::D2COMMON_GetTownLevel(MyUnit->dwAct);
 int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(MyUnit->pPath->pRoom1);
-if(aCurrLevel!=aLevel)	D2Funcs::D2GAME_MoveUnitToLevelId(MyUnit,aLevel,Data->ptGame);
+if(aCurrLevel != aLevel) D2Funcs::D2GAME_MoveUnitToLevelId(MyUnit,aLevel,Data->ptGame);
 LeaveCriticalSection(Data->ptGame->ptLock); 
 return 0;
 }

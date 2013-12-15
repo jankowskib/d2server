@@ -2,7 +2,7 @@
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
- * Copyright 2013 lolet
+ * Copyright 2011-2013 Bartosz Jankowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -613,12 +613,54 @@ __asm
 	}
 }
 
+// Fixed FindUnitById, which causes crash if unittype <> {0-5}
+//	<eax>(signed int a1<eax>, int a2<edx>, int pGame<ecx>)
+__declspec(naked) UnitAny* __fastcall D2GAME_FindUnit_STUB()
+{
+static DWORD retAdd = 0;
+	__asm
+	{
+	pop retAdd
+	push eax
+	push retAdd
+	jmp D2Funcs::D2GAME_FindUnit
+	}
+
+}
+
+
 }
 
 //----ASM SUBS---
 
 namespace D2Funcs 
 {
+
+//(Game *pGame<eax>, UnitAny *pUnit<edi>, Skill *pSkill, int nMode, signed int UnitType, int UnitId, int bAllowReEnter)
+__declspec(naked) void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter)
+{
+	__asm
+	{
+		push eax
+		push edi
+
+		mov eax, ecx
+		mov edi, edx
+
+		push [esp+20+8]
+		push [esp+20+8]
+		push [esp+20+8]	
+		push [esp+20+8]
+		push [esp+20+8]
+
+		call D2Ptrs::D2GAME_SetPlayerUnitMode_I
+
+		pop edi
+		pop eax
+
+		ret 20
+	}
+}
 
 __declspec(naked) void __fastcall D2GAME_UpdateClientInventory(ClientData* pClient, UnitAny* pPlayer)
 {
@@ -1306,14 +1348,48 @@ DWORD __declspec(naked) __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Le
 	}
 }
 
-__declspec(naked) UnitAny* __fastcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, DWORD dwUnitType)
-{
-	__asm {
-		mov eax,[esp+4]
-		call D2Ptrs::D2GAME_GameFindUnitFunc_I
-		retn 4
-	}
-}
+ UnitAny* __fastcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, DWORD dwUnitType)
+ {
+	 UnitAny **ptList, *ptUnit;
+	 ASSERT(ptGame)
+	 if(dwUnitId == -1) return 0;
+
+	 switch(dwUnitType)
+	 {
+		case 0:
+		case 1:
+		case 2:
+			ptList = (UnitAny **)&(ptGame->pUnitList[dwUnitType][dwUnitId & 127]);
+			break;
+		case 3:
+			ptList = (UnitAny **)&(ptGame->pUnitList[4][dwUnitId & 127]);
+			break;
+		case 4:
+			ptList = (UnitAny **)&(ptGame->pUnitList[3][dwUnitId & 127]);
+			break;
+		case 5:
+			ptList = (UnitAny **)&ptGame->pTileList;
+			break;
+		default:
+			return 0;
+	 }
+	 ptUnit = *ptList;
+	 while(ptUnit->dwUnitId != dwUnitId) 
+	 {
+		 ptUnit = ptUnit->pRoomNext;
+		 if(!ptUnit) return 0;
+	 }
+	 return ptUnit;
+ }
+
+//__declspec(naked) UnitAny* __fastcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, DWORD dwUnitType)
+//{
+//	__asm {
+//		mov eax,[esp+4]
+//		call D2Ptrs::D2GAME_GameFindUnitFunc_I
+//		retn 4
+//	}
+//}
 
 
 DWORD __declspec(naked) __fastcall D2GAME_SendPacket(ClientData *pClientData, BYTE *aPacket, int aLen)

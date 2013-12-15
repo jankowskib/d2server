@@ -2,7 +2,7 @@
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
- * Copyright 2013 lolet
+ * Copyright 2011-2013 Bartosz Jankowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ D2FUNCPTR(D2GAME, DeleteUnit, int __fastcall, (Game *ptGame, UnitAny *ptUnit),0x
 D2FUNCPTR(D2GAME, Transmute, void __stdcall, (Game *ptGame, UnitAny *ptUnit),0x38370)
 D2FUNCPTR(D2GAME, CopyPortal, UnitAny* __stdcall, (Game *pGame, UnitAny *pSourceUnit, int nLevel, POINT Coords), 0x109F0)
 D2FUNCPTR(D2GAME, CreateUnit, UnitAny* __fastcall,(DWORD UnitType, DWORD ClassId, int xPos, int yPos, Game *pGame, Room1 *pRoom1, WORD wFlags, DWORD InitMode, int UnitId), 0xC09E0)
-D2FUNCPTR(D2GAME, SetUnitMode, int __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, int a9), 0x41990)
+D2FUNCPTR(D2GAME, SetUnitMode, int __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x41990)
 D2FUNCPTR(D2GAME, RemoveFromPickedUp, void __stdcall, (UnitAny *pPlayer), 0x44B50)
 D2FUNCPTR(D2GAME, KillPlayer, void __fastcall, (Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller), 0x42F20)
 
@@ -299,9 +299,11 @@ D2ASMPTR(D2GAME, StopSequence_I,0xBEB30)
 D2ASMPTR(D2GAME, RemoveBuffs_I,0x41670)
 D2ASMPTR(D2GAME, ResetTimers_I,0xC1230)
 D2ASMPTR(D2GAME, RemoveInteraction_I,0x7FA00)
+D2ASMPTR(D2GAME, SetPlayerUnitMode_I, 0x41870)
+
 D2ASMPTR(D2NET, ReceivePacket_I, -10029) //wrong (its get packet size is ok)
 
-
+//D2VARPTR(D2GAME, pUnitListOffset, DWORD*, 0xFB2B4)
 D2VARPTR(D2GAME, PacketTable, PacketTbl, 0xFA7C0)
 D2VARPTR(D2GAME, pSpell, pSpellTbl, 0x105098)
 

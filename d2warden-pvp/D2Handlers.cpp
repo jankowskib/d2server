@@ -2,7 +2,7 @@
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
- * Copyright 2013 lolet
+ * Copyright 2011-2013 Bartosz Jankowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -852,10 +852,10 @@ if(ClientID==NULL) return TRUE;
 		if(pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Player is not in the same game!"); UNLOCK return false;}
 		//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
 		SendMsgToClient(psUnit->ptClientData, "%s started watching you!",pUnit->pPlayerData->pClientData->AccountName);
-		static Spec Data = {0};
-		Data.ptGame = pUnit->pGame;
-		Data.RequesterID = pUnit->dwUnitId;
-		Data.SpecID = psUnit->ptPlayer->dwUnitId;
+		Spec * Data = new Spec;
+		Data->ptGame = pUnit->pGame;
+		Data->RequesterID = pUnit->dwUnitId;
+		Data->SpecID = psUnit->ptPlayer->dwUnitId;
 
 		if(!psUnit->ptPlayer->pPlayerData->isSpecing && !pUnit->pPlayerData->isSpecing)
 		{

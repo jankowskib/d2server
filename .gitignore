@@ -18,4 +18,6 @@
 *.tlog
 *.log
 *.pch
-
+*.user
+*.opensdf
+*.ipch
