@@ -19,12 +19,7 @@
 
 #include "stdafx.h"
 #include "D2Warden.h"
-
-
-int round(double a)
-{
-	return int(a + 0.5);
-}
+#include "RC4.h"
 
 
 BYTE GetColorNameByAcc(string szAcc)
@@ -657,6 +652,11 @@ BOOL WriteBytes(void* lpAddr, void* lpBuffer, DWORD dwLen)
 
 void PatchGS(BYTE bInst, DWORD pAddr, DWORD pFunc, DWORD dwLen, char* Type)
 {
+	if (!pAddr)
+	{
+		Log("NULL address error while patching GS %s with %d byte(s)", Type, dwLen);
+		return;
+	}
 	BYTE *bCode = new BYTE[dwLen];
 	if(bInst)
 	{
@@ -701,7 +701,7 @@ void PatchGS(BYTE bInst, DWORD pAddr, DWORD pFunc, DWORD dwLen, char* Type)
 	}
 	if(!WriteBytes((void*)pAddr, bCode, dwLen))
 	{
-		Log("Error while patching GS %s with %d byte(s)",Type,dwLen);
+		Log("Cannot write bytes for patch: %s",Type);
 		Warden_Enable=false;
 	}
 	delete[] bCode;

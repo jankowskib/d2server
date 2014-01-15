@@ -28,6 +28,7 @@
 #include "LMonsters.h"
 #include "LWorldEvent.h"
 #include "process.h"
+#include "RC4.h"
 
 #include "Build.h"
 
@@ -113,38 +114,41 @@ return 0;
 
 BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem)
 {
-Npc* ptVendor = ptGame->pNpcControl->pNpc;
+	Npc* ptVendor = ptGame->pNpcControl->pNpc;
 
-if(!ptNPC) return FALSE;
-if(!ptVendor) return FALSE;
-
-for(int i = 0; i<64; i++)
-{
-if(ptVendor[i].npcNo==ptNPC->dwClassId) { ptVendor = &ptVendor[i]; break; }
-if(i==63) { ptVendor=0; break;}
-}
-
-if(ptVendor)
-{
-	DWORD iCode = D2Funcs::D2COMMON_GetItemCode(ptItem);
-	//WORLD EVENT
-	if(EnableWE && WE_isKey(ptItem))
+	if (!ptNPC || !ptVendor)
 	{
-		if(SellCount == NextDC) {WE_GenerateNextDC(); WE_CreateDCKey(ptNPC);}
-
-		ptItem->pItemData->InvPage = 0xFF; 
-		return TRUE;
+		Log("%s", "isPermStore: null ptNPC or ptVendor!");
+		return FALSE;
 	}
-	//OLD CODE
-	if(ptGame->DifficultyLevel && (iCode == ' 4ph' || iCode == ' 5ph' || iCode == ' 4pm' || iCode == ' 5pm')) return TRUE;
 
-	for(unsigned int i = 0; i<ptVendor->nPermStoreRecords; i++)
+	for(int i = 0; i<64; i++)
 	{
-	if(ptVendor->pPermStoreList[i]==iCode) return 1;
+		if(ptVendor[i].npcNo==ptNPC->dwClassId) { ptVendor = &ptVendor[i]; break; }
+		if(i==63) { ptVendor=0; break; }
 	}
-}
 
-return FALSE;
+	if(ptVendor)
+	{
+		DWORD iCode = D2Funcs::D2COMMON_GetItemCode(ptItem);
+		//WORLD EVENT
+		if(EnableWE && WE_isKey(ptItem))
+		{
+			if(SellCount == NextDC) {WE_GenerateNextDC(); WE_CreateDCKey(ptNPC);}
+
+			ptItem->pItemData->InvPage = 0xFF; 
+			return TRUE;
+		}
+		//OLD CODE
+		if(ptGame->DifficultyLevel && (iCode == ' 4ph' || iCode == ' 5ph' || iCode == ' 4pm' || iCode == ' 5pm')) return TRUE;
+
+		for(unsigned int i = 0; i<ptVendor->nPermStoreRecords; i++)
+		{
+		if(ptVendor->pPermStoreList[i]==iCode) return 1;
+		}
+	}
+
+	return FALSE;
 }
 
 
@@ -216,7 +220,7 @@ pEvent.MsgType=3;
 	else
 	{
 #ifdef _ENGLISH_LOGS
-		Log("NEWCLIENT: No SessionKey in database! Droping player %s !",pClient->AccountName);
+		Log("NEWCLIENT: No SessionKey in database! Dropping player %s !",pClient->AccountName);
 #else
 		Log("NOWYKLIENT: Brak SessionKey w bazie! Wykopuje gracza %s !",pClient->AccountName);
 #endif
@@ -278,16 +282,16 @@ CreateFFAItems(pUnit);
 
 
 if(pUnit->pGame, pUnit->pGame->bFestivalMode == 1) 
-if(pUnit->pPlayerData->isPlaying)
-{
-pUnit->pPlayerData->CanAttack = 0;
-pUnit->pPlayerData->SaidGO = 0;
+	if(pUnit->pPlayerData->isPlaying)
+	{
+		pUnit->pPlayerData->CanAttack = 0;
+		pUnit->pPlayerData->SaidGO = 0;
 
-DoRoundEndStuff(pUnit->pGame, pUnit);
+		DoRoundEndStuff(pUnit->pGame, pUnit);
 
-pUnit->pPlayerData->isPlaying = 0;
-pUnit->pGame->nPlaying--;
-}
+		pUnit->pPlayerData->isPlaying = 0;
+		pUnit->pGame->nPlaying--;
+	}
 
 
 }
@@ -297,7 +301,7 @@ DWORD __fastcall OnD2ExPacket(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, D
 if(PacketLen!=5) return 3;
 DWORD Version = *(DWORD*)&ptPacket[1];
 //Log("Otrzymano pakiet wersji!");
-SendMsgToClient(ptPlayer->pPlayerData->pClientData,ptPlayer->pPlayerData->pClientData->LocaleID == 10 ? "Uwaga masz starego klienta! Wpisz #update lub wejdz na strone AR w celu aktualizacji" : "Warning, your client is outdated! Type #update or go realm.angrenost.org, to fix this!");
+SendMsgToClient(ptPlayer->pPlayerData->pClientData,ptPlayer->pPlayerData->pClientData->LocaleID == 10 ? "Uwaga masz starego klienta! Wpisz #update w celu aktualizacji" : "Warning, your client is outdated! Type #update to fix this!");
 return 0;
 //if(Version==1)
 //{
@@ -338,29 +342,31 @@ return DR;
 
 Act* __stdcall OnActLoad (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, DWORD* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2)
 {
-
-    int MySeed = 0;
+	int MySeed = 0;
 	BYTE MyDiff = (BYTE) DiffLvl;
 	if(strlen(pGame->GameDesc)>0)
 	{	
-	char *nt = 0;
-	char tk[32];
-	strcpy_s(tk,32,pGame->GameDesc);
-	char * ret = strtok_s(tk,"- ",&nt);
-	 while (ret)
-	 {
-	 if(ret[0]=='m' && strlen(ret)>1 && EnableSeed) MySeed=atoi(ret+1);
-	 if(ret[0]=='t' && strlen(ret)==1 && AllowTourMode) pGame->bFestivalMode = 1;
-	 if(_strnicmp(ret,"ffa",3)==0 && FFAMode) pGame->dwGameState=1;
-	 ret = strtok_s( NULL, "- ", &nt);
-	 }		
+		char *nt = 0;
+		char tk[32];
+		strcpy_s(tk,32,pGame->GameDesc);
+		char * ret = strtok_s(tk,"- ",&nt);
+		while (ret)
+		{
+			if(ret[0]=='m' && strlen(ret)>1 && EnableSeed) 
+				MySeed=atoi(ret+1);
+			if(ret[0]=='t' && strlen(ret)==1 && AllowTourMode) 
+				pGame->bFestivalMode = 1;
+			if(_strnicmp(ret,"ffa",3)==0 && FFAMode) 
+				pGame->dwGameState=1;
+			ret = strtok_s( NULL, "- ", &nt);
+		}		
 	}
-if(MySeed) 
-{
-pGame->InitSeed=MySeed;
-return D2Funcs::D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
-}
-return D2Funcs::D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+	if(MySeed) 
+	{
+		pGame->InitSeed=MySeed;
+		return D2Funcs::D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+	}
+	return D2Funcs::D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
 }
 
 
@@ -376,21 +382,21 @@ case 0x1A: //EQUIP CHECK
 case 0x1D:
 case 0x16:
 	{
-	break;
-// 1a   9   Equip item         1a [DWORD id] [WORD position] 00 00
-DWORD ItemID = 0;
-DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
-if(!Socket) break;
-Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
-if(!pGame) break;
-ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		break;
+		// 1a   9   Equip item         1a [DWORD id] [WORD position] 00 00
+		DWORD ItemID = 0;
+		DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
+		if(!Socket) break;
+		Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
+		if(!pGame) break;
+		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
+		if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 
-if(ThePacket[0]==0x16)
-ItemID = *(DWORD*)&ThePacket[5];
-else
-ItemID = *(DWORD*)&ThePacket[1];
-UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
+		if(ThePacket[0]==0x16)
+		ItemID = *(DWORD*)&ThePacket[5];
+		else
+		ItemID = *(DWORD*)&ThePacket[1];
+		UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 		if(ptItem)
 		{
 			if(!ptItem->pItemData->dwItemFlags.bPersonalized) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break;}
@@ -398,7 +404,7 @@ UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 			if(!isAnAdmin(ptClientData->AccountName))
 			if(ptClientData->AccountName!=ptItem->pItemData->szPlayerName) 
 			{
-			SendMsgToClient(ptClientData,ptClientData->LocaleID == 10 ? "Nie mozesz zalozyc przedmiotu, ktory nie nalezy do ciebie!" : "You cant equip item bound to other player!");
+			SendMsgToClient(ptClientData,ptClientData->LocaleID == LOC_PL ? "Nie mozesz zalozyc przedmiotu, ktory nie nalezy do ciebie!" : "You cant equip item bound to other player!");
 			*(DWORD*)&ThePacket[1]=0;
 			}
 		}
@@ -407,24 +413,24 @@ UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 	break;
 case 0x1F://STASH HACK
 	{
-//GC 78:   0x1F SwapContainerItem; SubjectUID: 28; ObjectUID: 29; X: 5; Y: 0
-//GC 78:   17   1f [1c 00 00 00] [1d 00 00 00] [05 00 00 00] [00 00 00 00]
-DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
-if(!Socket) break;
-Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
-if(!pGame) break;
-ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		//GC 78:   0x1F SwapContainerItem; SubjectUID: 28; ObjectUID: 29; X: 5; Y: 0
+		//GC 78:   17   1f [1c 00 00 00] [1d 00 00 00] [05 00 00 00] [00 00 00 00]
+		DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
+		if(!Socket) break;
+		Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
+		if(!pGame) break;
+		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
+		if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
 
-	int LvlNo = D2Funcs::D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
-	if(LvlNo == 0) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
-	int ActNo = D2Funcs::D2COMMON_GetActNoByLevelNo(LvlNo);
-	if(LvlNo == D2Funcs::D2COMMON_GetTownLevel(ActNo)) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
-	DWORD ItemID = *(DWORD*)&ThePacket[5];
-	UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,UNIT_ITEM);
-	if(!ptItem) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
-	if(ptItem->pItemData->InvPage==4) Log("HACK: %s (*%s) opened stash being out of town [STASH HACK]!",ptClientData->CharName,ptClientData->AccountName);
-	D2Funcs::D2GAME_LeaveCriticalSection(pGame); 
+		int LvlNo = D2Funcs::D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
+		if(LvlNo == 0) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		int ActNo = D2Funcs::D2COMMON_GetActNoByLevelNo(LvlNo);
+		if(LvlNo == D2Funcs::D2COMMON_GetTownLevel(ActNo)) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		DWORD ItemID = *(DWORD*)&ThePacket[5];
+		UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID, UNIT_ITEM);
+		if(!ptItem) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		if(ptItem->pItemData->InvPage == 4) Log("HACK: %s (*%s) opened stash being out of town [STASH HACK]!",ptClientData->CharName,ptClientData->AccountName);
+		D2Funcs::D2GAME_LeaveCriticalSection(pGame); 
 	}
 	break;
 }

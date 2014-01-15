@@ -18,6 +18,7 @@
 *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA   02111-1307   USA 
 */ 
 #include "stdafx.h"
+#include "RC4.h"
 
 void rc4_setup( unsigned char *s, unsigned char *key, int length )
 {

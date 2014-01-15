@@ -84,8 +84,8 @@ __declspec(naked) int nPlayersFormula()
 void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPartyExp)
 {
 	if(pPartyMember && !((pPartyMember->dwFlags) & 0x00010000))
-		if((pPartyMember->dwType == 1 && pPartyMember->dwMode != NPC_MODE_DEATH && pPartyMember->dwMode != NPC_MODE_DEAD) ||
-			(pPartyMember->dwType == 0 && pPartyMember->dwMode != PLAYER_MODE_DEATH && pPartyMember->dwMode != PLAYER_MODE_DEAD))
+		if((pPartyMember->dwType == UNIT_MONSTER && pPartyMember->dwMode != NPC_MODE_DEATH && pPartyMember->dwMode != NPC_MODE_DEAD) ||
+			(pPartyMember->dwType == UNIT_PLAYER && pPartyMember->dwMode != PLAYER_MODE_DEATH && pPartyMember->dwMode != PLAYER_MODE_DEAD))
 		{
 
 			UnitAny* pMonster = pnPartyExp->pMonster;
@@ -95,12 +95,12 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 			int pX = D2Funcs::D2GAME_GetUnitX(pPartyMember);
 			int pY = D2Funcs::D2GAME_GetUnitY(pPartyMember);
 
-			if(GetRange(pX,pY,mX,mY)>ExpRange) return;
+			if(GetRange(pX,pY,mX,mY)>ExpRange && ExpRange != -1) return;
 
 			int nMembers = pnPartyExp->nMembers;
 			if(nMembers>Max_Players)
 			{
-			D2ERROR("nMember>Max_Players")
+				D2ERROR("nMember>Max_Players")
 			}
 			pnPartyExp->pPartyMembers[nMembers] = pPartyMember;
 			pnPartyExp->PartyLevels[nMembers] =  D2Funcs::D2COMMON_GetStatSigned(pPartyMember,STAT_LEVEL,0);

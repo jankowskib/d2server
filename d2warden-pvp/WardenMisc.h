@@ -34,7 +34,6 @@ int TransQuality(string str);
 BYTE GetColorNameByAcc(string szAcc);
 DWORD TransCode(const char* ptCode);
 char* TransCode(DWORD dwCode);
-int round(double a);
 void KickPlayer(ClientData* pClient);
 void KickPlayer(DWORD ClientID);
 void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue);

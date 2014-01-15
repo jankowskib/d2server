@@ -17,6 +17,12 @@
  * limitations under the License.
  * ========================================================== */
 
+enum D2Langs
+{
+	LOC_EN = 0,
+	LOC_PL = 10
+};
+
 enum ExSounds
 {
 STAND_SELECT =		2,

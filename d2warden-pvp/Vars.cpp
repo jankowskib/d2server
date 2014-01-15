@@ -43,6 +43,7 @@ BYTE AllowTourMode;
 BYTE AllowVanilla;
 BYTE AllowGU;
 BYTE AllowHB;
+BYTE DisableHostileDelay;
 BYTE MoveToTown;
 BYTE DropEarGold;
 BYTE StrBugFix;

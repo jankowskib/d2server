@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ========================================================== */
-//#pragma optimize ("", off)
+#pragma optimize ("", off)
 
 #ifdef _DEFINE_PTRS
 enum {DLLNO_D2CLIENT, DLLNO_D2COMMON, DLLNO_D2GFX, DLLNO_D2LANG, DLLNO_D2WIN, DLLNO_D2NET, DLLNO_D2GAME, DLLNO_D2LAUNCH, DLLNO_FOG, DLLNO_BNCLIENT, DLLNO_STORM, DLLNO_D2CMP, DLLNO_D2MULTI};
@@ -100,7 +100,7 @@ D2FUNCPTR(D2COMMON, AllocInventory, Inventory* __stdcall, (void *pMemPool, UnitA
 D2FUNCPTR(D2COMMON, AllocTradeInventory, int __stdcall, (void *pMemPool, UnitAny *pPlayer, UnitAny *pTrader, BOOL *bNoRoom), -10339)
 D2FUNCPTR(D2COMMON, CreateItemFromStream, int __stdcall, (), -11024) // dodaj argumenty
 D2FUNCPTR(D2COMMON, GetItemIdx, ItemsTxt* __stdcall, (DWORD ItemCode, int * Idx), -10322)
-D2FUNCPTR(D2COMMON, GetItemTxt, ItemsTxt* __stdcall, (int ItemNo), 0x42F60)
+D2FUNCPTR(D2COMMON, GetItemTxt, ItemsTxt* __stdcall, (int ItemNo), -10262)
 D2FUNCPTR(D2COMMON, GetItemCode, DWORD __stdcall, (UnitAny* ptItem), -10360)
 D2FUNCPTR(D2COMMON, SetItemQuality, void __stdcall, (UnitAny* ptItem, int iQual), -10297)
 D2FUNCPTR(D2COMMON, SetBeginFlag, void __stdcall, (UnitAny* ptPlayer, int HowSet), -10948)
@@ -316,20 +316,9 @@ D2VARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11170)
 #define _D2PTRS_END D2Vars::D2COMMON_sgptDataTables
 //087CB0
 
-#define ASSERT(e) if (e == 0) { Log("Critical error in line %d, plik '%s' , function: '%s'.",__LINE__,__FILE__,__FUNCTION__); exit(-1); }
-#define D2ERROR(s) { Log("Critical error '%s' in line %d, plik '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
-
-#ifdef _DEBUG
-#define DEBUGMSG(s,...) Debug((s));
-#else
-#define DEBUGMSG(s,...) {}
-#endif
-#define LOCK   {/*Debug("--> CS : %d : %s",__LINE__,__FUNCTION__); */EnterCriticalSection(&hWarden.WardenLock);}
-#define UNLOCK {/*Debug("<-- CS : %d : %s",__LINE__,__FUNCTION__); */LeaveCriticalSection(&hWarden.WardenLock);}
-
 #undef D2FUNCPTR
 #undef D2ASMPTR
 #undef D2VARPTR
 
-//#pragma optimize ("", on)
+#pragma optimize ("", on)
 

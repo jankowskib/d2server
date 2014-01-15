@@ -13,7 +13,7 @@ IF NOT EXIST Resource.res D:\MASM32\Bin\Rc.exe /iD:\MASM32\Include Resource.rc
 IF EXIST 1.obj D:\MASM32\Bin\Link.exe /SUBSYSTEM:Windows /LIBPATH:D:\MASM32\Lib 1.obj Resource.res 
 
 :_Done:
-IF EXIST 1.obj DEL 1.obj
+REM IF EXIST 1.obj DEL 1.obj
 GOTO :_End
 
 :_NoMasm32

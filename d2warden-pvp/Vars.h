@@ -34,6 +34,7 @@ extern int ExpRange;
 extern int DmgRekord;
 extern string DmgOwner;
 
+extern BYTE DisableHostileDelay;
 extern BYTE MoveToTown;
 extern BYTE DropEarGold;
 extern BYTE StrBugFix;

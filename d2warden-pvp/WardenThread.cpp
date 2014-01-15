@@ -19,7 +19,11 @@
 
 #include "stdafx.h"
 #define _DEFINE_PTRS
-#include "D2Ptrs.h"
+#ifdef VER_113D
+#include "D2Ptrs_113D.h"
+#elif defined VER_111B
+#include "D2Ptrs_111B.h"
+#endif
 
 #include "D2Warden.h"
 #include "process.h"
@@ -31,17 +35,25 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 {
 	if(!InitializeCriticalSectionAndSpinCount(&hWarden.WardenLock, 4000))
 	{
+#ifdef _ENGLISH_LOGS
+		LogNoLock("No memory to allocate critical section!");
+#else
 		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
+#endif
 		return -1;
 	}
 	if(!InitializeCriticalSectionAndSpinCount(&LOG_CS, 4000))
 	{
 		DeleteCriticalSection(&hWarden.WardenLock);
-		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
+#ifdef _ENGLISH_LOGS
+				LogNoLock("No memory to allocate critical section!");
+#else
+				LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
+#endif
 		return -1;
 	}
 
-	//DefineOffsets();
+	DefineOffsets();
 
 	Warden_Init();
 	if (Warden_Enable == false)
@@ -94,14 +106,22 @@ case DLL_PROCESS_ATTACH:
 	hEvent = CreateEvent(NULL, TRUE, FALSE, "WARDEN_END");
 	if(!hEvent)
 		{ 
+#ifdef _ENGLISH_LOGS
+		LogNoLock("Couldn't initialize event. Error id: %d!", errno); 
+#else
 		LogNoLock("Nie moge zainicjowac eventu. Blad %d!", errno); 
+#endif
 		return FALSE;
 		}
 
 	if(!WardenThread) WardenThread = (HANDLE)_beginthreadex(0,0,&d2warden_thread,0,0,&Id);
 	if(!WardenThread)
 		{ 
-		LogNoLock("Nie moge zainicjowac watku. Blad %d!", errno); 
+#ifdef _ENGLISH_LOGS
+		LogNoLock("Couldn't initialize thread. Error id: %d!", errno);
+#else
+		LogNoLock("Nie moge zainicjowac thread. Blad %d!", errno);
+#endif
 		return FALSE;
 		}
 	}

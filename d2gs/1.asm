@@ -71,15 +71,15 @@ next_game_increase:
 MyCleanupHandler endp
 
 ; OK, you can add your stuff here...
-aMyLogo db 'Version 1.11b patch build 45 by marsgod. Edited by Lolet 2012-02-08',0
-aD2Server db 'D2Server1.11b',0
-D2COMMON_10800_GetpPlayerDataFromUnit	dd 0
-D2COMMON_11003_GetInvItemByBodyLoc	dd 0
-D2COMMON_10743_GetRoom1	dd 0
-D2COMMON_10604_GetUnitState	dd 0
-D2COMMON_10061_GetUnitStat	dd 0
-D2Common_10572_ChangeCurrentMode	dd 0
-D2Common_10590_SetStat dd 0
+aMyLogo db 'Version 1.13d patch build 1 by lolet. Based on original work by marsgod for patch 1.11b.',0
+aD2Server db 'D2Server1.13d',0 
+D2COMMON_11103_GetpPlayerDataFromUnit	dd 0 ;1.13d
+D2COMMON_10292_GetInvItemByBodyLoc	dd 0 ;1.13d
+D2COMMON_10632_GetRoom1	dd 0 ; 1.13d
+D2COMMON_10706_GetUnitState	dd 0 ;1.13d
+D2COMMON_10550_GetUnitStat	dd 0 ;1.13d
+D2Common_10193_ChangeCurrentMode	dd 0 ; 1.13d
+D2Common_10590_SetStat dd 0 ; 1.13d fo' so
 D2GAME_DestoryAEvent dd 0
 
 ;internal useage...
@@ -298,8 +298,6 @@ MyPatchInit proc
 	call    eax
 	add     esp, 8
 	popad
-
-
 	push ecx
 	
 	; Patch the Fog.dll 6FF65CD0h , this should be done before D2GSPreInit!
@@ -367,50 +365,50 @@ MyPatchInit proc
 	call D2GSPreInit
 	push eax
 	
-	push 10800
+	push 11103
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2COMMON_10800_GetpPlayerDataFromUnit,eax
+	mov D2COMMON_11103_GetpPlayerDataFromUnit,eax
 
-	push 11003
+	push 10292
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2COMMON_11003_GetInvItemByBodyLoc,eax
+	mov D2COMMON_10292_GetInvItemByBodyLoc,eax
 
-	push 10604
+	push 10706
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2COMMON_10604_GetUnitState,eax
+	mov D2COMMON_10706_GetUnitState,eax
 
-	push 10061
+	push 10550
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2COMMON_10061_GetUnitStat,eax
+	mov D2COMMON_10550_GetUnitStat,eax
 
-	push 10572
+	push 10193
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2Common_10572_ChangeCurrentMode,eax
+	mov D2Common_10193_ChangeCurrentMode,eax
 
 	push 10590
 	mov eax,D2COMMON
@@ -421,14 +419,14 @@ MyPatchInit proc
 	call eax; GetProcAddr
 	mov D2Common_10590_SetStat,eax
 
-	push 10743
+	push 10632
 	mov eax,D2COMMON
 	mov eax,[eax]
 	push eax
 	mov eax,6800B03Ch
 	mov eax,[eax]
 	call eax; GetProcAddr
-	mov D2COMMON_10743_GetRoom1,eax
+	mov D2COMMON_10632_GetRoom1,eax
 
 ; Call D2Game
 ;	mov ecx, dword_func00
@@ -581,6 +579,33 @@ MyPatchInit2 proc
 	push 68001054h
 	ret
 continue:
+	;将CallBack函数设置为NULL
+	push ebx
+	mov eax,680135A0h
+	xor ebx,ebx
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	add eax,4
+	mov [eax],ebx
+	mov eax,680135B4h
+	mov ebx,68001A90h	;nullsub_1
+	mov [eax],ebx
+	pop ebx
 	call Patch_sgptDataTables
 
 over:	
@@ -598,9 +623,14 @@ D2GamePatch proc
 	push 0
 	call UnProtectDLL2
 	
+	; 1.13 CompareFileTime workaround
+	mov	ecx,esi
+	add	ecx,024F35h		;6FC44F35 7E14
+	mov	ax,9090h
+	mov	word ptr[ecx],ax
 	; for warden patch 0x68,0x66 packet handler
 	;mov ecx,esi
-	;add ecx,0FAAF0h		; packet 0x66 handler
+	;add ecx,0FA9C8h		; packet 0x66 handler .113d
 	;mov eax,offset MyPacket0X66Handler
 	;mov [ecx],eax
 	
@@ -609,7 +639,7 @@ D2GamePatch proc
 ;68022800
 ;D2Game.dll	0X10AD9	DD9EFFFF	231D3FF8	0 #6FC30AD9 = Patch Call Offset(x-6FC30ADD)
 	mov ecx,esi
-	add ecx,10AD9h
+	add ecx,1602Bh ; 1.13d
 	mov eax,offset TPCrashBugPatch
 	sub eax,ecx
 	sub eax,4
@@ -619,31 +649,33 @@ D2GamePatch proc
 ;When the item remove from pet or player, the aura event is not removed from the unit.
 ;D2Game.dll	0X7604C	6A098BC7E80BAEFFFF	FF1510100268909090	0 #6FC9604C(7604C) remove the aura event from unit
 ;call    DestroyAuraEventHandler->call NewDualAuraPatch
-	mov ecx,esi
-	add ecx,7604Ch
-	mov eax,101015FFh
-	mov [ecx],eax
-	add ecx,4
-	mov eax,90906802h
-	mov [ecx],eax
-	add ecx,4
-	mov eax,245C8B90h
-	mov [ecx],eax
+; TODO: Add NewDualAuraPatch for 1.13c
+;	mov ecx,esi
+;	add ecx,7604Ch
+;	mov eax,101015FFh
+;	mov [ecx],eax
+;	add ecx,4
+;	mov eax,90906802h
+;	mov [ecx],eax
+;	add ecx,4
+;	mov eax,245C8B90h
+;	mov [ecx],eax
 
 ;Missile_DO_diabwallmaker Patch
 ;D2Game.dll	0X104B80	60F9CB6F	F0DFCB6F	3 #6FD24B80(11C4B80) replace Missile_DO_diabwallmaker with Missile_DO_01
 	mov ecx,esi
-	add ecx,104B80h
-	mov eax,9DFF0h
+	add ecx, 108448h ; 1.13d, was 104B80h
+	mov eax, 434A0h ; 1.13d, was 9DFF0h
 	add eax,esi
 	mov [ecx],eax
 
 ;Carry1 Trade Patch(for USC\ULC\UGC trade), skip the carry1 check in trade
 ;D2Game.dll	0X36D85	740A	EB0A	0 #6FC56D85(10F6D85)
-	mov ecx,esi
-	add ecx,36D84h
-	mov eax,0C70AEBC0h
-	mov [ecx],eax
+;	mov ecx,esi
+;	add ecx,36D84h
+;	mov eax,0C70AEBC0h
+;	mov [ecx],eax
+
 
 
 	mov eax,EnableExpGlitchFix
@@ -661,7 +693,7 @@ D2GamePatch proc
 	
 	;7E0AC
 	mov ecx,esi
-	add ecx,7E0ADh
+	add ecx, 08A42Dh ; 1.13d 7E0ADh
 	sub ecx,eax
 	
 	;ecx has the start address of ExpGlitchFix
@@ -669,14 +701,14 @@ D2GamePatch proc
 	
 	; patch first jnz at 6FC9E021
 	mov eax,esi
-	add eax,7E021h
+	add eax, 08A3A1h ; 1.13d 7E021h
 	sub ecx,eax
 	dec ecx
 	mov byte ptr[eax],cl
 	
 	; patch last jl at 6FC9E0CA
 	mov eax,esi
-	add eax,7E0CAh
+	add eax, 08A44Ah ; .1.13d 7E0CAh
 	mov byte ptr[eax],0D0h
 
 ;transfer ExpGlitchFix to target
@@ -693,7 +725,7 @@ no_EnableExpGlitchFix:
 	jz no_EnableMeleeHireableAI
 ;D2Game.dll	0X67F99	MeleePetAIFix	0 #6FC87F99
 	mov ecx,esi
-	add ecx,67F99h
+	add ecx, 0B0309h; 1.3d 67F99h
 	mov byte ptr[ecx],0E8h
 	inc ecx
 	mov eax,offset MeleePetAIFix
@@ -708,7 +740,7 @@ no_EnableMeleeHireableAI:
 	jz no_EnableNeroPetAI
 ;D2Game.dll	0X6E98C	NeroPetAIFix	0 #6FC8E98C
 	mov ecx,esi
-	add ecx,6E98Ch
+	add ecx, 0AFBCCh ; 1.13d 6E98Ch
 	mov byte ptr[ecx],0E8h
 	inc ecx
 	mov eax,offset NeroPetAIFix
@@ -723,7 +755,7 @@ no_EnableNeroPetAI:
 	jz no_EnableUnicodeCharName
 ;D2Game.dll	0XE47B5	UnicodeCharNameCheck	0 #6FD047B5
 	mov ecx,esi
-	add ecx,0E47B5h
+	add ecx, 0BC4C5h ; 1.13d 0E47B5h
 	mov eax,offset UnicodeCharNameCheck
 	sub eax,ecx
 	sub eax,4
@@ -737,7 +769,7 @@ no_EnableNeroPetAI:
 	call UnProtectDLL
 	
 	mov ecx,esi
-	add ecx,76B27h
+	add ecx, 046437h; 76B27h
 	mov eax,8306B60Fh;  0FB60683
 	mov [ecx],eax
 	add ecx,4
@@ -748,7 +780,8 @@ no_EnableNeroPetAI:
 	mov [ecx],eax
 	
 	mov ecx,esi
-	add ecx,74744h
+	add ecx, 0447B4h ; 1.13d 74744h
+	
 	mov eax,8306B60Fh;  0FB60683
 	mov [ecx],eax
 	add ecx,4
@@ -758,6 +791,16 @@ no_EnableNeroPetAI:
 	mov eax,83909090h;  90909083
 	mov [ecx],eax
 	
+	mov ecx,esi
+	add ecx,04480Bh	
+	mov eax,8306B60Fh;  0FB60683
+	mov [ecx],eax
+	add ecx,4
+	mov eax,90907FE0h;  E07F9090
+	mov [ecx],eax
+	add ecx,4
+	mov eax,83909090h;  90909083
+	mov [ecx],eax
 	push esi
 	push 0
 	call ProtectDLL
@@ -777,7 +820,8 @@ no_EnableUnicodeCharName:
 
 ;D2Game.dll	0XD20F4	CalculateTreasureClassNoDropPatch	0 #6FCF20F4
 	mov ecx,esi
-	add ecx,0D20F4h
+	add ecx, 0E41C4h ; 1.13d 0D20F4h
+	
 	mov byte ptr[ecx],0E8h
 	inc ecx
 	mov eax,offset CalculateTreasureClassNoDropPatch
@@ -794,9 +838,9 @@ no_EnablePreCalculateTCNoDropTbl:
 	test eax,eax
 	jz no_EnableEthSocketBugFix
 
-;D2Game.dll	0X37910	call    D2Common_10572_ChangeCurrentMode->call EthBugFix	0 #6FC57910
+;D2Game.dll	0X37910	call    D2Common_10193_ChangeCurrentMode->call EthBugFix	0 #6FC57910
 	mov ecx,esi
-	add ecx,37910h
+	add ecx, 097250h; 1.13d 37910h
 	mov eax,offset EthBugFix
 	sub eax,ecx
 	sub eax,4
@@ -810,7 +854,7 @@ no_EnableEthSocketBugFix:
 
 ;D2Game.dll	0X3F3B1	call    GetPlayerCurrentQuestRecord->call MFBugFix	0 #6FC5F3B1
 	mov ecx,esi
-	add ecx,3F3B1h
+	add ecx, 087571h ; 1.13d 3F3B1h
 	mov eax,offset MFBugFix
 	sub eax,ecx
 	sub eax,4
@@ -838,21 +882,21 @@ no_DisableBugMF:
 ;openPandPortal=68021BD0
 ;D2Game.dll	0XFA7B8	2049C56F	D01B0268 1 #6FD1A7B8(11BA7B8)
 	mov ecx,esi
-	add ecx,0FA7B8h
+	add ecx, 0FA2C4h; 1.13d 0FA7B8h
 	mov eax,offset openPandPortal
 	mov [ecx],eax
 
 ;openPandFinalPortal=68021C78
 ;D2Game.dll	0XFA7BC	1049C56F	781C0268 1 #6FD1A7BC(11BA7BC)
 	mov ecx,esi
-	add ecx,0FA7BCh
+	add ecx, 0FA2C8h; 1.13d 0FA7BCh
 	mov eax,offset openPandFinalPortal
 	mov [ecx],eax
 
 ;SpawnUberBossOff=68021CF0 ; Hook
 ;D2Game.dll	0XE6B52 6ACAF3FF	F01C0268 20  #6FD06B52(11A6B52) = Patch Call Offset
 	mov ecx,esi
-	add ecx,0E6B52h
+	add ecx, 0BE9AAh ;  1.13d 0E6B52h
 	mov eax,offset SpawnUberBoss
 	sub eax,ecx
 	sub eax,4
@@ -864,8 +908,8 @@ no_DisableBugMF:
 ;UberBaal AI
 ;D2Game.dll	0X10F5E8	00A3C46F	80BCC46F 3 #6FD2F5E8(11CF5E8) nullsub->UberBaal_AI(6FC4BC80)
 	mov ecx,esi
-	add ecx,10F5E8h
-	mov eax,2BC80h
+	add ecx,010F618h ; 1.13d 10F5E8h
+	mov eax,0C8850h ; 1.13d 2BC80h
 	add eax,esi
 	mov [ecx],eax
 
@@ -873,11 +917,11 @@ no_DisableBugMF:
 ;D2Game.dll	0X10F5F8	702DCF6F	8F200268 1 #6FD2F5F8 nullsub->UberMephisto_AI(6802208F)
 ;D2Game.dll	0X10F5F4	00000000	5C200268 0 #6FD2F5F4 0->UberMephisto_AI0(6802205C)
 	mov ecx,esi
-	add ecx,10F5F8h
+	add ecx, 010F628h ; 10F5F8h
 	mov eax,offset UberMephisto_AI
 	mov [ecx],eax
 	mov ecx,esi
-	add ecx,10F5F4h
+	add ecx, 010F624h; 10F5F4h
 	mov eax,offset UberMephisto_AI0
 	mov [ecx],eax
 
@@ -885,11 +929,11 @@ no_DisableBugMF:
 ;D2Game.dll	0X10F608	60FEC96F	DC200268 1 #6FD2F608 nullsub->UberDiablo_AI(680220DC)
 ;D2Game.dll	0X10F604	00000000	29200268 0 #6FD2F604 0->UberDiablo_AI0(68022029)
 	mov ecx,esi
-	add ecx,10F608h
+	add ecx, 010F638h; 10F608h
 	mov eax,offset UberDiablo_AI
 	mov [ecx],eax
 	mov ecx,esi
-	add ecx,10F604h
+	add ecx, 010F634h ;10F604h
 	mov eax,offset UberDiablo_AI0
 	mov [ecx],eax
 
@@ -1543,7 +1587,7 @@ stub_func07 proc
 	cmp     dword ptr [ecx], 0
 	jnz     short loc_6FCBC2F8
 	push    ecx
-	call    D2COMMON_10800_GetpPlayerDataFromUnit
+	call    D2COMMON_11103_GetpPlayerDataFromUnit
 	mov     eax, [eax+9Ch]
 	retn    4
 loc_6FCBC2F8:
@@ -1984,7 +2028,7 @@ again:							; 获取PET身上所有装备的UID，并保存到一个临时数组中
 	mov edx,[edi+60h]	; ptPet->Inv
 	push ebx
 	push edx
-	call D2COMMON_11003_GetInvItemByBodyLoc
+	call D2COMMON_10292_GetInvItemByBodyLoc
 	test eax,eax
 	jz check_next_loc
 	mov eax,[eax+0Ch]
@@ -2033,7 +2077,7 @@ my_over1:
 	popad
 	
 over:
-	ret
+	retn 4
 
 NewDualAuraPatch endp
 
@@ -2148,7 +2192,7 @@ next_inv_item1:
 	push edi					; body location
 	mov eax,[ebp+60h]	; Player's Inventory
 	push eax
-	call D2COMMON_11003_GetInvItemByBodyLoc
+	call D2COMMON_10292_GetInvItemByBodyLoc
 	test eax,eax
 	jz try_next_item1
 	cmp ebx,[eax+0Ch]	; item->nUnitId
@@ -2193,7 +2237,7 @@ next_inv_item2:
 	push edi					; body location
 	mov eax,[ebp+60h]	; Player's Inventory
 	push eax
-	call D2COMMON_11003_GetInvItemByBodyLoc
+	call D2COMMON_10292_GetInvItemByBodyLoc
 	test eax,eax
 	jz try_next_item2
 	cmp ebx,[eax+0Ch]	; item->nUnitId
@@ -2231,7 +2275,7 @@ TPCrashBugPatch proc
 	; save the retaddr
 	pop esi		; retaddr
 	
-	call D2COMMON_10743_GetRoom1
+	call D2COMMON_10632_GetRoom1
 	push esi	; retaddr
 	push ebx
 	push ecx
@@ -2269,7 +2313,7 @@ fail_over:
 	pop ecx
 	pop ebx
 	pop eax	;	stack fix: retaddr
-	mov eax,D2GAME_0X10B1B		; fail, destroy the town portal already created
+	mov eax,D2GAME_0X1606D ; 1.13d		; fail, destroy the town portal already created
 	push eax	; new retaddr
 	xor eax,eax
 	ret
@@ -2372,7 +2416,7 @@ MeleePetAIFix proc
 	
 	push 55		; STATE_IRONMAIDEN
 	push esi
-	call D2COMMON_10604_GetUnitState
+	call D2COMMON_10706_GetUnitState
 	test eax,eax
 	mov  edi,62h
 	jz over
@@ -2387,7 +2431,7 @@ NeroPetAIFix proc
 	
 	push 55		; STATE_IRONMAIDEN
 	push ebx
-	call D2COMMON_10604_GetUnitState
+	call D2COMMON_10706_GetUnitState
 	test eax,eax
 	mov  eax,64h
 	jz over
@@ -2870,7 +2914,7 @@ d2c:
 	pop eax
 	mov eax,D2GAME
 	mov eax,[eax]
-	add eax,0D21BFh
+	add eax, 0E428Fh ; 1.13d 0D21BFh
 	push eax
 	ret
 orig_code:
@@ -2896,7 +2940,7 @@ Ethereal_Item:
 	push 0
 	push 15h	;mindamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2909,7 +2953,7 @@ Ethereal_Item:
 	push 0
 	push 16h	;maxdamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2922,7 +2966,7 @@ Ethereal_Item:
 	push 0
 	push 17h	;secondary_mindamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2935,7 +2979,7 @@ Ethereal_Item:
 	push 0
 	push 18h	;secondary_maxdamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2948,7 +2992,7 @@ Ethereal_Item:
 	push 0
 	push 9Fh	;item_throw_mindamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2961,7 +3005,7 @@ Ethereal_Item:
 	push 0
 	push 0A0h	;item_throw_maxdamage
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2974,7 +3018,7 @@ Ethereal_Item:
 	push 0
 	push 1Fh	;armorclass
 	push edi
-	call D2COMMON_10061_GetUnitStat
+	call D2COMMON_10550_GetUnitStat
 	lea eax,[eax+eax]
 	cdq
 	div ebx
@@ -2987,7 +3031,7 @@ Ethereal_Item:
 	popad
 	
 orig_code:
-	mov eax,D2Common_10572_ChangeCurrentMode
+	mov eax,D2Common_10193_ChangeCurrentMode
 	jmp eax
 EthBugFix endp
 
@@ -3055,7 +3099,7 @@ MyCheckSpawnDiabloClone proc
                  test eax,eax
                  jz not_check_level
                  push    edi
-                 call    D2COMMON_11021	; Get Level ID , 1 arg
+                 call    D2COMMON_10691_GetLevelIdFromRoom  ; 11021	; Get Level ID , 1 arg
                  cmp eax,108	; 不能在混沌避难所创建DiabloClone
                  jz loc_6800575C
                  cmp eax,120	; 不能在亚瑞特山脉巅峰创建DiabloClone

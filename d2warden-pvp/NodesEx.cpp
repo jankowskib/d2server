@@ -53,7 +53,7 @@ int NEU_NODE = Max_Players + 3;
                 ptUnit->dwNodeIdx = z;
               }
 			  else
-				Log("Brak pamieci na alokacje Node'a");
+				Log("No memory to allocate an node");
           }
 		  else
 		  {
@@ -197,7 +197,7 @@ int NEU_NODE = Max_Players + 3;
 			  }
 			  else
 			  {
-					Log("NodesEx: Brak pamieci na alokacje Node'a");
+					Log("NodesEx: No memory to allocate an node");
 			  }
 }
 

@@ -100,12 +100,6 @@
     <ClInclude Include="D2Handlers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D2Ptrs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D2Structs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="D2Stubs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -173,6 +167,24 @@
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
     <ClInclude Include="Offset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Ptrs_111B.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Structs_111B.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Ptrs_113D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Structs_113D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Patches_111B.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Patches_113D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

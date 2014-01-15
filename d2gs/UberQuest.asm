@@ -20,7 +20,7 @@
 
 ;D2 export entrys
 D2COMMON_10056_GetMyPosition dd 0
-D2COMMON_11021 dd 0
+D2COMMON_10691_GetLevelIdFromRoom dd 0
 D2COMMON_10933 dd 0
 D2COMMON_10491 dd 0
 D2COMMON_10572 dd 0
@@ -35,7 +35,7 @@ D2GAME_0XEC7E0_SpawnSuperUnique dd 0
 D2GAME_0X1DF0 dd 0
 D2GAME_0XC09E0 dd 0
 D2GAME_0X109F0 dd 0
-D2GAME_0X10B1B dd 0
+D2GAME_0X1606D dd 0 ; 1.13d
 D2GAME_RemoveMonsterCorpse dd 0
 
 D2GAME_Baal_AI dd 0
@@ -49,7 +49,7 @@ D2GAME_SpawnAMonster dd 0
 D2GAME_sgptDataTables dd 0
 D2GAME_GetMonstatsTxtRec dd 0
 
-D2COMMON_10445_GetLevelRec dd 0
+D2COMMON_10142_GetLevelRec dd 0
 
 
 ; Every Game should call InitUberQuestState once and only once!
@@ -308,7 +308,7 @@ arg_4           = dword ptr  8
                 push    edi
                 mov     edi, [esp+10h+4]
                 push    edi
-                call    D2COMMON_11021	; Get Level ID , 1 arg
+                call    D2COMMON_10691_GetLevelIdFromRoom	; Get Level ID , 1 arg
                 mov     esi, [esp+0Ch+4]	; ptGame
                 add     eax, 0FFFFFF7Bh ; eax=eax-85h
                 cmp     eax, 3
@@ -497,13 +497,13 @@ PortalConditionCheck proc
                 push    edi
                 call    D2COMMON_10933
                 push    eax
-                call    D2COMMON_11021
+                call    D2COMMON_10691_GetLevelIdFromRoom
                 cmp     eax, 6Dh
                 jnz     short over
 
 ; Check player finished a5q3?
 								push		edi
-								call		D2COMMON_10800_GetpPlayerDataFromUnit
+								call		D2COMMON_11103_GetpPlayerDataFromUnit
 								movzx   ecx, byte ptr [esi+6Dh] ; ÄÑ¶È£¬hell=2   
 								mov     eax, [eax+ecx*4+10h]	; Player's Quest Structure
 								push    0
@@ -543,7 +543,7 @@ arg_8           = dword ptr  0Ch
                 call    D2COMMON_10933
                 mov     esi, eax
                 push    esi
-                call    D2COMMON_11021
+                call    D2COMMON_10691_GetLevelIdFromRoom
                 cmp     eax, 6Dh
                 jnz     short loc_10018A97
                 lea     eax, [esp+0Ch]
@@ -1161,7 +1161,7 @@ Patch_sgptDataTables proc
 	push ecx
 
 	push 134 ; get the level 134 record
-	call D2COMMON_10445_GetLevelRec
+	call D2COMMON_10142_GetLevelRec
 	test eax,eax
 	jz over
 	mov cx,0FFh
@@ -1225,10 +1225,10 @@ UberQuestPatchInit proc
 	call ebx; GetProcAddr
 	mov D2COMMON_10056_GetMyPosition,eax
 	
-	push 11021
+	push 10691
 	push esi
 	call ebx; GetProcAddr
-	mov D2COMMON_11021,eax
+	mov D2COMMON_10691_GetLevelIdFromRoom,eax
 	
 	push 10491
 	push esi
@@ -1270,10 +1270,10 @@ UberQuestPatchInit proc
 	call ebx; GetProcAddr
 	mov D2Common_10930_SetQuestFlag,eax
 	
-	push 10445
+	push 10142
 	push esi
 	call ebx; GetProcAddr
-	mov D2COMMON_10445_GetLevelRec,eax
+	mov D2COMMON_10142_GetLevelRec,eax ;1.13d
 	
 	mov eax,D2GAME
 	mov edx,[eax]
@@ -1331,7 +1331,7 @@ UberQuestPatchInit proc
 	mov D2GAME_SpawnAMonster,eax ; 6FD0F870
 
 	mov eax,edx
-	add eax,0F8288h
+	add eax,00F8260h ; 1.13d 0F8288h
 	mov D2GAME_sgptDataTables,eax ; 6FD18288
 	
 	mov eax,edx
@@ -1343,8 +1343,8 @@ UberQuestPatchInit proc
 	mov D2GAME_DestoryAEvent,eax ; 6FC90C50
 	
 	mov eax,edx
-	add eax,10B1Bh
-	mov D2GAME_0X10B1B,eax ; 6FC30B1B
+	add eax,1606Dh ; 1.13dh
+	mov D2GAME_0X1606D,eax ; 6FC30B1B 1.13d
 	
 	
 	
