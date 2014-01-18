@@ -71,7 +71,7 @@ next_game_increase:
 MyCleanupHandler endp
 
 ; OK, you can add your stuff here...
-aMyLogo db 'Version 1.13d patch build 1 by lolet. Based on original work by marsgod for patch 1.11b.',0
+aMyLogo db 'Version 1.13d patch build 2 by lolet. Based on original work by marsgod for patch 1.11b.',0
 aD2Server db 'D2Server1.13d',0 
 D2COMMON_11103_GetpPlayerDataFromUnit	dd 0 ;1.13d
 D2COMMON_10292_GetInvItemByBodyLoc	dd 0 ;1.13d
@@ -80,7 +80,7 @@ D2COMMON_10706_GetUnitState	dd 0 ;1.13d
 D2COMMON_10550_GetUnitStat	dd 0 ;1.13d
 D2Common_10193_ChangeCurrentMode	dd 0 ; 1.13d
 D2Common_10590_SetStat dd 0 ; 1.13d fo' so
-D2GAME_DestoryAEvent dd 0
+D2GAME_0C04F0_DeleteTimer dd 0
 
 ;internal useage...
 cb_leavegame_orig dd 68007310h ; +04
@@ -638,12 +638,12 @@ D2GamePatch proc
 ;Creating a town portal when corpses or other objects entirely fill the area where the portal will appear in town will no longer crash the game. 
 ;68022800
 ;D2Game.dll	0X10AD9	DD9EFFFF	231D3FF8	0 #6FC30AD9 = Patch Call Offset(x-6FC30ADD)
-	mov ecx,esi
-	add ecx,1602Bh ; 1.13d
-	mov eax,offset TPCrashBugPatch
-	sub eax,ecx
-	sub eax,4
-	mov [ecx],eax
+;	mov ecx,esi
+;	add ecx,1602Bh ; 1.13d
+;	mov eax,offset TPCrashBugPatch
+;	sub eax,ecx
+;	sub eax,4
+;	mov [ecx],eax
 
 ;Dual Aura Bug Patch(This include the PET & Player)
 ;When the item remove from pet or player, the aura event is not removed from the unit.
@@ -1482,7 +1482,7 @@ stub_func02 proc
 ;ecx=ClientID+ptPacket
 ;edx=packet_len
 	sub esp,4
-	mov [esp],ecx	;save the ptr
+	mov [esp], ecx	;save the ptr
 	cmp edx,25h
 	jz check_0x68
 not_0x68:
@@ -2062,7 +2062,7 @@ again_uid:
 	pushad				; 非法光环，清除掉
 	mov edi,ecx
 	mov eax,esi
-	call D2GAME_DestoryAEvent		; eax=the event edi=ptGame
+	call D2GAME_0C04F0_DeleteTimer		; eax=the event edi=ptGame
 	popad
 ;	mov esi,[edi+0DCh] ; Get the Event chain from pet unit
 ;	test esi,esi
@@ -2104,7 +2104,7 @@ again_prev:
 	jnz next_event_prev
 	pushad
 	mov eax,esi
-	call D2GAME_DestoryAEvent		; eax=the event edi=ptGame
+	call D2GAME_0C04F0_DeleteTimer		; eax=the event edi=ptGame
 	popad
 	mov esi,[ebp+0DCh] ; Get the Event chain from pet unit
 	test esi,esi
@@ -2127,7 +2127,7 @@ again_next:
 	jnz next_event_next
 	pushad
 	mov eax,esi
-	call D2GAME_DestoryAEvent		; eax=the event edi=ptGame
+	call D2GAME_0C04F0_DeleteTimer		; eax=the event edi=ptGame
 	popad
 	mov esi,[ebp+0DCh] ; Get the Event chain from pet unit
 	test esi,esi
@@ -2210,7 +2210,7 @@ found_aura_item1:
 remove_aura1:	
 	pushad
 	mov eax,esi
-	call D2GAME_DestoryAEvent		; eax=the event edi=ptGame
+	call D2GAME_0C04F0_DeleteTimer		; eax=the event edi=ptGame
 	popad
 	mov esi,[ebp+0DCh] ; Get the Event chain from player unit
 	test esi,esi
@@ -2255,7 +2255,7 @@ found_aura_item2:
 remove_aura2:	
 	pushad
 	mov eax,esi
-	call D2GAME_DestoryAEvent		; eax=the event edi=ptGame
+	call D2GAME_0C04F0_DeleteTimer		; eax=the event edi=ptGame
 	popad
 	mov esi,[ebp+0DCh] ; Get the Event chain from player unit
 	test esi,esi
@@ -2288,17 +2288,17 @@ TPCrashBugPatch proc
 	mov esi,eax
 	test esi,esi
 	jz fail_over
-	mov eax,[esi+8]	; Get room XStart
+	mov eax,[esi+4Ch]	; Get room XStart
 	cmp ecx,eax
 	jl fail_over		; X<XStart, fail
-	mov ebx,[esi+10h]	; Get room XSize
+	mov ebx,[esi+54h]	; Get room XSize
 	add ebx,eax				; room XEnd
 	cmp ecx,ebx				; X>XEnd, fail
 	jge fail_over
-	mov eax,[esi+0Ch]	; Get room YStart
+	mov eax,[esi+50h]	; Get room YStart
 	cmp edx,eax
 	jl fail_over			; Y<YStart, fail
-	mov ebx,[esi+14h]	; Get room YSize
+	mov ebx,[esi+58h]	; Get room YSize
 	add ebx,eax				; room YEnd
 	cmp edx,ebx
 	jge fail_over			; Y>YEnd, fail
@@ -2313,7 +2313,7 @@ fail_over:
 	pop ecx
 	pop ebx
 	pop eax	;	stack fix: retaddr
-	mov eax,D2GAME_0X1606D ; 1.13d		; fail, destroy the town portal already created
+	mov eax, D2GAME_0X1606D ; 1.13d		; fail, destroy the town portal already created
 	push eax	; new retaddr
 	xor eax,eax
 	ret
@@ -2712,11 +2712,18 @@ var_4           = dword ptr -4
                 mov     ebp, esp
                 sub     esp, 1Ch
                 push    esi
-                mov     eax, 6FDF114Ch
+				
+                mov     eax,D2COMMON ; 1.13d 6FDF114Ch
+				mov		eax, [eax]
+				add 	eax, 0A6214h
                 mov     esi, [eax]
                 test    esi, esi
                 push    edi
-                mov     edi, ds:6FDF1150h
+				
+			    mov     edi,  D2COMMON ; 1.13d 6FDF1150h
+				mov		edi,[edi]
+				add 	edi, 0A6218h
+				mov edi, [edi]
                 mov     [ebp+var_18], edi
                 jz      loc_10003F98
                 test    edi, edi
@@ -2870,8 +2877,12 @@ CalculateTreasureClassNoDropPatch proc
 	test eax,eax
 	jz orig_code
 	; 使能预计算的TC NoDrop
-  mov     esi, ds:6FDF114Ch ;start address
-  mov     ebx, ds:6FDF1150h
+	mov     ebx,D2COMMON ; 1.13d 6FDF114Ch
+	mov		ebx, [ebx]
+	add 	ebx, 0A6214h
+	mov     esi, [ebx] ;start address
+	add		ebx,4
+  mov     ebx, [ebx] ; ds:6FDF1150h
 ;  test esi,esi
 ;  jz orig_code
 ;  test ebx,ebx
@@ -3046,7 +3057,7 @@ orig_code:
 	push edx
 	push ebx
 	push ecx
-	call D2Common_10753_GetQuestFlag
+	call D2Common_10156_GetQuestFlag
 	cmp eax,1
 	jz over
 	;get the ptGame->ptQuest
@@ -3061,7 +3072,7 @@ orig_code:
 	push 0Fh
 	push eax
 	push ebx
-	call D2Common_10753_GetQuestFlag ; 任务已经完成？
+	call D2Common_10156_GetQuestFlag ; 任务已经完成？
 	cmp eax,1
 	jz over
 	
@@ -3069,7 +3080,7 @@ orig_code:
 	push 1
 	push ecx
 	push ebx
-	call D2Common_10753_GetQuestFlag	; 任务奖励中？
+	call D2Common_10156_GetQuestFlag	; 任务奖励中？
 	cmp eax,1
 	jz over
 	
@@ -3078,7 +3089,7 @@ orig_code:
 	push edx
 	push ecx
 	push ebx
-	call D2Common_10753_GetQuestFlag	;可以进行任务Drop？
+	call D2Common_10156_GetQuestFlag	;可以进行任务Drop？
 over:
 	ret
 MFBugFix endp

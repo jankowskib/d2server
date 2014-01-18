@@ -48,11 +48,11 @@ DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *p
 
 	if(InRange)
 	{
-		for(auto i : Specers)
+		for (map<DWORD, DWORD>::const_iterator i = Specers.begin(); i != Specers.end(); ++i)
 		{
-			if(i.second == ptPlayer->dwUnitId) 
+			if((*i).second == ptPlayer->dwUnitId) 
 			{
-				UnitAny * ptSpecee = D2Funcs::D2GAME_FindUnit(ptGame, i.first, UNIT_PLAYER);
+				UnitAny * ptSpecee = D2Funcs::D2GAME_FindUnit(ptGame, (*i).first, UNIT_PLAYER);
 				if(!ptSpecee) continue;
 
 				Room1* aRoom = D2Funcs::D2COMMON_GetUnitRoom(ptPlayer);

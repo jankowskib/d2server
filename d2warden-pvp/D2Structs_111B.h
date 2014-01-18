@@ -484,6 +484,18 @@ struct AiGeneral
   DWORD eTrapNo;											  //0x3C - used by shadows for summoning traps (so they stick to one type usually)
 };
 
+struct AiParam
+{
+	AiGeneral* pAiGeneral;     //+00 
+	DWORD _1;                  //+04 
+	Unit* ptTarget;            //+08 
+	DWORD _2;                  //+0C 
+	DWORD _3;                  //+10 
+	int nDistanceToTarget;     //+14 
+	BOOL bEngagedInCombat;     //+18 
+	void* pMonStatsRec;        //+1C 
+	void* pMonStats2Rec;       //+20 
+};
 
 struct AiUnk1
 {

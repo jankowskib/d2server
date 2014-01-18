@@ -33,7 +33,10 @@ InitWardenThread proc
 	mov eax,[eax]
 	call eax ; GetProcAddr
 	mov D2Warden_0X68Handler,eax
+	popad
+	retn
 over:
+	mov EnableWarden, 0
 	popad
 	retn
 InitWardenThread endp

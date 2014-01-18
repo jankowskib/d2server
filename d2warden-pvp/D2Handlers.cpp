@@ -34,6 +34,13 @@
 
 map<string,int> Dane;
 
+Room1* __stdcall D2GAME_PortalCrashFix(Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitAlign)
+{
+	Room1* ptRoom =	D2Funcs::D2COMMON_GetRoomXYByLevel(ptAct, LevelNo, Unk0, xPos, yPos, UnitAlign);
+	return ptRoom;
+
+}
+
 void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDamage)
 {
 	if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER) {
