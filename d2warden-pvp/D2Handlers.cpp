@@ -733,7 +733,6 @@ struct px67 //Create Game 0x2E
 
 	if (D2Version < 16 && !AllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
 	{
-		KickPlayer(pPacket->ClientID);
 		if(D2Version==11)
 #ifdef _ENGLISH_LOGS
 		Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.",pJoinPacket->szCharName);
@@ -746,6 +745,7 @@ struct px67 //Create Game 0x2E
 #else
 		Log("NowyKlient: Zrywam polaczenie z graczem '%s', powod : Nieoblsugiwana wersja patcha (1.%d).",pJoinPacket->szCharName,D2Version);
 #endif
+		KickPlayer(pPacket->ClientID);
 		return 3;
 	}
 	Dane[pJoinPacket->szCharName] = pJoinPacket->ServerHash;

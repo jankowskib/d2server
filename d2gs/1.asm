@@ -199,7 +199,7 @@ aDisableDCSpawnInSomeAreaMsg db 'DC will not spawn in some area.'
 DisableDCSpawnInSomeArea dd 0
 
 D2GamePatched dd 0
-aD2GamePatchedMsg db 'D2Game already patched.',0
+aD2GamePatchedMsg db 'D2Game is already patched.',0
 
 cb_func00 dd 6800D9B8h ; d2game.dll 6FC903B6
 cb_func01 dd 6800D9BCh ; d2game.dll 6FD0832F
@@ -240,10 +240,10 @@ dword_func19 	dd 6801461Ch	;d2game.dll		6FCB2858
 dword_func20 	dd 68014660h	;d2game.dll		6FD0CF10
 
 dword_save_func00	dd 0	;d2client.dll	6FB7D5C1
-dword_save_func01	dd 0	;d2game.dll		6FC903B6
+ParseIncomingPackets dd 0	;d2game.dll		6FC903B6
 ParseCreatePackets	dd 0	;d2game.dll		6FD0832F
-dword_save_func03	dd 0	;d2game.dll		6FD04A30
-dword_save_func04	dd 0	;d2game.dll		6FCE4C40
+GetGameByClientID	dd 0	;d2game.dll		6FD04A30
+GetClientDataByClientID	dd 0;d2game.dll		6FCE4C40
 dword_save_func05	dd 0	;d2game.dll		6FD03AD0
 dword_save_func06	dd 0	;d2game.dll		6FC3C710
 dword_save_func07	dd 0	;d2game.dll		6FCBC2E0	; nocall 0
@@ -437,7 +437,7 @@ MyPatchInit proc
 
 	mov ecx, dword_func01
 	mov eax,[ecx]
-	mov dword_save_func01,eax
+	mov ParseIncomingPackets,eax
 	mov eax,offset stub_func01
 	mov [ecx],eax
 
@@ -449,13 +449,13 @@ MyPatchInit proc
 
 	mov ecx, dword_func03
 	mov eax,[ecx]
-	mov dword_save_func03,eax
+	mov GetGameByClientID,eax
 	mov eax,offset stub_func03
 	mov [ecx],eax
 
 	mov ecx, dword_func04
 	mov eax,[ecx]
-	mov dword_save_func04,eax
+	mov GetClientDataByClientID,eax
 	mov eax,offset stub_func04
 	mov [ecx],eax
 
@@ -896,7 +896,7 @@ no_DisableBugMF:
 ;SpawnUberBossOff=68021CF0 ; Hook
 ;D2Game.dll	0XE6B52 6ACAF3FF	F01C0268 20  #6FD06B52(11A6B52) = Patch Call Offset
 	mov ecx,esi
-	add ecx, 0BE9AAh ;  1.13d 0E6B52h
+	add ecx, 0BE9ABh ;  1.13d 0E6B52h
 	mov eax,offset SpawnUberBoss
 	sub eax,ecx
 	sub eax,4
@@ -1462,7 +1462,7 @@ stub_func01 proc
 	mov esi,edx
 	sub esp,8
 	
-	call dword_save_func01
+	call ParseIncomingPackets
 	pop esi
 	pop ebx
 	ret
@@ -1527,7 +1527,7 @@ stub_func02 endp
 stub_func03 proc
 	push esi
 	mov esi,ecx
-	call dword_save_func03
+	call GetGameByClientID
 	pop esi
 	ret
 stub_func03 endp
@@ -1538,7 +1538,7 @@ stub_func03 endp
 stub_func04 proc
 	mov eax,ecx
 	mov ecx,edx
-	call dword_save_func04
+	call GetClientDataByClientID
 	ret
 stub_func04 endp
 

@@ -299,10 +299,10 @@ void Warden_Init()
 	//#endif
 
 #ifdef VER_113D
-	PatchGS(0, GetDllOffset("D2Game.dll", 0x3C707), 0xE8, 1, "Assassin's Cloak Crash Fix");
+	PatchGS(0, GetDllOffset("D2Game.dll", 0x3C707), 0xEB, 1, "Assassin's Cloak Crash Fix");
 	//PatchGS(CALL, GetDllOffset("D2Game.dll", 0x1602A), (DWORD)D2GAME_PortalCrashFix, 5, "TP Crash Fix");
 #endif
-	/*
+
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_LASTHITINTERCEPT), (DWORD)D2Stubs::D2GAME_LastHitIntercept_STUB, 5, "LastHitIntercept");
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_ONDAMAGECREATION), (DWORD)D2Stubs::D2GAME_OnCreateDamage_STUB, 6, "OnDamageCreation");
 	PatchGS(CALL, GetDllOffset("D2Net.dll", D2NET_CLIENT_PACKET_WRAPPER), (DWORD)D2Stubs::D2NET_ReceivePacket_STUB, 5, "Client Packet Wrapper");
@@ -513,7 +513,7 @@ void Warden_Init()
 
 	//Missiles
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEOBJECT_IB), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateObject I");
-*/
+
 	if (strlen(Warden_MOD) != 36)
 	{
 #ifdef _ENGLISH_LOGS

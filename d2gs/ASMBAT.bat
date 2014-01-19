@@ -3,7 +3,7 @@
 IF NOT EXIST D:\Masm32\Bin\Ml.Exe GOTO _NoMasm32
 
 IF EXIST 1.obj DEL 1.obj
-IF EXIST 1.asm D:\MASM32\Bin\Ml.exe /ID:\MASM32\Include /c /Zf /Zd /Zi /coff 1.asm
+IF EXIST 1.asm D:\MASM32\Bin\Ml.exe /ID:\MASM32\Include /c /Zf /Zd /Zi /Fm /coff 1.asm
 IF EXIST Resource.rc GOTO _ExistRC
 IF EXIST 1.obj D:\MASM32\Bin\Link.exe /BASE:0x68020000 /SUBSYSTEM:Console /LIBPATH:D:\MASM32\Lib 1.obj 
 GOTO _Done
