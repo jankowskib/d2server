@@ -26,7 +26,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 
 	if(_stricmp(str,"#mspawn")==0)
 		{
-		list<WardenClient>::iterator ptCurrentClient = GetClientByID(ClientID);
+		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
 		if(ptCurrentClient == hWarden.Clients.end()) return TRUE;
 
 		if(!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE; }
@@ -37,7 +37,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		if(No>733)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-733"); UNLOCK return false;}
 
 		int count = 1;
-		list<WardenClient>::iterator psUnit = ptCurrentClient;
+		WardenClient_i psUnit = ptCurrentClient;
 
 		Room1* aRoom = pUnit->pPath->pRoom1;
 		int xPos = pUnit->pPath->xPos;
@@ -51,7 +51,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		if(str)
 		{
 		UNLOCK
-		list<WardenClient>::iterator psUnit = GetClientByName(str);
+		WardenClient_i psUnit = GetClientByName(str);
 			if(psUnit != hWarden.Clients.end()) 
 			{
 			SendMsgToClient(pUnit->pPlayerData->pClientData,"Spawning monster on %s", psUnit->CharName);
@@ -73,10 +73,10 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		for(int i = 0; i<10; i++)
 		{
 
-		aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,1);
+		aRoom =	D2ASMFuncs::D2GAME_FindFreeCoords(&Pos,aRoom,&Out,1);
 		if(!aRoom) {SendMsgToClient(pUnit->pPlayerData->pClientData,"FindFreeCoords failed!"); break;}
 
-		ptMonster = D2Funcs::D2GAME_SpawnMonster(No,1,psUnit->ptPlayer->pGame,aRoom,Out.x,Out.y,-1,0);
+		ptMonster = D2Funcs.D2GAME_SpawnMonster(No,1,psUnit->ptPlayer->pGame,aRoom,Out.x,Out.y,-1,0);
 		if(ptMonster) break;
 
 		if(i % 2) Pos.x = Out.x + (rand() % 4); else  Pos.x = Out.x - (rand() % 4);
@@ -84,7 +84,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		}
 		if(!ptMonster) {SendMsgToClient(pUnit->pPlayerData->pClientData,"Error limit exceeded!"); break;}
 
-		SendMsgToClient(pUnit->pPlayerData->pClientData,"#%d Monster spawned, HP = %d",z+1, D2Funcs::D2COMMON_GetUnitMaxLife(ptMonster) >> 8);	
+		SendMsgToClient(pUnit->pPlayerData->pClientData,"#%d Monster spawned, HP = %d",z+1, D2Funcs.D2COMMON_GetUnitMaxLife(ptMonster) >> 8);	
 		}
 		UNLOCK
 		return false;
@@ -94,7 +94,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		{
 		if(!ptMonster) {SendMsgToClient(pUnit->pPlayerData->pClientData,"Spawn monster first (#spawn)");  return false;}
 
-		list<WardenClient>::iterator ptCurrentClient = GetClientByID(ClientID);
+		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
 		if(ptCurrentClient == hWarden.Clients.end()) return TRUE;
 
 		if(!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE;}
@@ -112,9 +112,9 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		if(SkillNo>356)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-356"); UNLOCK return false;}
 		
 
-		D2Funcs::D2COMMON_AddSkillToUnit(ptMonster, SkillNo, 99, 1 , __FILE__, __LINE__);
-		D2Funcs::D2COMMON_RefreshSkills(ptMonster);
-		D2Funcs::D2GAME_SetMonSkill(ptMonster,0,SkillNo,-1);
+		D2Funcs.D2COMMON_AddSkillToUnit(ptMonster, SkillNo, 99, 1 , __FILE__, __LINE__);
+		D2Funcs.D2COMMON_RefreshSkills(ptMonster);
+		D2Funcs.D2GAME_SetMonSkill(ptMonster,0,SkillNo,-1);
 		UNLOCK
 		return false;
 		}

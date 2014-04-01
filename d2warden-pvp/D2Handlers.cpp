@@ -32,11 +32,11 @@
 
 #include "Build.h"
 
-map<string,int> Dane;
+map<string,int> ServerHashMap;
 
 Room1* __stdcall D2GAME_PortalCrashFix(Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitAlign)
 {
-	Room1* ptRoom =	D2Funcs::D2COMMON_GetRoomXYByLevel(ptAct, LevelNo, Unk0, xPos, yPos, UnitAlign);
+	Room1* ptRoom =	D2Funcs.D2COMMON_GetRoomXYByLevel(ptAct, LevelNo, Unk0, xPos, yPos, UnitAlign);
 	return ptRoom;
 
 }
@@ -44,7 +44,7 @@ Room1* __stdcall D2GAME_PortalCrashFix(Act* ptAct, int LevelNo, int Unk0, int* x
 void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDamage)
 {
 	if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER) {
-		if(D2Funcs::D2COMMON_GetStatSigned(ptVictim,STAT_HP,0) <=0)
+		if(D2Funcs.D2COMMON_GetStatSigned(ptVictim,STAT_HP,0) <=0)
 		{ 
 			int Dmg = (int)ptDamage->DamageTotal >> 8;
 			if(Dmg>50000) return;
@@ -72,7 +72,7 @@ void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDama
 
 
 			if((GetTickCount() - ptVictim->pPlayerData->LastDamageTick < 5000) && ptVictim->pPlayerData->LastDamageId !=0 && ptVictim->pPlayerData->LastDamageId != ptKiller->dwUnitId) {
-				UnitAny* pAssister = D2Funcs::D2GAME_FindUnit(ptKiller->pGame,ptVictim->pPlayerData->LastDamageId,UNIT_PLAYER);
+				UnitAny* pAssister = D2ASMFuncs::D2GAME_FindUnit(ptKiller->pGame,ptVictim->pPlayerData->LastDamageId,UNIT_PLAYER);
 				if(pAssister) {
 					LRost::UpdateRoster(ptKiller->pGame,pAssister->pPlayerData->szName,3);
 					LRoster * AssRoster = LRost::Find(ptKiller->pGame,pAssister->pPlayerData->szName);
@@ -85,7 +85,7 @@ void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDama
 			ptVictim->pPlayerData->LastDamageTick = 0;
 		}
 		else {
-			int Percent = ((((int)ptDamage->DamageTotal >> 8) * 100) / (D2Funcs::D2COMMON_GetStatSigned(ptVictim,STAT_MAXHP,0) >>8));
+			int Percent = ((((int)ptDamage->DamageTotal >> 8) * 100) / (D2Funcs.D2COMMON_GetStatSigned(ptVictim,STAT_MAXHP,0) >>8));
 			if(ptVictim->pPlayerData->LastDamageTick &&
 				(GetTickCount() - ptVictim->pPlayerData->LastDamageTick < 5000)) ptVictim->pPlayerData->LastDamage+= Percent; else	ptVictim->pPlayerData->LastDamage = Percent;
 			ptVictim->pPlayerData->LastDamageId = ptKiller->dwUnitId;
@@ -104,9 +104,9 @@ int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Ro
 	int aX, aY, aLevel;
 	Room1* aRoom;
 
-	aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
-	aRoom = D2Funcs::D2COMMON_GetRoomXYByLevel(pRoom->pAct,aLevel,0,&aX,&aY,2);
-	return D2Funcs::D2GAME_CreateCorpse(pGame,pUnit,aX,aY,aRoom);
+	aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
+	aRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pRoom->pAct,aLevel,0,&aX,&aY,2);
+	return D2Funcs.D2GAME_CreateCorpse(pGame,pUnit,aX,aY,aRoom);
 
 }
 
@@ -114,9 +114,9 @@ int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Ro
 int __stdcall GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage)
 {
 //if(pPlayer->pGame, pPlayer->pGame->dwGameState!=1)
-//return D2Funcs::D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
+//return D2Funcs.D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
 //else
-return 0;
+return 1;
 }
 
 BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem)
@@ -125,7 +125,7 @@ BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem)
 
 	if (!ptNPC || !ptVendor)
 	{
-		Log("%s", "isPermStore: null ptNPC or ptVendor!");
+		DEBUGMSG("isPermStore: null ptNPC or ptVendor!");
 		return FALSE;
 	}
 
@@ -137,7 +137,7 @@ BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem)
 
 	if(ptVendor)
 	{
-		DWORD iCode = D2Funcs::D2COMMON_GetItemCode(ptItem);
+		DWORD iCode = D2Funcs.D2COMMON_GetItemCode(ptItem);
 		//WORLD EVENT
 		if(EnableWE && WE_isKey(ptItem))
 		{
@@ -159,88 +159,6 @@ BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem)
 }
 
 
-int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
-{
-//if(pClient->InitStatus!=4)
-//Log("NowyKlient: -> %s, InitStatus == %d",pClient->CharName,pClient->InitStatus);
-
-//LRost::SendKills(Data->ptGame);
-//LRost::SendDeaths(Data->ptGame);
-
-ExEvent pEvent;
-::memset(&pEvent,0,sizeof(ExEvent));
-pEvent.P_A6=0xA6;
-pEvent.MsgType=3;
-	strcpy_s(pEvent.szMsg,255,ClansURL.c_str());
-	if(pEvent.szMsg[0])
-	pEvent.PacketLen=14+strlen(pEvent.szMsg) +1;
-	else
-	pEvent.PacketLen=15;
-
-	D2Funcs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent,pEvent.PacketLen);
-
-	if(strlen(ptGame->GameDesc)>0)
-	{	
-		char tk[32];
-		strcpy_s(tk,32,ptGame->GameDesc);
-		char *nt =0;
-		for(char * ret = strtok_s(tk," -",&nt);ret;ret = strtok_s(NULL," -",&nt))
-			{
-			if(_strnicmp(ret,"ffa",3)==0) {SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!");continue;}
-			if(_strnicmp(ret,"m",1)==0 && strlen(ret)>1 && AllowTourMode) { SendMsgToClient(pClient,pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'",atoi(ret+1)); continue;}
-			if(_strnicmp(ret,"t",1)==0 && strlen(ret)==1) { SendMsgToClient(pClient,pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue;}
-			}	
-	}
-
-	unsigned char RC4_KEY_0X66[16],RC4_KEY_0XAE[16];
-
-	DEBUGMSG("NOWYKLIENT: Probuje dodac gracza %s !",pClient->CharName);
-	if(Dane.count(pClient->CharName)) {
-	WardenClient NewClientData;
-	memset(&NewClientData,0,sizeof(WardenClient));
-
-	NewClientData.ClientID = pClient->ClientID;
-	memcpy(NewClientData.SessionKey,&Dane[pClient->CharName],4);
-	Dane.erase(pClient->CharName);
-	NewClientData.ClientLogonTime = GetTickCount();
-	NewClientData.NextCheckTime = NewClientData.ClientLogonTime +500;
-	
-	NewClientData.MouseXPosition = 400; //neutralne pozycje
-	NewClientData.MouseYPosition = 300; //j.w.
-
-	HashGameSeed(RC4_KEY_0XAE, RC4_KEY_0X66, NewClientData.SessionKey, 4);
-	rc4_setup(NewClientData.RC4_KEY_0XAE,RC4_KEY_0XAE,16);
-	rc4_setup(NewClientData.RC4_KEY_0X66,RC4_KEY_0X66,16);
-	
-	LOCK
-	hWarden.Clients.push_back(NewClientData);
-	UNLOCK
-	if(hWarden.Clients.size()==200) {
-#ifdef _ENGLISH_LOGS
-		Log("NEWCLIENT: Number of clients (%d) is bigger than 200, isn't it a memory leak though?",hWarden.Clients.size());
-#else
-		Log("NOWYKLIENT: Liczba klientów w petli %d wieksza niz 200, czy to napewno nie wyciek pamieci?",hWarden.Clients.size());
-#endif
-	}
-	DEBUGMSG("Gracz %s dodany!",pClient->CharName);
-	}
-	else
-	{
-#ifdef _ENGLISH_LOGS
-		Log("NEWCLIENT: No SessionKey in database! Dropping player %s !",pClient->AccountName);
-#else
-		Log("NOWYKLIENT: Brak SessionKey w bazie! Wykopuje gracza %s !",pClient->AccountName);
-#endif
-		KickPlayer(pClient->ClientID);
-	}
-
-return 0;
-}
-
-
-
-
-
 void __fastcall OnMonsterDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 {
 if(!ptVictim || !ptKiller) return;
@@ -259,29 +177,29 @@ if(ptKiller->dwType) return;
 
 void __fastcall OnNPCHeal(UnitAny* pUnit)
 {
-StatList* pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,1); // FREEZE
+StatList* pList = D2Funcs.D2COMMON_GetStateStatList(pUnit,1); // FREEZE
 if(pList)
 {
-	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
-	D2Funcs::D2COMMON_FreeStatList(pList);
+	D2Funcs.D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs.D2COMMON_FreeStatList(pList);
 }
-pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,2); // PSN
+pList = D2Funcs.D2COMMON_GetStateStatList(pUnit,2); // PSN
 if(pList)
 {
-	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
-	D2Funcs::D2COMMON_FreeStatList(pList);
+	D2Funcs.D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs.D2COMMON_FreeStatList(pList);
 }
-pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,54); // UNINTERUPTABLE
+pList = D2Funcs.D2COMMON_GetStateStatList(pUnit,54); // UNINTERUPTABLE
 if(pList)
 {
-	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
-	D2Funcs::D2COMMON_FreeStatList(pList);
+	D2Funcs.D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs.D2COMMON_FreeStatList(pList);
 }
-pList = D2Funcs::D2COMMON_GetStateStatList(pUnit,87); // SLOW MISSILE
+pList = D2Funcs.D2COMMON_GetStateStatList(pUnit,87); // SLOW MISSILE
 if(pList)
 {
-	D2Funcs::D2COMMON_RemoveStatList(pUnit,pList);
-	D2Funcs::D2COMMON_FreeStatList(pList);
+	D2Funcs.D2COMMON_RemoveStatList(pUnit,pList);
+	D2Funcs.D2COMMON_FreeStatList(pList);
 }
 
 if(pUnit->pGame, pUnit->pGame->dwGameState==1) //FFA MODE
@@ -312,7 +230,7 @@ SendMsgToClient(ptPlayer->pPlayerData->pClientData,ptPlayer->pPlayerData->pClien
 return 0;
 //if(Version==1)
 //{
-//list<WardenClient>::iterator ptCurrentClient = GetClientByID(ptPlayer->pPlayerData->pClientData->ClientID);
+//WardenClient_i ptCurrentClient = GetClientByID(ptPlayer->pPlayerData->pClientData->ClientID);
 //if(ptCurrentClient == hWarden.Clients.end()) return 0;
 //ptCurrentClient->NewPatch=1;
 //UNLOCK
@@ -371,14 +289,14 @@ Act* __stdcall OnActLoad (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGa
 	if(MySeed) 
 	{
 		pGame->InitSeed=MySeed;
-		return D2Funcs::D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+		return D2Funcs.D2COMMON_LoadAct(ActNumber,MySeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
 	}
-	return D2Funcs::D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
+	return D2Funcs.D2COMMON_LoadAct(ActNumber,InitSeed,Unk0,pGame,MyDiff,pMemPool,TownLevelId,Func1,Func2);
 }
 
 
 
-BOOL __fastcall OnReceivePacket (BYTE * ThePacket, PacketData * pClient)
+BOOL __fastcall OnReceivePacket (BYTE * ThePacket, PacketData * pClient) // return is currently ignored
 {
 if(!pClient) return true;
 int ClientID = pClient->ClientID;
@@ -392,21 +310,21 @@ case 0x16:
 		break;
 		// 1a   9   Equip item         1a [DWORD id] [WORD position] 00 00
 		DWORD ItemID = 0;
-		DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
+		DWORD Socket = D2Funcs.D2NET_GetClient(ClientID);
 		if(!Socket) break;
-		Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
+		Game* pGame = D2Funcs.D2GAME_GetGameByNetSocket(Socket);
 		if(!pGame) break;
 		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-		if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		if(!ptClientData ) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
 
 		if(ThePacket[0]==0x16)
 		ItemID = *(DWORD*)&ThePacket[5];
 		else
 		ItemID = *(DWORD*)&ThePacket[1];
-		UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
+		UnitAny* ptItem = D2ASMFuncs::D2GAME_FindUnit(ptClientData->pGame,ItemID,4);
 		if(ptItem)
 		{
-			if(!ptItem->pItemData->dwItemFlags.bPersonalized) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break;}
+			if(!ptItem->pItemData->dwItemFlags.bPersonalized) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break;}
 
 			if(!isAnAdmin(ptClientData->AccountName))
 			if(ptClientData->AccountName!=ptItem->pItemData->szPlayerName) 
@@ -415,29 +333,29 @@ case 0x16:
 			*(DWORD*)&ThePacket[1]=0;
 			}
 		}
-	D2Funcs::D2GAME_LeaveCriticalSection(pGame);
+	D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame);
 	}
 	break;
 case 0x1F://STASH HACK
 	{
 		//GC 78:   0x1F SwapContainerItem; SubjectUID: 28; ObjectUID: 29; X: 5; Y: 0
 		//GC 78:   17   1f [1c 00 00 00] [1d 00 00 00] [05 00 00 00] [00 00 00 00]
-		DWORD Socket = D2Funcs::D2NET_GetClient(ClientID);
+		DWORD Socket = D2Funcs.D2NET_GetClient(ClientID);
 		if(!Socket) break;
-		Game* pGame = D2Funcs::D2GAME_GetGameByNetSocket(Socket);
+		Game* pGame = D2Funcs.D2GAME_GetGameByNetSocket(Socket);
 		if(!pGame) break;
 		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-		if(!ptClientData ) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		if(!ptClientData ) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
 
-		int LvlNo = D2Funcs::D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
-		if(LvlNo == 0) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
-		int ActNo = D2Funcs::D2COMMON_GetActNoByLevelNo(LvlNo);
-		if(LvlNo == D2Funcs::D2COMMON_GetTownLevel(ActNo)) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		int LvlNo = D2Funcs.D2COMMON_GetLevelNoByRoom(ptClientData->ptRoom);
+		if(LvlNo == 0) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
+		int ActNo = D2Funcs.D2COMMON_GetActNoByLevelNo(LvlNo);
+		if(LvlNo == D2Funcs.D2COMMON_GetTownLevel(ActNo)) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
 		DWORD ItemID = *(DWORD*)&ThePacket[5];
-		UnitAny* ptItem = D2Funcs::D2GAME_FindUnit(ptClientData->pGame,ItemID, UNIT_ITEM);
-		if(!ptItem) { D2Funcs::D2GAME_LeaveCriticalSection(pGame); break; }
+		UnitAny* ptItem = D2ASMFuncs::D2GAME_FindUnit(ptClientData->pGame,ItemID, UNIT_ITEM);
+		if(!ptItem) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
 		if(ptItem->pItemData->InvPage == 4) Log("HACK: %s (*%s) opened stash being out of town [STASH HACK]!",ptClientData->CharName,ptClientData->AccountName);
-		D2Funcs::D2GAME_LeaveCriticalSection(pGame); 
+		D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); 
 	}
 	break;
 }
@@ -448,55 +366,70 @@ return true;
 //Valid for 0x06*, 0x07, 0x09*, 0x0A,  || 0x0D*, 0x0E, 0x10*, 0x11
 DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen)
 {
-int InRange = 0;
-if(PacketLen!=9) return 3;
-if(!ptGame) return 3;
-if(ptPlayer->dwType != UNIT_PLAYER) return 3;
-if(ptPacket->UnitType>5) return 3;
+	int InRange = 0;
+	if(PacketLen!=9) return 3;
+	if(!ptGame) return 3;
+	if(ptPlayer->dwType != UNIT_PLAYER) return 3;
+	if(ptPacket->UnitType>5) return 3;
 
-InRange = D2Funcs::D2GAME_isUnitInRange(ptGame,ptPacket->UnitId,ptPacket->UnitType,ptPlayer,50);
-if(InRange == 2) return 2;
-if(InRange == 3) return 3;
-
-Skill * ptSkill = (ptPacket->Header == 6 || ptPacket->Header == 7 || ptPacket->Header == 9 || ptPacket->Header == 0xA) ? D2Funcs::D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs::D2COMMON_GetRightSkill(ptPlayer);
-if(!ptSkill) return 3;
-int SkillId = D2Funcs::D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
-
-	PlayerData* pPlayerData = ptPlayer->pPlayerData;
-	if(!pPlayerData) return 2;
-
-if(TeleChars[ptPlayer->dwClassId]==FALSE && ptPlayer->pGame->dwGameState==0 && SkillId == 0x36)
+	InRange = D2ASMFuncs::D2GAME_isUnitInRange(ptGame,ptPacket->UnitId,ptPacket->UnitType,ptPlayer,50);
+	if (InRange == 2) 
 	{
-	SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" :"Teleport Is Not Allowed For This Character");
-	return 0;
+		DEBUGMSG("OnClickUnit: Over the range (3)")
+		return 2;
+	}
+	if (InRange == 3)
+	{
+		DEBUGMSG("OnClickUnit: Over the range (3)");
+		return 3;
+	}
+	Skill * ptSkill = (ptPacket->Header == 6 || ptPacket->Header == 7 || ptPacket->Header == 9 || ptPacket->Header == 0xA) ? D2Funcs.D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs.D2COMMON_GetRightSkill(ptPlayer);
+	if (!ptSkill)
+	{
+		DEBUGMSG("%s: ptSkill not found!. Packet id is = %d", __FUNCTION__, ptPacket->Header);
+		return 3;
+	}
+	int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
+
+		PlayerData* pPlayerData = ptPlayer->pPlayerData;
+		if(!pPlayerData) return 2;
+
+	if(TeleChars[ptPlayer->dwClassId]==FALSE && ptPlayer->pGame->dwGameState==0 && SkillId == 0x36)
+	{
+		SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" :"Teleport Is Not Allowed For This Character");
+		return 0;
 	}
 
-if(SkillId == 0x65 && !AllowHB) {
-	SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" :"Holy Bolt Is Not Allowed On This Server");	
-	return 0;
+	if(SkillId == 0x65 && !AllowHB)
+	{
+		SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" :"Holy Bolt Is Not Allowed On This Server");	
+		return 0;
 	}
-if(SkillId == 151 && !AllowNLWW) { 
-	SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" :"NLWW Is Not Allowed On This Server");	
-	return 0;
-}
+	if(SkillId == 151 && !AllowNLWW) 
+	{ 
+		SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" :"NLWW Is Not Allowed On This Server");	
+		return 0;
+	}
 		
-		static int AttackCount;
+	static int AttackCount;
 
-		if(ptGame->bFestivalMode == 1 && pPlayerData->CanAttack == 0 && (!isSafeSkill(SkillId) && SkillId != D2S_CHARGE)) {
-		if(AttackCount == 0) {
-		SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");	
+	if(ptGame->bFestivalMode == 1 && pPlayerData->CanAttack == 0 && (!isSafeSkill(SkillId) && SkillId != D2S_CHARGE)) 
+	{
+		if(AttackCount == 0) 
+		{
+			SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");	
 		}
 		AttackCount++;
 		if(AttackCount>4) AttackCount = 0;
 		return 0;
-		}
+	}
 
 
-int nPierceIdx = D2Funcs::D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-D2Funcs::D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
+	int nPierceIdx = D2Funcs.D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
+	D2Funcs.D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
 
-D2Funcs::D2GAME_CastSkillOnUnit(ptPlayer,ptSkill,ptGame,ptPacket->UnitType,ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10 ) ? 1 : 0);
-return 0;
+	D2ASMFuncs::D2GAME_CastSkillOnUnit(ptPlayer,ptSkill,ptGame,ptPacket->UnitType,ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10 ) ? 1 : 0);
+	return 0;
 }
 
 
@@ -508,8 +441,8 @@ static int AttackCount;
 	if(!ptGame) return 3;
 	if(ptPlayer->dwType != UNIT_PLAYER) return 3;
 
-	WORD UnitX = D2Funcs::D2GAME_GetUnitX(ptPlayer);
-	WORD UnitY = D2Funcs::D2GAME_GetUnitY(ptPlayer);
+	WORD UnitX = D2Funcs.D2GAME_GetUnitX(ptPlayer);
+	WORD UnitY = D2Funcs.D2GAME_GetUnitY(ptPlayer);
 
 	int xOffset = UnitX - ptPacket->xPos;
 	if(xOffset<0) xOffset = -xOffset;
@@ -519,17 +452,18 @@ static int AttackCount;
 	if(yOffset < 50 && xOffset < 50) InRange = true;
 
 	PlayerData* pPlayerData = ptPlayer->pPlayerData;
-	if(!pPlayerData) {
-		Log("Didn't find a PlayerData, function %s, %d",__FUNCTION__,__LINE__);
+	if(!pPlayerData) 
+	{
+		DEBUGMSG("Didn't find a PlayerData, function %s, %d",__FUNCTION__,__LINE__);
 		return 2;
 	}
 
 	if(InRange)
 	{
 		pPlayerData->GameFrame = ptGame->GameFrame;
-		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2Funcs::D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs::D2COMMON_GetRightSkill(ptPlayer);
+		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2Funcs.D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs.D2COMMON_GetRightSkill(ptPlayer);
 		if(!ptSkill) return 3;
-		int SkillId = D2Funcs::D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
+		int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill,__FILE__,__LINE__);
 		
 		if(TeleChars[ptPlayer->dwClassId]==FALSE && ptPlayer->pGame->dwGameState==0 && SkillId == 0x36)
 		{
@@ -542,39 +476,43 @@ static int AttackCount;
 		return 0;
 		}
 
-		int nPierceIdx = D2Funcs::D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-		D2Funcs::D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
+		int nPierceIdx = D2Funcs.D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
+		D2Funcs.D2COMMON_SetStat(ptPlayer,328,nPierceIdx+1,0);
 
-		if(ptGame->bFestivalMode && !pPlayerData->CanAttack && !isSafeSkill(SkillId)) {
-		if(AttackCount == 0) {
-		SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");	
-		}
-		AttackCount++;
-		if(AttackCount>4) AttackCount = 0;
-		return 0;
-		}
+		if(ptGame->bFestivalMode && !pPlayerData->CanAttack && !isSafeSkill(SkillId)) 
+		{
+			if(AttackCount == 0)
+			{
+				SendMsgToClient(pPlayerData->pClientData,pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");	
+			}
+			AttackCount++;
+			if(AttackCount>4) 
+				AttackCount = 0;
+			return 0;
+			}
 
-		D2Funcs::D2GAME_CastSkill(ptPlayer,ptSkill,ptGame,ptPacket->xPos,ptPacket->yPos);
+		D2ASMFuncs::D2GAME_CastSkill(ptPlayer,ptSkill,ptGame,ptPacket->xPos,ptPacket->yPos);
 
-		if(!DetectTrick) return 0;
+		if(!DetectTrick) 
+			return 0;
 
-		list<WardenClient>::iterator ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
+		WardenClient_i ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
 		if(ptWardenClient == hWarden.Clients.end()) return 0;
 
 		if(GetTickCount()>ptWardenClient->UIModesTime+500) { UNLOCK return 0; }
 
 		if((ptWardenClient->UIModes[UI_CHARACTER] || ptWardenClient->UIModes[UI_QUEST]) && (ptWardenClient->MouseXPosition>=0 && ptWardenClient->MouseXPosition<=200) && (ptWardenClient->MouseYPosition>=0 && ptWardenClient->MouseYPosition<=550))
 		{	
-		if(ptWardenClient->DebugTrick)	
-		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Left window) X=%d Y=%d, LAG= %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
-		Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_CHARACTER] ? "Character Stats":"Quests",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);				
+			if(ptWardenClient->DebugTrick)	
+				SendMsgToClient(ptWardenClient->ptClientData,"Trick (Left window) X=%d Y=%d, LAG= %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
+			Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_CHARACTER] ? "Character Stats":"Quests",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);				
 		}
 		else 
 		if((ptWardenClient->UIModes[UI_INVENTORY] || ptWardenClient->UIModes[UI_SKILL]) && (ptWardenClient->MouseXPosition>=600 && ptWardenClient->MouseXPosition<=800) && (ptWardenClient->MouseYPosition>=0 && ptWardenClient->MouseYPosition<=550))
 		{	
-		if(ptWardenClient->DebugTrick)	
-		SendMsgToClient(ptWardenClient->ptClientData,"Trick (Right window) X=%d Y=%d, LAG = %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
-		Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory":"Skill Tree",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);
+			if(ptWardenClient->DebugTrick)	
+				SendMsgToClient(ptWardenClient->ptClientData,"Trick (Right window) X=%d Y=%d, LAG = %d ms",ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition,GetTickCount()-ptWardenClient->UIModesTime);
+			Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]",ptWardenClient->CharName.c_str(),ptWardenClient->AccountName.c_str(),ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory":"Skill Tree",ConvertSkill(SkillId).c_str(),ptWardenClient->MouseXPosition,ptWardenClient->MouseYPosition);
 		}
 		UNLOCK
 		return 0;
@@ -587,19 +525,107 @@ static int AttackCount;
 			if(pClient)
 			{
 				ReassignPacket hReassign = {0};
-				//::memset(&hReassign,0,11);
 				hReassign.Header= 0x15;
 				hReassign.UnitId = ptPlayer->dwUnitId;
 				hReassign.xPos = UnitX;
 				hReassign.yPos = UnitY;
 				hReassign.Reassign = 1;
 
-				D2Funcs::D2GAME_SendPacket(pClient,(BYTE*)&hReassign,11);
+				D2ASMFuncs::D2GAME_SendPacket(pClient,(BYTE*)&hReassign,11);
 			}
 		}
 		return 1;
 	}
 	return 3;
+}
+
+int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
+{
+	//if(pClient->InitStatus!=4)
+	//Log("NowyKlient: -> %s, InitStatus == %d",pClient->CharName,pClient->InitStatus);
+
+	//LRost::SendKills(Data->ptGame);
+	//LRost::SendDeaths(Data->ptGame);
+
+	ExEvent pEvent;
+	::memset(&pEvent, 0, sizeof(ExEvent));
+	pEvent.P_A6 = 0xA6;
+	pEvent.MsgType = 3;
+	strcpy_s(pEvent.szMsg, 255, ClansURL.c_str());
+	if (pEvent.szMsg[0])
+		pEvent.PacketLen = 14 + strlen(pEvent.szMsg) + 1;
+	else
+		pEvent.PacketLen = 15;
+
+	D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
+
+	if (strlen(ptGame->GameDesc)>0)
+	{
+		char tk[32];
+		strcpy_s(tk, 32, ptGame->GameDesc);
+		char *nt = 0;
+		for (char * ret = strtok_s(tk, " -", &nt); ret; ret = strtok_s(NULL, " -", &nt))
+		{
+			if (_strnicmp(ret, "ffa", 3) == 0) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!"); continue; }
+			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret)>1 && AllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
+			if (_strnicmp(ret, "t", 1) == 0 && strlen(ret) == 1) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue; }
+		}
+	}
+
+	unsigned char RC4_KEY_0X66[16], RC4_KEY_0XAE[16];
+
+	DEBUGMSG("NEWCLIENT: Trying to add  '%s' !", pClient->CharName);
+
+	if (ServerHashMap.count(pClient->CharName))
+	{
+		WardenClient NewClientData = { 0 };
+
+		NewClientData.ClientID = pClient->ClientID;
+		memcpy(NewClientData.SessionKey, &ServerHashMap[pClient->CharName], 4);
+		*(DWORD*)&NewClientData.SessionKey = ServerHashMap[pClient->CharName];
+		ServerHashMap.erase(pClient->CharName);
+		NewClientData.ClientLogonTime = GetTickCount();
+		NewClientData.NextCheckTime = NewClientData.ClientLogonTime + 500;
+		NewClientData.AccountName = pClient->AccountName;
+		NewClientData.CharName = pClient->CharName;
+		NewClientData.ptClientData = pClient;
+		NewClientData.ptGame = ptGame;
+		NewClientData.ptPlayer = ptPlayer;
+		NewClientData.MyIp = "";
+		NewClientData.MouseXPosition = 400; //neutralne pozycje
+		NewClientData.MouseYPosition = 300; //j.w.
+
+		HashGameSeed(RC4_KEY_0XAE, RC4_KEY_0X66, NewClientData.SessionKey, 4);
+		rc4_setup(NewClientData.RC4_KEY_0XAE, RC4_KEY_0XAE, 16);
+		rc4_setup(NewClientData.RC4_KEY_0X66, RC4_KEY_0X66, 16);
+
+		LOCK
+			DEBUGMSG("Added (*%s) %s to WardenQueue", pClient->AccountName, pClient->CharName);
+		hWarden.Clients.push_back(NewClientData);
+		UNLOCK
+		if (hWarden.Clients.size()>600)
+		{
+#ifdef _ENGLISH_LOGS
+			Log("NEWCLIENT: Number of clients (%d) is bigger than 600, isn't it a memory leak though?", hWarden.Clients.size());
+#else
+			Log("NOWYKLIENT: Liczba klientów w petli %d wieksza niz 600, czy to napewno nie wyciek pamieci?", hWarden.Clients.size());
+#endif
+		}
+		DEBUGMSG("Player %s has been added to WardenQueue!", pClient->CharName);
+	}
+	else
+	{
+#ifdef _ENGLISH_LOGS
+		Log("NEWCLIENT: No SessionKey in database! Dropping player %s !", pClient->AccountName);
+#else
+		Log("NOWYKLIENT: Brak SessionKey w bazie! Wykopuje gracza %s !", pClient->AccountName);
+#endif
+		KickPlayer(pClient->ClientID);
+	}
+	DEBUGMSG("Triggering the event from OnGameJoin..");
+	SetEvent(hWardenCheckEvent);
+
+	return 0;
 }
 
 int  __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, int PacketLen) // Pakiet 66 -> Odpowiedz klienta na zapytanie Wardena
@@ -609,74 +635,68 @@ int  __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPa
 	// 1 - ?
 	// 2 - blad
 	// 3 - hack 
+	if (!ptPlayer)
+	{
+		DEBUGMSG("WardenPacket: ptPlayer == null!");
+		return 3;
+	}
 
 	DWORD ClientID = ptPlayer->pPlayerData->pClientData->ClientID;
 	
-	if (PacketLen < 3)	{
-	Log("WardenPacket: Pakiet krotszy niz 3!");
-	return 3;
-	}
-	
-	if(!ClientID) {
-	Log("WardenPacket: Brak numeru klienta!");
-	return 3;
-	}
-
-	WardenPacket *New66 = new WardenPacket;
-	if (!New66)	
+	if (PacketLen < 3)	
 	{
-	Log("WardenPacket: Brak pamieci na alokacje pakietu klienta!");
-	return 3; // Brak pamieci
-	}
-	
-	New66->ReceiveTime = GetTickCount();
-	New66->PacketLen = ptPacket[2]*256 + ptPacket[1];
-	
-	if (New66->PacketLen == 0 || New66->PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
-	{
-		Log("WardenPacket: Otrzymano pakiet przekraczajacy 512 bajtow!");
-		delete New66;
+		DEBUGMSG("WardenPacket: PacketLen < 3 !");
 		return 3;
 	}
 	
-	BYTE *ThePacket = new BYTE[New66->PacketLen];
-	if (!ThePacket)
+	if(!ClientID) 
 	{
-		Log("WardenPacket: Brak pamieci na alokacje pakietu klienta!");
-		delete New66; // Brak pamieci
+		DEBUGMSG("WardenPacket: No client id!");
 		return 3;
 	}
-	memcpy(ThePacket,ptPacket+3,New66->PacketLen);
-	
-	New66->ThePacket = ThePacket;
 
-	list<WardenClient>::iterator i = GetClientByID(ClientID);
 
-	if(i != hWarden.Clients.end())		{
-			if(!i->ptPlayer)     i->ptPlayer=ptPlayer;
-			if(!i->ptGame)       i->ptGame=ptGame;
-			if(!i->ptClientData) i->ptClientData = ptPlayer->pPlayerData->pClientData;
-			if(i->AccountName.empty())  i->AccountName = i->ptClientData->AccountName;  
-			if(i->CharName.empty())  i->CharName = i->ptClientData->CharName;
+	WardenClient_i i = GetClientByID(ClientID);
+	if(i != hWarden.Clients.end())	
+	{
+		i->pWardenPacket.ReceiveTime = GetTickCount();
+		i->pWardenPacket.PacketLen = ptPacket[2] * 256 + ptPacket[1];
 
-			rc4_crypt(i->RC4_KEY_0X66,New66->ThePacket,New66->PacketLen);
+		if (i->pWardenPacket.PacketLen == 0 || i->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
+		{
+			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
+			return 3;
+		}
 
-			i->pWardenPackets_ReceiveTime = New66->ReceiveTime;
-			i->pWardenPackets = New66;
-			i->NextCheckTime = GetTickCount();
-			UNLOCK
-			return 0; // Wszystko OK!
+		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
+		if (!ThePacket)
+		{
+			Log("WardenPacket: No memory to allocate packet data!");
+			return 3;
+		}
+
+		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
+		i->pWardenPacket.ThePacket = ThePacket;
+
+		rc4_crypt(i->RC4_KEY_0X66, i->pWardenPacket.ThePacket, i->pWardenPacket.PacketLen);
+		DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
+		i->NextCheckTime = GetTickCount();
+		UNLOCK
+		DEBUGMSG("WardenPacket: Triggering the check event...");
+		SetEvent(hWardenCheckEvent);
+		return 0; // Wszystko OK!
 	}
+	else
+	{
+		DEBUGMSG("WardenPacket: Client %d, %s (*%s) is not in WardenQueue!!", ClientID, ptPlayer->pPlayerData->pClientData->CharName, ptPlayer->pPlayerData->pClientData->AccountName);
 
-
-		delete[] New66->ThePacket;
-		delete New66;
 #ifdef _ENGLISH_LOGS
-		Log("WardenPacket: Unexpected packet from player'%s'! Returning an error..",ptPlayer->pPlayerData->szName);
+		Log("WardenPacket: Unexpected packet from player %s (*%s)! Returning an error..", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
 #else
-		Log("WardenPacket: Nieoczekiwany pakiet od gracza '%s'! Zwracam blad...",ptPlayer->pPlayerData->szName);
+		Log("WardenPacket: Nieoczekiwany pakiet od gracza %s (*%s) ! Zwracam blad...",ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
 #endif
 		return 3;
+	}
 
 }
 
@@ -722,10 +742,11 @@ struct px67 //Create Game 0x2E
 
 #ifdef _SINGLEPLAYER
 	if(pJoinPacket->Header !=0x68 || pCreatePacket->Header !=0x67 ) return 0;
-		if(pCreatePacket->Header == 0x67) {
-		Dane[pCreatePacket->szCharName] = 0;
+	if(pCreatePacket->Header == 0x67) 
+	{
+		ServerHashMap[pCreatePacket->szCharName] = 0;
 		return 0;
-		}
+	}
 #endif
 
 
@@ -733,7 +754,7 @@ struct px67 //Create Game 0x2E
 
 	if (D2Version < 16 && !AllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
 	{
-		if(D2Version==11)
+		if(D2Version==13)
 #ifdef _ENGLISH_LOGS
 		Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.",pJoinPacket->szCharName);
 #else
@@ -748,7 +769,7 @@ struct px67 //Create Game 0x2E
 		KickPlayer(pPacket->ClientID);
 		return 3;
 	}
-	Dane[pJoinPacket->szCharName] = pJoinPacket->ServerHash;
+	ServerHashMap[pJoinPacket->szCharName] = pJoinPacket->ServerHash;
 
 		return 0;
 }
@@ -799,7 +820,7 @@ else
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus==4) D2Funcs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -841,7 +862,7 @@ if(ClientID==NULL) return TRUE;
 
 		str = strtok_s(NULL, " ", &t);
 		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#spec <*account> or #spec [charname]!"); return false; }
-		list<WardenClient>::iterator psUnit =  hWarden.Clients.end();
+		WardenClient_i psUnit =  hWarden.Clients.end();
 		if(str[0]== '*') 
 		{
 			str++;
@@ -966,7 +987,7 @@ if(ClientID==NULL) return TRUE;
 		else
 		pEvent.PacketLen=15;
 	
-		D2Funcs::D2GAME_SendPacket(pUnit->pPlayerData->pClientData, (BYTE*)&pEvent,pEvent.PacketLen);
+		D2ASMFuncs::D2GAME_SendPacket(pUnit->pPlayerData->pClientData, (BYTE*)&pEvent,pEvent.PacketLen);
 		return false;
 		}
 		if(_stricmp(str,"#map")==0)
@@ -980,8 +1001,8 @@ if(ClientID==NULL) return TRUE;
 		{
 		if(!pUnit->pGame->bFestivalMode) return true;
 
-		int aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
-		int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
+		int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
+		int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 		if(aCurrLevel==aLevel)
 		{
 		SendMsgToClient(pUnit->pPlayerData->pClientData,pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Najpierw opusc miasto!" : "Leave town first!");
@@ -1006,7 +1027,7 @@ if(ClientID==NULL) return TRUE;
 			{
 				if(pMem->dwUnitId == pUnit->dwUnitId)  InParty = true;
 
-				UnitAny* pMate = D2Funcs::D2GAME_FindUnit(pUnit->pGame,pMem->dwUnitId,UNIT_PLAYER);
+				UnitAny* pMate = D2ASMFuncs::D2GAME_FindUnit(pUnit->pGame,pMem->dwUnitId,UNIT_PLAYER);
 				if(pMate) {
 				pakiet << pMate->pPlayerData->szName << '#' << pMate->pPlayerData->pClientData->AccountName << '#' << ConvertClass(pMate->dwClassId) << ':';
 				}
@@ -1072,10 +1093,10 @@ if(ClientID==NULL) return TRUE;
 		{
 			if(AllowGU)
 			{
-				int aLevel = D2Funcs::D2COMMON_GetTownLevel(pUnit->dwAct);
-				int aCurrLevel = D2Funcs::D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
+				int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
+				int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 				if(aCurrLevel!=aLevel)
-					D2Funcs::D2GAME_MoveUnitToLevelId(pUnit,aLevel,pUnit->pGame);
+					D2ASMFuncs::D2GAME_MoveUnitToLevelId(pUnit,aLevel,pUnit->pGame);
 			}
 			if(pUnit->pGame->bFestivalMode == 1)
 				if(pUnit->pPlayerData->isPlaying) {
@@ -1090,7 +1111,7 @@ if(ClientID==NULL) return TRUE;
 		}
 		if(_stricmp(str,"#debug")==0)
 		{
-		list<WardenClient>::iterator ptCurrentClient = GetClientByID(ClientID);
+		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
 		if(ptCurrentClient == hWarden.Clients.end()) return TRUE;
 		ptCurrentClient->DebugTrick=!ptCurrentClient->DebugTrick;
 		UNLOCK
@@ -1109,7 +1130,7 @@ if(ClientID==NULL) return TRUE;
 
 		str = strtok_s(NULL," ",&t);
 		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"#kick <*account> or #kick [charname]!"); return false;}
-		list<WardenClient>::iterator psUnit =  hWarden.Clients.end();
+		WardenClient_i psUnit =  hWarden.Clients.end();
 		if(str[0]== '*') {
 		str++;
 		psUnit = GetClientByAcc(str);
@@ -1132,7 +1153,7 @@ if(ClientID==NULL) return TRUE;
 			{
 			if(!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
-			list<WardenClient>::iterator ptCurrentClient =  hWarden.Clients.end();
+			WardenClient_i ptCurrentClient =  hWarden.Clients.end();
 			if(str[0]== '*') {
 				str++;
 				ptCurrentClient = GetClientByAcc(str);
@@ -1147,52 +1168,52 @@ if(ClientID==NULL) return TRUE;
 
 			if(!pDestUnit) return false;
 
-			int sFR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FIRERESIST,0);
-			int sCR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_COLDRESIST,0);
-			int sLR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGRESIST,0);
-			int sPR =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_POISONRESIST,0);
+			int sFR =   D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_FIRERESIST,0);
+			int sCR =   D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_COLDRESIST,0);
+			int sLR =   D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGRESIST,0);
+			int sPR =   D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_POISONRESIST,0);
 			
-			int sDR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_DAMAGEREDUCTION,0);
+			int sDR = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_DAMAGEREDUCTION,0);
 
-			int sFCR =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERCAST,0);
-			int sFHR =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERHITRECOVERY,0);
-			int sIAS =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_IAS,0);
-			int sFRW =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERRUNWALK,0);
-			int sDS  =  D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_DEADLYSTRIKE,0);
-			int sOW =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_OPENWOUNDS,0);
-			int sCB =	D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_CRUSHINGBLOW,0);
+			int sFCR =  D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERCAST,0);
+			int sFHR =  D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERHITRECOVERY,0);
+			int sIAS =	D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_IAS,0);
+			int sFRW =  D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_FASTERRUNWALK,0);
+			int sDS  =  D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_DEADLYSTRIKE,0);
+			int sOW =	D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_OPENWOUNDS,0);
+			int sCB =	D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_CRUSHINGBLOW,0);
 
-			int sCABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_COLDABSORBPERCENT,0);
-			int sLABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGABSORBPERCENT,0);
-			int sFABS = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_FIREABSORBPERCENT,0);
+			int sCABS = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_COLDABSORBPERCENT,0);
+			int sLABS = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_LIGHTNINGABSORBPERCENT,0);
+			int sFABS = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_FIREABSORBPERCENT,0);
 			
-			int sMFR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXFIRERESIST,0) +75;
-			int sMCR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXCOLDRESIST,0) +75;
-			int sMLR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXLIGHTNINGRESIST,0)+75;
-			int sMPR = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAXPOISONRESIST,0)+75;
+			int sMFR = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_MAXFIRERESIST,0) +75;
+			int sMCR = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_MAXCOLDRESIST,0) +75;
+			int sMLR = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_MAXLIGHTNINGRESIST,0)+75;
+			int sMPR = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_MAXPOISONRESIST,0)+75;
 
-			int sMF = D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_MAGICFIND,0);
-			int aLife = D2Funcs::D2COMMON_GetUnitMaxLife(pDestUnit) >>8;
-			int aMana = D2Funcs::D2COMMON_GetUnitMaxMana(pDestUnit) >>8;
+			int sMF = D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_MAGICFIND,0);
+			int aLife = D2Funcs.D2COMMON_GetUnitMaxLife(pDestUnit) >>8;
+			int aMana = D2Funcs.D2COMMON_GetUnitMaxMana(pDestUnit) >>8;
 
-			int sREP =   D2Funcs::D2COMMON_GetStatSigned(pDestUnit,STAT_HPREGEN,0);
+			int sREP =   D2Funcs.D2COMMON_GetStatSigned(pDestUnit,STAT_HPREGEN,0);
 
-			if(D2Funcs::D2COMMON_GetUnitState(pDestUnit,83))  //Nat res
+			if(D2Funcs.D2COMMON_GetUnitState(pDestUnit,83))  //Nat res
 			{
-			Skill* pSkill = D2Funcs::D2COMMON_GetSkillById(pDestUnit,153,-1);
+			Skill* pSkill = D2Funcs.D2COMMON_GetSkillById(pDestUnit,153,-1);
 				if(pSkill)
 				{
-				int SkillLvl = D2Funcs::D2COMMON_GetSkillLevel(pDestUnit,pSkill,1);
-				int ResBonus = D2Funcs::D2COMMON_EvaluateSkill(pDestUnit,3442,153,SkillLvl);
+				int SkillLvl = D2Funcs.D2COMMON_GetSkillLevel(pDestUnit,pSkill,1);
+				int ResBonus = D2Funcs.D2COMMON_EvaluateSkill(pDestUnit,3442,153,SkillLvl);
 				sFR-=ResBonus;
 				sCR-=ResBonus;
 				sLR-=ResBonus;
 				sPR-=ResBonus;
 				}
 			}
-			if(D2Funcs::D2COMMON_GetUnitState(pDestUnit,8)) //Salv
+			if(D2Funcs.D2COMMON_GetUnitState(pDestUnit,8)) //Salv
 			{
-				StatList * Stats = D2Funcs::D2COMMON_GetStateStatList(pDestUnit,8);
+				StatList * Stats = D2Funcs.D2COMMON_GetStateStatList(pDestUnit,8);
 				int ResBonus = Stats->Stats.pStat->dwStatValue;
 				sFR-=ResBonus;
 				sCR-=ResBonus;
@@ -1215,7 +1236,7 @@ if(ClientID==NULL) return TRUE;
 		int LvlId = atoi(str);
 		str = strtok_s(NULL," ",&t);
 		if(str) {
-		list<WardenClient>::iterator ptCurrentClient = GetClientByName(str);
+		WardenClient_i ptCurrentClient = GetClientByName(str);
 		if(ptCurrentClient == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Player not found!"); return false;}
 		if(!ptCurrentClient->ptPlayer) { UNLOCK return false; }
 		if(aUnit == ptCurrentClient->ptPlayer){ UNLOCK return false; }
@@ -1225,7 +1246,7 @@ if(ClientID==NULL) return TRUE;
 		if(!LvlId) return false;
 		if(LvlId>136) return false;
 		SendMsgToClient(aUnit->pPlayerData->pClientData,"Moving '%s' to level '%d'...",aUnit->pPlayerData->szName,LvlId);
-		D2Funcs::D2GAME_MoveUnitToLevelId(aUnit,LvlId,aUnit->pGame);
+		D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit,LvlId,aUnit->pGame);
 		return false;
 		}
 

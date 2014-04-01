@@ -35,35 +35,39 @@ using namespace std;
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/random.hpp>
+#include <boost/timer.hpp>
+
 #include <shellapi.h>
 #include <urlmon.h>
 #include <math.h>
 
 
+#include "D2DataTables.h"
+
 #ifdef VER_113D
 #include "D2Structs_113D.h"
-#include "D2Ptrs_113D.h"
+#include "ExPointers_113D.h"
 #elif defined VER_111B
 #include "D2Structs_111B.h"
-#include "D2Ptrs_111B.h"
-#else
-#error("Not supported version code :()")
+#include "ExPointers_111B.h"
 #endif
+
 
 #include "D2Stubs.h"
 #include "Vars.h"
 
-#include "WardenMisc.h"
+#include "Misc.h"
+#include "D2Warden.h"
 #include "Offset.h"
 
-#define ASSERT(e) if (e == 0) { Log("Critical error in line %d, file '%s' , function: '%s'.",__LINE__,__FILE__,__FUNCTION__); exit(-1); }
-#define D2ERROR(s) { Log("Critical error '%s' in line %d, file '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
+#define ASSERT(e) if (e == 0) {LogNoLock("Critical error in line %d, file '%s' , function: '%s'm eip 0x%X.",__LINE__,__FILE__,__FUNCTION__,GetEIP()); exit(-1); }
+#define D2ERROR(s) { LogNoLock("Critical error '%s' in line %d, file '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
+
+#define LOCK   {/*DEBUGMSG("--> CS : %d : %s",__LINE__,__FUNCTION__);*/ EnterCriticalSection(&hWarden.WardenLock);}
+#define UNLOCK {/*DEBUGMSG("<-- CS : %d : %s",__LINE__,__FUNCTION__);*/ LeaveCriticalSection(&hWarden.WardenLock);}
 
 #ifdef _DEBUG
-#define DEBUGMSG(s,...) Debug((s));
+#define DEBUGMSG(s,...) Debug(s, ##__VA_ARGS__);
 #else
 #define DEBUGMSG(s,...) {}
 #endif
-
-#define LOCK   {/*Debug("--> CS : %d : %s",__LINE__,__FUNCTION__); */EnterCriticalSection(&hWarden.WardenLock);}
-#define UNLOCK {/*Debug("<-- CS : %d : %s",__LINE__,__FUNCTION__); */LeaveCriticalSection(&hWarden.WardenLock);}

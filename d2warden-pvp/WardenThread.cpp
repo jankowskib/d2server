@@ -18,18 +18,21 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#define _DEFINE_PTRS
+
+#define __DEFINE_EXPTRS
 #ifdef VER_113D
-#include "D2Ptrs_113D.h"
-#elif defined VER_111B
-#include "D2Ptrs_111B.h"
+#include "ExPointers_113D.h"
+#else
+#include "ExPointers_111B.h"
 #endif
 
 #include "D2Warden.h"
+#include "Misc.h"
 #include "process.h"
 
 static HANDLE WardenThread = 0;
 static unsigned Id = 0;
+static volatile bool gWardenRunning = true;
 
 unsigned __stdcall d2warden_thread(void *lpParameter)
 {
@@ -53,13 +56,15 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 		return -1;
 	}
 
-	DefineOffsets();
 
+	SetupD2Vars();
+	SetupD2Pointers();
+	SetupD2Funcs();
+	
 	Warden_Init();
 	if (Warden_Enable == false)
 	{
 		DeleteCriticalSection(&LOG_CS);
-		DeleteCriticalSection(&hWarden.WardenLock);
 #ifdef _ENGLISH_LOGS
 		LogNoLock("Error during initialization. Warden is turned off");
 #else
@@ -77,75 +82,87 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 
 
 	WardenUpTime = GetTickCount();
-	while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
+	//while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
+	while(gWardenRunning)
 	{
-		WardenLoop();
-		Sleep(100);
+		if(!isWardenQueueEmpty()) 
+			WaitForSingleObject(hWardenCheckEvent, WardenLoop());
 	}
-
-	delete[] MOD_Enrypted; 
-	LOCK
-	hWarden.Clients.clear();
-	UNLOCK
 #ifdef _ENGLISH_LOGS
 	LogNoLock("End of main thread!");
 #else
 	LogNoLock("Koniec watku glownego!");
 #endif
-	DeleteCriticalSection(&LOG_CS);
 	return 0; 
 }
 
 
 DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 {
-switch (dwReason)
-{
-case DLL_PROCESS_ATTACH:
+	switch (dwReason)
 	{
-	hEvent = CreateEvent(NULL, TRUE, FALSE, "WARDEN_END");
-	if(!hEvent)
-		{ 
-#ifdef _ENGLISH_LOGS
-		LogNoLock("Couldn't initialize event. Error id: %d!", errno); 
-#else
-		LogNoLock("Nie moge zainicjowac eventu. Blad %d!", errno); 
-#endif
-		return FALSE;
-		}
+		case DLL_PROCESS_ATTACH:
+		{
+		//hEvent = CreateEvent(NULL, TRUE, FALSE, "WARDEN_END");
+			hWardenCheckEvent = CreateEvent(NULL, FALSE, FALSE, "WARDEN_CHECK");
 
-	if(!WardenThread) WardenThread = (HANDLE)_beginthreadex(0,0,&d2warden_thread,0,0,&Id);
-	if(!WardenThread)
-		{ 
-#ifdef _ENGLISH_LOGS
-		LogNoLock("Couldn't initialize thread. Error id: %d!", errno);
-#else
-		LogNoLock("Nie moge zainicjowac thread. Blad %d!", errno);
-#endif
-		return FALSE;
-		}
-	}
-break;
-case DLL_PROCESS_DETACH:
-	{
-#ifdef _ENGLISH_LOGS
-	LogNoLock("Closing threads..");
-#else
-	LogNoLock("Trwa zamykanie watkow...");
-#endif
-	SetEvent(hEvent);
-	WaitForSingleObject(WardenThread,5000);
-	WaitForSingleObject(DumpHandle,5000);
-	CloseHandle(hEvent);
-	CloseHandle(WardenThread);
-	CloseHandle(DumpHandle);
+			if (!hWardenCheckEvent)
+				{ 
+		#ifdef _ENGLISH_LOGS
+				LogNoLock("Couldn't initialize events. Error id: %d!", errno); 
+		#else
+				LogNoLock("Nie moge zainicjowac eventu. Blad %d!", errno); 
+		#endif
+				return FALSE;
+				}
 
-	DeleteCriticalSection(&hWarden.WardenLock);
-	hEvent = 0;
-	WardenThread = 0;
-	DumpHandle = 0;
+			if(!WardenThread) WardenThread = (HANDLE)_beginthreadex(0,0,&d2warden_thread,0,0,&Id);
+			if(!WardenThread)
+				{ 
+		#ifdef _ENGLISH_LOGS
+				LogNoLock("Couldn't initialize thread. Error id: %d!", errno);
+		#else
+				LogNoLock("Nie moge zainicjowac thread. Blad %d!", errno);
+		#endif
+				return FALSE;
+				}
+			}
+		break;
+		case DLL_PROCESS_DETACH:
+			{
+		#ifdef _ENGLISH_LOGS
+			LogNoLock("Closing threads...");
+		#else
+			LogNoLock("Trwa zamykanie watkow...");
+		#endif
+			LOCK
+			gWardenRunning = false;
+			SetEvent(hWardenCheckEvent);
+			UNLOCK
+			//SetEvent(hEvent);
+			WaitForSingleObject(WardenThread,5000);
+			if (DumpHandle)
+				WaitForSingleObject(DumpHandle,5000);
+			if (hEvent)
+				CloseHandle(hEvent);
+			CloseHandle(WardenThread);
+			CloseHandle(hWardenCheckEvent);
+			if (DumpHandle)
+				CloseHandle(DumpHandle);
+
+			delete[] MOD_Enrypted; 
+
+			hWarden.Clients.clear();
+	
+			DeleteCriticalSection(&LOG_CS);
+			DeleteCriticalSection(&hWarden.WardenLock);
+			hEvent = 0;
+			hWardenCheckEvent = 0;
+			WardenThread = 0;
+			DumpHandle = 0;
+			LogNoLock("Done!");
+		}
+		break;
 	}
-break;
-}
-return TRUE;
+	return TRUE;
 }

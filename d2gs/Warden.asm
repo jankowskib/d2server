@@ -41,28 +41,6 @@ over:
 	retn
 InitWardenThread endp
 
-
-;d2game.dll 6FC4BE20
-;ecx
-;edx
-;arg_0
-;arg_4
-;
-;ret eax=3 非法报文
-MyPacket0X66Handler proc 
-	mov			eax,EnableWarden
-	test		eax,eax
-	jnz			SendInfoToWarden
-	; 奇怪！Warden并没有Enable，但是客户端却回送了0x66报文？！
-	retn 8
-SendInfoToWarden:
-	; ecx=ptGame
-	; edx=ptPlayer
-	; arg_0=ptPacket
-	; arg_4=len
-	jmp D2Warden_0X66Handler
-MyPacket0X66Handler	endp
-
 ; Client Logon into game
 MyPacket0X68Handler proc 
 	xor			eax,eax

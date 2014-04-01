@@ -30,6 +30,12 @@
     <Filter Include="Source Files\Misc">
       <UniqueIdentifier>{09fd842c-4c3a-4f27-ada6-1350d26f2a4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\1.11b">
+      <UniqueIdentifier>{f9933e56-ab82-46ef-830c-e4b0674d4682}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\1.13d">
+      <UniqueIdentifier>{45f963ff-b898-4159-8b51-8c0da251d11c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp">
@@ -39,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StatDumpThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WardenMisc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WardenThread.cpp">
@@ -95,6 +98,12 @@
     <ClCompile Include="Offset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D2Patches.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc.cpp">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -110,9 +119,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vars.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WardenMisc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Build.h">
@@ -169,23 +175,32 @@
     <ClInclude Include="Offset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D2Ptrs_111B.h">
+    <ClInclude Include="WardenChecks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D2Structs_111B.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Misc.h">
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="D2Ptrs_113D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D2Structs_113D.h">
+    <ClInclude Include="D2DataTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D2Patches_111B.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\1.11b</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Structs_111B.h">
+      <Filter>Header Files\1.11b</Filter>
     </ClInclude>
     <ClInclude Include="D2Patches_113D.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\1.13d</Filter>
+    </ClInclude>
+    <ClInclude Include="D2Structs_113D.h">
+      <Filter>Header Files\1.13d</Filter>
+    </ClInclude>
+    <ClInclude Include="ExPointers_113D.h">
+      <Filter>Header Files\1.13d</Filter>
+    </ClInclude>
+    <ClInclude Include="ExPointers_111B.h">
+      <Filter>Header Files\1.11b</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

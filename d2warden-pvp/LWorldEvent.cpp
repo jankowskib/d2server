@@ -29,7 +29,7 @@
 bool WE_isKey(UnitAny* ptItem)
 {
 
-	DWORD iCode = D2Funcs::D2COMMON_GetItemCode(ptItem);
+	DWORD iCode = D2Funcs.D2COMMON_GetItemCode(ptItem);
 
 	for(int i = 0; i<20; i++)
 	{
@@ -97,7 +97,7 @@ void WE_CreateDCKey(UnitAny* pUnit)
 		CreateItem sets;
 		memset(&sets,0,sizeof(sets));
 		int Idx;
-		D2Funcs::D2COMMON_GetItemIdx(' kew',&Idx);
+		D2Funcs.D2COMMON_GetItemIdx(' kew',&Idx);
 
 		sets.pOwner=pUnit;
 		sets.wItemFormat=pUnit->pGame->ItemFormat;
@@ -108,15 +108,15 @@ void WE_CreateDCKey(UnitAny* pUnit)
 		sets.dwItemFlags.bIdentified=1; 
 		sets.wCreateFlags=1; 
 		sets.iLvl=99;
-		UnitAny* ptItem = D2Funcs::D2GAME_CreateItemEx(pUnit->pGame,&sets,0);
+		UnitAny* ptItem = D2Funcs.D2GAME_CreateItemEx(pUnit->pGame,&sets,0);
 
 			if(ptItem)
 			{
 				POINT Pos = {pUnit->pPath->xPos,pUnit->pPath->yPos};
 				POINT Out = {0,0};
-				Room1* aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
+				Room1* aRoom =	D2ASMFuncs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
 				if(!aRoom) return;
-				D2Funcs::D2GAME_DropItem(ptItem,aRoom,pUnit->pGame,pUnit,Out.x,Out.y);
+				D2ASMFuncs::D2GAME_DropItem(ptItem,aRoom,pUnit->pGame,pUnit,Out.x,Out.y);
 				BroadcastEventMsg(pUnit->pGame,COL_RED,"The World Event Key has been crafted");
 			}
 }
@@ -129,21 +129,21 @@ int __fastcall WE_Spawn(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *
 		return 0;
 	}
 
-	Room1* pRoom = D2Funcs::D2COMMON_GetUnitRoom(pUnit);
+	Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
 
 	if(pRoom)
 	{
-		int aLvl = D2Funcs::D2COMMON_GetLevelNoByRoom(pRoom);
+		int aLvl = D2Funcs.D2COMMON_GetLevelNoByRoom(pRoom);
 		if(aLvl==39)
 		{
 
 			POINT Pos = {pUnit->pPath->xPos,pUnit->pPath->yPos};
 			POINT Out = {0,0};
-			Room1* aRoom =	D2Funcs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
+			Room1* aRoom =	D2ASMFuncs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
 
 			if(aRoom)
 			{
-				ptMonster = D2Funcs::D2GAME_SpawnMonster(333,1,pGame,aRoom,Out.x,Out.y,-1,0);
+				ptMonster = D2Funcs.D2GAME_SpawnMonster(333,1,pGame,aRoom,Out.x,Out.y,-1,0);
 				if(ptMonster)
 				{
 

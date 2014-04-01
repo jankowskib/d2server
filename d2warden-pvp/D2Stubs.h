@@ -56,7 +56,7 @@ namespace D2Stubs
 }
 
 // -- ASM SUBS -- 
-namespace D2Funcs 
+namespace D2ASMFuncs 
 {
 void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter);
 void __fastcall D2GAME_UpdateClientInventory(ClientData* pClient, UnitAny* pPlayer);
@@ -104,7 +104,7 @@ int __fastcall D2GAME_TeleportUnit(int pX, int pY, Room1 *pRoom1, Game *pGame, U
 Game* __fastcall D2GAME_GetGameByClientID(DWORD ClientID);
 void __fastcall D2GAME_LeaveCriticalSection(Game* pGame);
 DWORD __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Length,DWORD *Packet);
-UnitAny* __fastcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, DWORD dwUnitType);
+UnitAny* __stdcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, BYTE dwUnitType);
 DWORD __fastcall D2GAME_SendPacket(ClientData *pClientData, BYTE *aPacket,int aLen);
 }
 

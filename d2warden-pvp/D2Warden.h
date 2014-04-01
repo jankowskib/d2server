@@ -42,7 +42,11 @@
 
 struct WardenPacket
 {
+#ifdef _DEBUG
+	DWORD SendTime;
 	DWORD ReceiveTime;
+#endif
+	DWORD ClientID;
 	DWORD PacketLen;
 	BYTE *ThePacket;
 };
@@ -71,9 +75,7 @@ struct WardenClient
 	BYTE NewPatch;
 	BYTE DebugTrick;
 
-	DWORD pWardenPacket_SendTime;
-	DWORD pWardenPackets_ReceiveTime;
-    WardenPacket* pWardenPackets;
+    WardenPacket pWardenPacket;
 	DWORD MOD_Position;
 
 	unsigned char RC4_KEY_0X66[258];
@@ -97,14 +99,16 @@ struct WardenClient
 	BYTE GMDetected;
 	BYTE LPDetected;
 	BYTE WardenBlocked;
+	BYTE RedVexDetected;
 };
 
 
-struct hWarden_Struct
+struct Warden
 {
 	CRITICAL_SECTION WardenLock;
 	list<WardenClient> Clients;
 };
+
 
 struct Vote
 {
@@ -122,7 +126,7 @@ struct Spec
 	DWORD SpecID;
 };
 
-struct WEITem
+struct WEItem
 {
 	DWORD ItemCode[20];
 	DWORD FileIdx[20];
@@ -132,8 +136,26 @@ struct WEITem
 extern "C" void  __fastcall HashGameSeed(unsigned char *pt_0XAE_RC4_KEY, unsigned char *pt_0X66_RC4_KEY, unsigned char * TheGameSeed, unsigned int TheLength);
 extern "C" void  __fastcall Double_MD5(DWORD *Mod_Length, DWORD unk, unsigned char *ptResult);
 
-void WardenLoop();
+DWORD WardenLoop();
 void Warden_Init();
+void PatchD2();
 void Warden_Config();
+
+// Warden struct functions
+
+typedef list<WardenClient>::iterator WardenClient_i;
+
+void RemoveWardenPacket(WardenClient_i ptCurrentClient);
+bool isWardenQueueEmpty();
+WardenClient_i GetClientByName(char *szAcc);
+WardenClient_i GetClientByAcc(char *szName);
+WardenClient_i GetClientByID(DWORD CID);
+WardenClient_i GetClientByName(Game* pGame, char *szName);
+void SendPtrRequest(WardenClient_i ptCurrentClient, char* DllName1, DWORD Addr, BYTE Bytes);
+void SendPtrRequest(WardenClient_i ptCurrentClient, DWORD Addr, BYTE Bytes);
+void SendPtrRequest(WardenClient_i ptCurrentClient, char* DllName1, DWORD Addr, char* DllName2, DWORD Addr2);
+void SendPtrRequest(WardenClient_i ptCurrentClient, char* DllName1, DWORD Addr, BYTE nBytes1, char* DllName2, DWORD Addr2, BYTE nBytes2);
+
+char * WardenStatusToString(BYTE aStatus);
 
 #endif

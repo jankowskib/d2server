@@ -17,6 +17,29 @@
  * limitations under the License.
  * ========================================================== */
 
+enum EventMsgType
+{
+  EVENT_TIMEOUT = 0,
+  EVENT_DROPPED = 1,
+  EVENT_JOINED = 2,
+  EVENT_LEFT = 3,
+  EVENT_NOT_IN_GAME = 4,
+  EVENT_NOT_LOGGED = 5,
+  EVENT_SLAIN = 6,
+  EVENT_PARTY = 7,
+  EVENT_BUSY = 8,
+  EVENT_TRADE_WAIT = 9,
+  EVENT_ITEMS_BOX = 10,
+  EVENT_GUILD_BOOTED = 11,
+  EVENT_GUILD_UNK = 12,
+  EVENT_NOT_LISTEN = 13,
+  EVENT_NO_MANA = 14,
+  EVENT_REALM_SHUTDOWN = 15,
+  EVENT_HOSTILE_WAIT = 16,
+  EVENT_SOJ_SELL = 17,
+  EVENT_DIABLO_WALKS = 18
+};
+
 enum D2Langs
 {
 	LOC_EN = 0,
@@ -49,12 +72,12 @@ D2EX_ACHIVEMENT =   4713
 
 enum UnitTypes
 {
-UNIT_PLAYER=	0,
-UNIT_MONSTER=	1,
-UNIT_OBJECT	=	2,
-UNIT_MISSILE=	3,
-UNIT_ITEM	=	4,
-UNIT_TILE	=	5
+	UNIT_PLAYER=	0,
+	UNIT_MONSTER=	1,
+	UNIT_OBJECT	=	2,
+	UNIT_MISSILE=	3,
+	UNIT_ITEM	=	4,
+	UNIT_TILE	=	5
 };
 
 enum UNITFLAG

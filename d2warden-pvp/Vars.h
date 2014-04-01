@@ -23,9 +23,10 @@
 #include "D2Warden.h"
 
 extern int WardenUpTime;
-extern hWarden_Struct hWarden;
+extern Warden hWarden;
 extern HANDLE DumpHandle;
 extern HANDLE hEvent;
+extern HANDLE hWardenCheckEvent;
 
 extern CRITICAL_SECTION MEM_CRITSECT;
 extern CRITICAL_SECTION LOG_CS;
@@ -65,6 +66,7 @@ extern unsigned StatID;
 extern BYTE DesyncFix;
 extern unsigned int AfkDrop;
 extern int PNo;
+extern int RespawnTimer;
 
 //-----------
 extern int SellCount;
@@ -73,7 +75,7 @@ extern int NextDC;
 extern int MinSell;
 extern int MaxSell;
 extern int InfoDelay;
-extern WEITem WItem;
+extern WEItem WItem;
 
 //----------------
 extern unsigned char *MOD_Enrypted;

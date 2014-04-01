@@ -19,7 +19,7 @@ ShowSOJMessageCheckerOffset dd offset ShowSOJMessageChecker		; d2server.dll 6800
 DualAuraPatchOffset dd offset NewDualAuraPatch
 MyInitGameHandlerOffset	dd offset MyInitGameHandler			;d2server.dll 68006539
 MyPacket0X68HandlerOffset	dd offset MyPacket0X68Handler	;0x18
-MyPacket0X66HandlerOffset	dd offset MyPacket0X66Handler	;0x1C
+MyPacket0X66HandlerOffset	dd 0; MyPacket0X66Handler	;0x1C
 TradePlayerAuraBugPatchOffset dd offset TradePlayerAuraBugPatch
 SingleRoomDCPatchOffset dd offset SingleRoomDCPatch
 dummy6 dd 0
@@ -603,7 +603,7 @@ continue:
 	add eax,4
 	mov [eax],ebx
 	mov eax,680135B4h
-	mov ebx,68001A90h	;nullsub_1
+	mov ebx,68001A90h	;nullsub_1 <-- this should be get file time EventCallbackTable func +54h
 	mov [eax],ebx
 	pop ebx
 	call Patch_sgptDataTables
@@ -623,10 +623,10 @@ D2GamePatch proc
 	push 0
 	call UnProtectDLL2
 	
-	; 1.13 CompareFileTime workaround
+	; 1.13 CompareFileTime workaround -> skipping cause Warden patches that in better way
 	mov	ecx,esi
-	add	ecx,024F35h		;6FC44F35 7E14
-	mov	ax,9090h
+	add	ecx, 024F0Ah		;6FC44F35 7E14
+	mov	ax, 053EBh
 	mov	word ptr[ecx],ax
 	; for warden patch 0x68,0x66 packet handler
 	;mov ecx,esi

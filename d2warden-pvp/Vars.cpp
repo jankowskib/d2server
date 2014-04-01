@@ -19,17 +19,11 @@
 
 #include "stdafx.h"
 
-//DWORD D2Funcs::D2NET_SendPacket(DWORD a,DWORD b,BYTE* c,DWORD d)
-//{ 
-//
-//	DEBUGMSG("S->C[%d] 0x%x, %d",b, c[0], d);
-//	return DEBUG_D2Funcs::D2NET_SendPacket(a,b,c,d);
-//}
-
 int WardenUpTime;
-hWarden_Struct hWarden;
+Warden hWarden;
 HANDLE DumpHandle = 0;
 HANDLE hEvent = 0;
+HANDLE hWardenCheckEvent = 0;
 
 CRITICAL_SECTION MEM_CRITSECT;
 CRITICAL_SECTION LOG_CS;
@@ -81,7 +75,8 @@ int NextDC = 0;
 int MinSell = 0;
 int MaxSell = 0;
 int InfoDelay = 0;
-WEITem WItem;
+int RespawnTimer = 0;
+WEItem WItem;
 
 
 

@@ -18,9 +18,16 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "D2Warden.h"
-#include "RC4.h"
 
+
+DWORD __declspec(naked) GetEIP()
+{
+	__asm
+	{
+		mov eax, [esp]
+		ret
+	}
+}
 
 BYTE GetColorNameByAcc(string szAcc)
 {
@@ -54,15 +61,15 @@ BOOL isItemBelongToUnit(UnitAny* ptUnit, DWORD iCode)
 {
 Inventory* ptInv = ptUnit->pInventory;
 if(!ptInv) return 0;
-UnitAny* ptItem = D2Funcs::D2COMMON_GetFirstItem(ptInv);
+UnitAny* ptItem = D2Funcs.D2COMMON_GetFirstItem(ptInv);
 if(!ptItem) return 0;
-if(D2Funcs::D2COMMON_GetItemCode(ptItem) == iCode) return TRUE;
-if(ptItem == D2Funcs::D2COMMON_GetCursorItem(ptInv) && D2Funcs::D2COMMON_GetItemCode(ptItem) == iCode) return TRUE;
+if(D2Funcs.D2COMMON_GetItemCode(ptItem) == iCode) return TRUE;
+if(ptItem == D2Funcs.D2COMMON_GetCursorItem(ptInv) && D2Funcs.D2COMMON_GetItemCode(ptItem) == iCode) return TRUE;
 
-for(UnitAny* i = ptItem; i; i = D2Funcs::D2COMMON_GetNextItem(i))
+for(UnitAny* i = ptItem; i; i = D2Funcs.D2COMMON_GetNextItem(i))
 {
-if(!D2Funcs::D2COMMON_UnitIsItem(i)) continue;
-if(D2Funcs::D2COMMON_GetItemCode(i) == iCode) return TRUE;
+if(!D2Funcs.D2COMMON_UnitIsItem(i)) continue;
+if(D2Funcs.D2COMMON_GetItemCode(i) == iCode) return TRUE;
 }
 return FALSE;
 }
@@ -71,15 +78,15 @@ BOOL isItemBelongToUnit(UnitAny* ptUnit, DWORD iCode, ItemQuality iQuality)
 {
 Inventory* ptInv = ptUnit->pInventory;
 if(!ptInv) return 0;
-UnitAny* ptItem = D2Funcs::D2COMMON_GetFirstItem(ptInv);
+UnitAny* ptItem = D2Funcs.D2COMMON_GetFirstItem(ptInv);
 if(!ptItem) return 0;
-if(D2Funcs::D2COMMON_GetItemCode(ptItem) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
-if(ptItem == D2Funcs::D2COMMON_GetCursorItem(ptInv) && D2Funcs::D2COMMON_GetItemCode(ptItem) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
+if(D2Funcs.D2COMMON_GetItemCode(ptItem) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
+if(ptItem == D2Funcs.D2COMMON_GetCursorItem(ptInv) && D2Funcs.D2COMMON_GetItemCode(ptItem) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
 
-for(UnitAny* i = ptItem; i; i = D2Funcs::D2COMMON_GetNextItem(i))
+for(UnitAny* i = ptItem; i; i = D2Funcs.D2COMMON_GetNextItem(i))
 {
-if(!D2Funcs::D2COMMON_UnitIsItem(i)) continue;
-if(D2Funcs::D2COMMON_GetItemCode(i) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
+if(!D2Funcs.D2COMMON_UnitIsItem(i)) continue;
+if(D2Funcs.D2COMMON_GetItemCode(i) == iCode && ptItem->pItemData->QualityNo==iQuality) return TRUE;
 }
 return FALSE;
 }
@@ -173,14 +180,14 @@ char* TransCode(DWORD dwCode)
 void KickPlayer(ClientData* pClient)
 {
 		BYTE Packet = 0x06;
-		D2Funcs::D2GAME_SendPacket(pClient,&Packet,1);
-//		D2Funcs::D2NET_SendPacket(1,ClientID,&Packet,1);
+		D2ASMFuncs::D2GAME_SendPacket(pClient,&Packet,1);
+//		D2Funcs.D2NET_SendPacket(1,ClientID,&Packet,1);
 }
 
 void KickPlayer(DWORD ClientID)
 {
 	BYTE Packet = 0x06;
-	D2Funcs::D2NET_SendPacket(0,ClientID,&Packet,1);
+	D2Funcs.D2NET_SendPacket(0,ClientID,&Packet,1);
 }
 
 void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue)
@@ -188,7 +195,7 @@ void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue)
 ClientData * pClientList = ptUnit->pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus==4) D2Funcs::D2GAME_UpdatePlayerStats(ptUnit,StatNo,StatValue,pClientList->pPlayerUnit);
+	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus==4) D2Funcs.D2GAME_UpdatePlayerStats(ptUnit,StatNo,StatValue,pClientList->pPlayerUnit);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -235,7 +242,7 @@ void BroadcastMsg(Game* pGame,char *Msg...)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus==4) D2Funcs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -249,7 +256,7 @@ void BroadcastPacket(Game* pGame, BYTE * aPacket, int aLen)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus == 4) D2Funcs::D2GAME_SendPacket(pClientList,aPacket,aLen);
+	if(pClientList->InitStatus == 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,aLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -274,7 +281,7 @@ void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, shor
 	if(pClientList->InitStatus==4) {
 		_snprintf_s(hEvent.szMsg,255,255,"%s",(pClientList->LocaleID == 10 ? polMsg.c_str() : engMsg.c_str()));
 		hEvent.PacketLen = 0xE + strlen(hEvent.szMsg) +1;
-		D2Funcs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
+		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
 		}
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
@@ -298,7 +305,7 @@ void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string sz
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-		if(pClientList->InitStatus==4)	D2Funcs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
+		if(pClientList->InitStatus==4)	D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
 		if(!pClientList->ptPrevious) break;
 		pClientList=pClientList->ptPrevious;
 	}
@@ -320,7 +327,7 @@ void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, s
 	_snprintf_s(hEvent.szMsg,255,255,"%s",(pClient->LocaleID == 10 ? polMsg.c_str() : engMsg.c_str()));
 	hEvent.PacketLen = 0xE + strlen(hEvent.szMsg) +1;
 
-	if(pClient->InitStatus==4) D2Funcs::D2GAME_SendPacket(pClient,(BYTE*)&hEvent,hEvent.PacketLen);
+	if(pClient->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClient,(BYTE*)&hEvent,hEvent.PacketLen);
 }
 
 
@@ -348,7 +355,7 @@ void BroadcastEventMsg(Game* pGame, int Color, char *Msg...)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus>=4) D2Funcs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus>=4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -364,23 +371,23 @@ void BroadcastEventMsgEx(Game* pGame, int Color, string EngMsg, string PolMsg)
 	EngMsg.resize(255);
 	while(pClientList)
 	{
-	if(pClientList->InitStatus!=4) continue;
+		if(pClientList->InitStatus!=4) continue;
 
-	WORD MsgLen = 27 + (pClientList->LocaleID == 10 ? strlen(PolMsg.c_str()) : strlen(EngMsg.c_str()));
-	BYTE * aPacket = new BYTE[MsgLen];
-	memset(aPacket,0,MsgLen);
-	aPacket[0] = 0x26;
-	aPacket[1] = 0x04;
-	aPacket[3] = 0x02;
-	aPacket[8] = (BYTE)Color;
-	strcpy_s((char*)aPacket+10,16,"[administrator]");
-	strcpy_s((char*)aPacket+26,MsgLen-26, pClientList->LocaleID == 10 ? PolMsg.c_str() : EngMsg.c_str());
+		WORD MsgLen = 27 + (pClientList->LocaleID == 10 ? strlen(PolMsg.c_str()) : strlen(EngMsg.c_str()));
+		BYTE * aPacket = new BYTE[MsgLen];
+		memset(aPacket,0,MsgLen);
+		aPacket[0] = 0x26;
+		aPacket[1] = 0x04;
+		aPacket[3] = 0x02;
+		aPacket[8] = (BYTE)Color;
+		strcpy_s((char*)aPacket+10,16,"[administrator]");
+		strcpy_s((char*)aPacket+26,MsgLen-26, pClientList->LocaleID == 10 ? PolMsg.c_str() : EngMsg.c_str());
 
 
-	D2Funcs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
-	delete[] aPacket;
-	if(!pClientList->ptPrevious) break;
-	pClientList=pClientList->ptPrevious;
+		D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+		delete[] aPacket;
+		if(!pClientList->ptPrevious) break;
+		pClientList=pClientList->ptPrevious;
 	}
 
 }
@@ -388,253 +395,29 @@ void BroadcastEventMsgEx(Game* pGame, int Color, string EngMsg, string PolMsg)
 
 void ClearSayGoFlag(Game* pGame)
 {
-for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
-{
-	if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->SaidGO = 0;
-}
+	for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
+	{
+		if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->SaidGO = 0;
+	}
 }
 
 void ClearIsPlayingFlag(Game* pGame)
 {
-for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
-{
-	if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->isPlaying = 0;
-}
+	for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
+	{
+		if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->isPlaying = 0;
+	}
 }
 
 
 void ClearCanAttackFlag(Game* pGame)
 {
-for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
-{
-	if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->CanAttack = 0;
-}
-}
-
-list<WardenClient>::iterator GetClientByID(DWORD CID)
-{
-LOCK
-list<WardenClient>::iterator ptWardenClient = hWarden.Clients.end();
-
-for(list<WardenClient>::iterator i = hWarden.Clients.begin(); i!=hWarden.Clients.end(); ++i)
-{
-	if(i->ClientID==CID) 
+	for(ClientData* i = pGame->pClientList; i; i = i->ptPrevious) 
 	{
-	ptWardenClient = i;
-	break;
+		if(i->InitStatus == 4)	i->pPlayerUnit->pPlayerData->CanAttack = 0;
 	}
 }
 
-if(ptWardenClient != hWarden.Clients.end()) return ptWardenClient;
-
-ptWardenClient = hWarden.Clients.end(); 
-UNLOCK
-return ptWardenClient;
-
-}
-
-list<WardenClient>::iterator GetClientByAcc(char *szAcc)
-{
-if(!szAcc) return hWarden.Clients.end();
-if(!szAcc[0]) return hWarden.Clients.end();
-LOCK
-
-list<WardenClient>::iterator ptWardenClient = hWarden.Clients.end();
-
-for(list<WardenClient>::iterator i = hWarden.Clients.begin(); i!=hWarden.Clients.end(); ++i)
-{
-	if(_stricmp(i->AccountName.c_str(),szAcc) == 0)
-	{
-	ptWardenClient = i;
-	break;
-	}
-}
-
-if(ptWardenClient != hWarden.Clients.end()) return ptWardenClient;
-
-ptWardenClient = hWarden.Clients.end(); 
-UNLOCK
-return ptWardenClient;
-}
-
-
-list<WardenClient>::iterator GetClientByName(char *szName)
-{
-if(!szName) return hWarden.Clients.end();
-if(!szName[0]) return hWarden.Clients.end();
-LOCK
-
-list<WardenClient>::iterator ptWardenClient = hWarden.Clients.end();
-
-for(list<WardenClient>::iterator i = hWarden.Clients.begin(); i!=hWarden.Clients.end(); ++i)
-{
-	if(_stricmp(i->CharName.c_str(),szName) == 0)
-	{
-	ptWardenClient = i;
-	break;
-	}
-}
-
-if(ptWardenClient != hWarden.Clients.end()) return ptWardenClient;
-
-ptWardenClient = hWarden.Clients.end(); 
-UNLOCK
-return ptWardenClient;
-}
-
-list<WardenClient>::iterator GetClientByName(Game* pGame, char *szName)
-{
-if(!pGame) return hWarden.Clients.end();
-if(!szName) return hWarden.Clients.end();
-if(!szName[0]) return hWarden.Clients.end();
-
-LOCK
-
-list<WardenClient>::iterator ptWardenClient = hWarden.Clients.end();
-
-for(list<WardenClient>::iterator i = hWarden.Clients.begin(); i!=hWarden.Clients.end(); ++i)
-{
-	if(_stricmp(i->CharName.c_str(),szName) == 0) 
-	{
-	ptWardenClient = i;
-	break;
-	}
-}
-
-if(ptWardenClient != hWarden.Clients.end())
-if(ptWardenClient->ptGame)
-if(ptWardenClient->ptGame == pGame) return ptWardenClient;
-
-ptWardenClient = hWarden.Clients.end(); 
-UNLOCK
-return ptWardenClient;
-}
-
-void SendPtrRequest(list<WardenClient>::iterator ptCurrentClient,char* DllName1,DWORD Addr, char* DllName2, DWORD Addr2)
-{
-//BYTE Pack[] = {0x02,0x0C,'D','2','C','l','i','e','n','t','.','d','l','l',0x0c,'D','2','C','l','i','e','n','t','.','d','l','l',0x00,0xec,0x01,0xFF,0xFF,0xFF,0xFF,0x04,0xec,0x02,0xFF,0xFF,0xFF,0xFF,0x04,0xd9};
-unsigned char WardenCMD2_local[100];
-memset(WardenCMD2_local,0,100);
-
-BYTE s1 = strlen(DllName1);
-BYTE s2 = strlen(DllName2);
-WORD PacketSize =s1+s2+19;
-BYTE * Packet = new BYTE[PacketSize];
-Packet[0]=0x02;
-Packet[1]=s1;
-memcpy(&Packet[2],DllName1,s1);
-Packet[2+s1]=s2;
-memcpy(&Packet[3+s1],DllName2,s2);
-
-Packet[3+s1+s2]=0x00;
-Packet[4+s1+s2]=0xEC;
-Packet[5+s1+s2]=0x01;
-*(DWORD*)&Packet[6+s1+s2]=Addr;
-Packet[10+s1+s2]=0x04;
-Packet[11+s1+s2]=0xEC;
-Packet[12+s1+s2]=0x02;
-*(DWORD*)&Packet[13+s1+s2]=Addr2;
-Packet[17+s1+s2]=0x04;
-Packet[18+s1+s2]=0xD9;
-WardenCMD2_local[0] = 0xAE;
-*(WORD*)&WardenCMD2_local[1] = PacketSize;
-memcpy(&WardenCMD2_local[3],Packet,PacketSize);
-rc4_crypt(ptCurrentClient->RC4_KEY_0XAE,&WardenCMD2_local[3],PacketSize);
-D2Funcs::D2NET_SendPacket(0,ptCurrentClient->ClientID,WardenCMD2_local,PacketSize+3);
-//if(D2Funcs::D2NET_GetClient(ptCurrentClient->ClientID))
-//D2Funcs::D2GAME_SendPacket(ptCurrentClient->ptClientData,WardenCMD2_local,PacketSize+3);
-delete[] Packet;
-}
-
-
-void SendPtrRequest(list<WardenClient>::iterator ptCurrentClient,char* DllName1,DWORD Addr, BYTE nBytes1, char* DllName2, DWORD Addr2, BYTE nBytes2)
-{
-//BYTE Pack[] = {0x02,0x0C,'D','2','C','l','i','e','n','t','.','d','l','l',0x0c,'D','2','C','l','i','e','n','t','.','d','l','l',0x00,0xec,0x01,0xFF,0xFF,0xFF,0xFF,0x04,0xec,0x02,0xFF,0xFF,0xFF,0xFF,0x04,0xd9};
-unsigned char WardenCMD2_local[100];
-memset(WardenCMD2_local,0,100);
-
-BYTE s1 = strlen(DllName1);
-BYTE s2 = strlen(DllName2);
-WORD PacketSize =s1+s2+19;
-BYTE * Packet = new BYTE[PacketSize];
-Packet[0]=0x02;
-Packet[1]=s1;
-memcpy(&Packet[2],DllName1,s1);
-Packet[2+s1]=s2;
-memcpy(&Packet[3+s1],DllName2,s2);
-
-Packet[3+s1+s2]=0x00;
-Packet[4+s1+s2]=0xEC;
-Packet[5+s1+s2]=0x01;
-*(DWORD*)&Packet[6+s1+s2]=Addr;
-Packet[10+s1+s2]=nBytes1;
-Packet[11+s1+s2]=0xEC;
-Packet[12+s1+s2]=0x02;
-*(DWORD*)&Packet[13+s1+s2]=Addr2;
-Packet[17+s1+s2]=nBytes2;
-Packet[18+s1+s2]=0xD9;
-WardenCMD2_local[0] = 0xAE;
-*(WORD*)&WardenCMD2_local[1] = PacketSize;
-memcpy(&WardenCMD2_local[3],Packet,PacketSize);
-rc4_crypt(ptCurrentClient->RC4_KEY_0XAE,&WardenCMD2_local[3],PacketSize);
-D2Funcs::D2NET_SendPacket(0,ptCurrentClient->ClientID,WardenCMD2_local,PacketSize+3);
-//if(D2Funcs::D2NET_GetClient(ptCurrentClient->ClientID))
-//D2Funcs::D2GAME_SendPacket(ptCurrentClient->ptClientData,WardenCMD2_local,PacketSize+3);
-delete[] Packet;
-}
-
-
-void SendPtrRequest(list<WardenClient>::iterator ptCurrentClient,char* DllName1,DWORD Addr, BYTE Bytes)
-{
-unsigned char WardenCMD2_local[100];
-memset(WardenCMD2_local,0,100);
-//02 0c 62 6E 63 6C 69 65 6E 74 2E 64 6C 6C 00 ec 01 30 D3 01 00 04 d9
-BYTE s1 = strlen(DllName1);
-WORD PacketSize =s1+11;
-BYTE * Packet = new BYTE[PacketSize];
-Packet[0]=0x02;
-Packet[1]=s1;
-memcpy(&Packet[2],DllName1,s1);
-
-Packet[2+s1]=0x00;
-Packet[3+s1]=0xEC;
-Packet[4+s1]=0x01;
-*(DWORD*)&Packet[5+s1]=Addr;
-Packet[9+s1]=Bytes;
-Packet[10+s1]=0xD9;
-WardenCMD2_local[0] = 0xAE;
-*(WORD*)&WardenCMD2_local[1] = PacketSize;
-memcpy(&WardenCMD2_local[3],Packet,PacketSize);
-rc4_crypt(ptCurrentClient->RC4_KEY_0XAE,&WardenCMD2_local[3],PacketSize);
-D2Funcs::D2NET_SendPacket(0,ptCurrentClient->ClientID,WardenCMD2_local,PacketSize+3);
-//if(D2Funcs::D2NET_GetClient(ptCurrentClient->ClientID))
-//D2Funcs::D2GAME_SendPacket(ptCurrentClient->ptClientData,WardenCMD2_local,PacketSize+3);
-delete[] Packet;
-}
-
-void SendPtrRequest(list<WardenClient>::iterator ptCurrentClient,DWORD Addr,BYTE Bytes)
-{
-//{0x02,0x00,0xec,0x00,0xff,0xff,0xff,0xff,0x40,0xd9 };
-unsigned char WardenCMD2_local[100];
-memset(WardenCMD2_local,0,100);
-WORD PacketSize = 10;
-BYTE * Packet = new BYTE[10];
-Packet[0]=0x02;
-Packet[1]=0x00;
-Packet[2]=0xEC;
-Packet[3]=0x00;
-*(DWORD*)&Packet[4]=Addr;
-Packet[8]=Bytes;
-Packet[9]=0xD9;
-WardenCMD2_local[0] = 0xAE;
-*(WORD*)&WardenCMD2_local[1] = PacketSize;
-memcpy(&WardenCMD2_local[3],Packet,PacketSize);
-rc4_crypt(ptCurrentClient->RC4_KEY_0XAE,&WardenCMD2_local[3],PacketSize);
-D2Funcs::D2NET_SendPacket(0,ptCurrentClient->ClientID,WardenCMD2_local,PacketSize+3);
-//if(D2Funcs::D2NET_GetClient(ptCurrentClient->ClientID))
-//D2Funcs::D2GAME_SendPacket(ptCurrentClient->ptClientData,WardenCMD2_local,PacketSize+3);
-delete[] Packet;
-}
 
 BOOL WriteBytes(void* lpAddr, void* lpBuffer, DWORD dwLen)
 {
@@ -729,9 +512,9 @@ void SendMsgToClient(ClientData* ptClient,char *Msg...)
 	strcpy_s((char*)aPacket+10,10,"ÿc3WARDEN");
 	strcpy_s((char*)aPacket+20,MsgLen-20,text);
 
-//	D2Funcs::D2NET_SendPacket(0,ptClient->ClientID,aPacket,MsgLen);
+//	D2Funcs.D2NET_SendPacket(0,ptClient->ClientID,aPacket,MsgLen);
 
-	D2Funcs::D2GAME_SendPacket(ptClient,aPacket,MsgLen);
+	D2ASMFuncs::D2GAME_SendPacket(ptClient,aPacket,MsgLen);
 	delete[] aPacket;
 	delete[] text;
 }
@@ -749,7 +532,7 @@ Packet[10]=0x01;
 ClientData * pClientList = ptUnit->pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus>=4) D2Funcs::D2GAME_SendPacket(pClientList,Packet,11);
+	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus>=4) D2ASMFuncs::D2GAME_SendPacket(pClientList,Packet,11);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -765,16 +548,16 @@ WideCharToMultiByte(CP_ACP, 0, Source, -1, Dest, 255, NULL, NULL);
 
 string ConvertSkill(WORD SkillID)
 {
-BYTE* Tbl = (*D2Vars::D2COMMON_sgptDataTables)->pSkillDescTxt;
-if(SkillID> (*D2Vars::D2COMMON_sgptDataTables)->dwSkillsRecs) return "?";
-SkillsTxt* pTxt = (*D2Vars::D2COMMON_sgptDataTables)->pSkillsTxt;
+BYTE* Tbl = (* D2Vars.D2COMMON_sgptDataTables)->pSkillDescTxt;
+if(SkillID> (* D2Vars.D2COMMON_sgptDataTables)->dwSkillsRecs) return "?";
+SkillsTxt* pTxt = (* D2Vars.D2COMMON_sgptDataTables)->pSkillsTxt;
 int nRow = pTxt[SkillID].wSkillDesc;
 if(!nRow) return "?";
 
 Tbl+= (nRow*0x120);
 WORD LocId = *(WORD*)(Tbl+8);
 if(LocId == 0) return "? - tell lolet";
-wstring wText (D2Funcs::D2LANG_GetLocaleText(LocId));
+wstring wText (D2Funcs.D2LANG_GetLocaleText(LocId));
 string szText;
 szText.assign(wText.begin(),wText.end());
 return szText;
@@ -964,8 +747,8 @@ void Log(char *format,...)
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
 
-	SYSTEMTIME t;
-	char timebuf[256];
+	SYSTEMTIME t = { 0 };
+	char timebuf[256] = { 0 };
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
 
@@ -992,8 +775,8 @@ void LogNoLock(char *format,...)
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
 
-	SYSTEMTIME t;
-	char timebuf[256];
+	SYSTEMTIME t = { 0 };
+	char timebuf[256] = { 0 };
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
 
@@ -1004,6 +787,7 @@ void LogNoLock(char *format,...)
 	fwrite(timebuf,strlen(timebuf),1,fp);
 	fwrite(text,strlen(text),1,fp);
 	fwrite("\n",1,1,fp);
+	fflush(fp);
 	fclose(fp);
 
 	delete[] text;
@@ -1018,9 +802,15 @@ void Debug(char *format,...)
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
 
-	OutputDebugString(text);
-	OutputDebugString("\n");
+	SYSTEMTIME t = { 0 };
+	GetLocalTime(&t);
 
+	char* out = new char[strlen(text) + 24];
+	sprintf_s(out, strlen(text) + 24, "[%04d-%02d-%02d %02d:%02d:%02d] %s\n", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, text);
+
+	OutputDebugString(out);
+
+	delete[] out;
 	delete[] text;
 };
 
@@ -1042,8 +832,8 @@ void LogToFile(char *FileName, bool PutTime, char *format,...)
 
 if(PutTime)
 {
-	SYSTEMTIME t;
-	char timebuf[256];
+	SYSTEMTIME t = { 0 };
+	char timebuf[256] = { 0 };
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
 	fwrite(timebuf,strlen(timebuf),1,fp);
@@ -1066,7 +856,7 @@ void LogError(unsigned char log_level_in,char *format,...)
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
 
-	SYSTEMTIME t;
+	SYSTEMTIME t = { 0 };
 	char timebuf[256];
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
@@ -1093,11 +883,11 @@ void LogMsg(char * GameName, char *format,...)
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
 
-	SYSTEMTIME t;
-	char timebuf[256];
+	SYSTEMTIME t = { 0 };
+	char timebuf[256] = { 0 };
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
-	char fn[40];
+	char fn[40] = { 0 };
 	sprintf_s(fn,40,"Msgs-%s.log",GameName);
 	FILE *fp = 0;
 	fopen_s(&fp,fn,"a+");

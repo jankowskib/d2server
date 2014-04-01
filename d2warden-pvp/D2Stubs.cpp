@@ -41,7 +41,7 @@ __declspec(naked) void __fastcall D2GAME_OnCreateDamage_STUB()
 	popad
 
 	sub esp, 408h
-	jmp D2Ptrs::D2GAME_CreateDamage_J
+	jmp D2Ptrs.D2GAME_CreateDamage_J
 	}
 
 }
@@ -90,7 +90,7 @@ __declspec(naked) void __fastcall D2GAME_ParseCreatePackets_STUB()
 	{
 	call d2warden_0X68Handler
 
-	jmp D2Ptrs::D2GAME_CreatePackets_J
+	jmp D2Ptrs.D2GAME_CreatePackets_J
 	ret
 	}
 }
@@ -104,7 +104,7 @@ __declspec(naked) void __fastcall D2GAME_LastHitIntercept_STUB()
 	push ebx // Atatacker
 	call OnLastHit
 
-	jmp D2Ptrs::D2GAME_ApplyBurnDmg_J
+	jmp D2Ptrs.D2GAME_ApplyBurnDmg_J
 	}
 }
 
@@ -130,7 +130,7 @@ __declspec(naked) void __fastcall D2GAME_GetPlayers_STUB()
 //	sub esp, 0x40
 //	push ebx
 //	push ebp
-//	jmp D2Ptrs::D2GAME_JoinGame_J
+//	jmp D2Ptrs.D2GAME_JoinGame_J
 //
 //	}
 //}
@@ -163,7 +163,7 @@ __declspec(naked) void __fastcall D2GAME_OnUseItem_STUB()
 		//push ebx     //pGame
 		//mov eax, ebp // pItem
 		//mov ecx, edi // pUnit
-		//call D2Ptrs::D2GAME_RemoveItem_I
+		//call D2Ptrs.D2GAME_RemoveItem_I
 
 		pop ebp
 		pop edi
@@ -175,7 +175,7 @@ __declspec(naked) void __fastcall D2GAME_OnUseItem_STUB()
 		ret 12
 skip:
 		cmp eax, ' ssa'
-		jmp D2Ptrs::D2GAME_UseableItems_J
+		jmp D2Ptrs.D2GAME_UseableItems_J
 	}
 }
 
@@ -204,7 +204,7 @@ __declspec(naked) void __fastcall D2GAME_OnMonsterDeath_STUB()
 //	push ebp
 	mov eax, esi
 
-	call D2Ptrs::D2GAME_Monster_I
+	call D2Ptrs.D2GAME_Monster_I
 
 	ret
 	}
@@ -382,6 +382,7 @@ void __declspec(naked) __fastcall D2GAME_GameEnter_STUB()
 
 	pop edi
 	pop esi
+	xor eax, eax
 	pop ebp
 	pop ebx
 	pop ecx
@@ -412,7 +413,7 @@ void __declspec(naked) __fastcall D2GAME_OnEventSend_STUB()
 	mov ebx, eax
 	xor eax, eax
 
-	jmp D2Ptrs::D2GAME_BroadcastEvent_J
+	jmp D2Ptrs.D2GAME_BroadcastEvent_J
 	}
 }
 
@@ -421,7 +422,7 @@ void __declspec(naked) __fastcall D2GAME_GameDestroy_STUB()
 {
 	__asm
 	{
-	call D2Ptrs::D2GAME_FreePartyMem_I
+	call D2Ptrs.D2GAME_FreePartyMem_I
 	push ecx
 	mov ecx, edi
 	call OnGameDestroy
@@ -471,7 +472,7 @@ old:
 push ebp
 mov ebp,esp
 and esp, -8
-jmp D2Ptrs::D2GAME_ChatOldCode_J
+jmp D2Ptrs.D2GAME_ChatOldCode_J
 
 skip:
 ret 8
@@ -527,7 +528,7 @@ mov dword ptr ss:[esp+0x0a],eax
 mov eax, dword ptr ss:[esp+0x14]
 push ecx
 mov dword ptr ss:[esp+0x09],edx
-call D2Ptrs::D2GAME_SendPacket_I
+call D2Ptrs.D2GAME_SendPacket_I
 add esp, 0x0c
 retn 0x10
 }
@@ -541,7 +542,7 @@ int __declspec(naked) __stdcall D2GAME_Ressurect_STUB()
 	{
 		mov eax, dword ptr ds:[ebx+0x18]
 		push eax
-		call D2Funcs::D2COMMON_GetTownLevel
+		call D2Funcs.D2COMMON_GetTownLevel
 		ret
 	}
 }
@@ -594,36 +595,37 @@ DWORD __declspec(naked) __fastcall D2GAME_SetDRCap_STUB()
 
 void __declspec(naked) __fastcall D2NET_ReceivePacket_STUB()
 {
-static DWORD retAdd = 0;
+//DWORD retAdd = 0;
 __asm
 	{
-	push ecx
-	push edx
-	mov edx,edi
+		pushad
 
-	call OnReceivePacket
-	pop edx
-	pop ecx
+		mov edx, edi
+		call OnReceivePacket
+		
+		popad
 
-	pop retAdd
-	call D2Ptrs::D2NET_ReceivePacket_I
-	push retAdd
-	retn
-
+		jmp D2Funcs.D2NET_isCorrectClientPacket
 	}
 }
 
 // Fixed FindUnitById, which causes crash if unittype <> {0-5}
-//	<eax>(signed int a1<eax>, int a2<edx>, int pGame<ecx>)
+//	UnitAny *__usercall UNIT_FindUnit_6FC8DC40<eax>(Game *pGame<ecx>, int dwUnitId<edx>, int dwType<eax>)
 __declspec(naked) UnitAny* __fastcall D2GAME_FindUnit_STUB()
 {
-static DWORD retAdd = 0;
 	__asm
 	{
-	pop retAdd
-	push eax
-	push retAdd
-	jmp D2Funcs::D2GAME_FindUnit
+	//	pushad
+
+		push eax
+		push edx
+		push ecx
+
+		call D2ASMFuncs::D2GAME_FindUnit
+
+	//	popad
+
+		ret
 	}
 
 }
@@ -633,7 +635,7 @@ static DWORD retAdd = 0;
 
 //----ASM SUBS---
 
-namespace D2Funcs 
+namespace D2ASMFuncs 
 {
 
 //(Game *pGame<eax>, UnitAny *pUnit<edi>, Skill *pSkill, int nMode, signed int UnitType, int UnitId, int bAllowReEnter)
@@ -653,7 +655,7 @@ __declspec(naked) void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny 
 		push [esp+20+8]
 		push [esp+20+8]
 
-		call D2Ptrs::D2GAME_SetPlayerUnitMode_I
+		call D2Ptrs.D2GAME_SetPlayerUnitMode_I
 
 		pop edi
 		pop eax
@@ -671,7 +673,7 @@ __declspec(naked) void __fastcall D2GAME_UpdateClientInventory(ClientData* pClie
 		mov edi, ecx
 		push edx
 
-		call D2Ptrs::D2GAME_UpdateItems_I
+		call D2Ptrs.D2GAME_UpdateItems_I
 
 		pop edi
 
@@ -687,7 +689,7 @@ __declspec(naked) char __fastcall D2GAME_MoveItems(Game* pGame, UnitAny* pSource
 		push [esp+4]
 		push ecx
 
-		call D2Ptrs::D2GAME_MoveItems_I
+		call D2Ptrs.D2GAME_MoveItems_I
 
 		ret 4
 	}
@@ -702,7 +704,7 @@ __declspec(naked) void __fastcall D2GAME_DeleteTimer(Game* pGame, Timer* pTimer)
 		mov edi, ecx
 		mov eax, edx
 
-		call D2Ptrs::D2GAME_DeleteTimer_I
+		call D2Ptrs.D2GAME_DeleteTimer_I
 
 		pop edi
 
@@ -718,7 +720,7 @@ __declspec(naked) void __fastcall D2GAME_StopSequence(UnitAny* pUnit)
 
 		mov esi, ecx
 
-		call D2Ptrs::D2GAME_StopSequence_I
+		call D2Ptrs.D2GAME_StopSequence_I
 
 		pop esi
 
@@ -731,7 +733,7 @@ __declspec(naked) void __fastcall D2GAME_RemoveBuffs(Game* pGame, UnitAny* pUnit
 	__asm
 	{
 		mov eax, edx
-		jmp D2Ptrs::D2GAME_RemoveBuffs_I
+		jmp D2Ptrs.D2GAME_RemoveBuffs_I
 
 	}
 }
@@ -745,7 +747,7 @@ __declspec(naked) void __fastcall D2GAME_ResetTimers(Game* pGame, UnitAny* pUnit
 		mov esi, edx
 		push ecx
 
-		call D2Ptrs::D2GAME_ResetTimers_I
+		call D2Ptrs.D2GAME_ResetTimers_I
 
 		pop esi
 
@@ -763,7 +765,7 @@ __declspec(naked) void __fastcall D2GAME_DeleteTimers(Game* pGame, UnitAny* pUni
 		mov eax, ecx
 		mov ebx, edx
 
-		call D2Ptrs::D2GAME_DeleteTimers_I
+		call D2Ptrs.D2GAME_DeleteTimers_I
 		
 		pop ebx
 		pop eax
@@ -781,7 +783,7 @@ __declspec(naked) void __fastcall D2GAME_RemoveInteraction(Game* pGame, UnitAny*
 		mov eax, edx
 		mov esi, ecx
 
-		call D2Ptrs::D2GAME_RemoveInteraction_I
+		call D2Ptrs.D2GAME_RemoveInteraction_I
 
 		pop esi
 
@@ -794,7 +796,7 @@ __declspec(naked) int __fastcall D2GAME_RestoreItems(Game *pGame, BYTE *pSaveBuf
 	__asm
 	{
 		mov eax, edx
-		jmp D2Ptrs::D2GAME_RestoreItems_I
+		jmp D2Ptrs.D2GAME_RestoreItems_I
 	}
 }
 
@@ -804,7 +806,7 @@ __declspec(naked) void __fastcall D2GAME_RemoveBonuses(Game* pGame, UnitAny* pPl
 	{
 		mov eax, edx
 		push ecx
-		call D2Ptrs::D2GAME_RemoveBonuses_I
+		call D2Ptrs.D2GAME_RemoveBonuses_I
 
 		ret
 	}
@@ -821,7 +823,7 @@ __declspec(naked) void __fastcall D2GAME_AddGold(UnitAny* pPlayer, Game *pGame, 
 
 		mov esi, ecx
 
-		call D2Ptrs::D2GAME_AddGold_I
+		call D2Ptrs.D2GAME_AddGold_I
 
 		pop esi
 
@@ -833,8 +835,8 @@ __declspec(naked) void __fastcall D2GAME_UpdateQuantity(UnitAny* pPlayer)
 {
 	__asm
 	{
-	mov eax, ecx
-	jmp D2Ptrs::D2GAME_UpdateQuantity_I
+		mov eax, ecx
+		jmp D2Ptrs.D2GAME_UpdateQuantity_I
 	}
 }
 
@@ -847,7 +849,7 @@ __declspec(naked) void __fastcall D2GAME_UpdateItemQuantity(UnitAny* pPlayer, Un
 		mov eax, edx
 		mov edi, ecx
 		
-		call D2Ptrs::D2GAME_UpdateQuantity_II
+		call D2Ptrs.D2GAME_UpdateQuantity_II
 
 		pop edi
 		ret
@@ -859,7 +861,7 @@ __declspec(naked) int __fastcall D2GAME_SaveItems(BYTE *pBuffer, BOOL _2, Game *
 	__asm
 	{
 		mov eax, ecx
-		jmp D2Ptrs::D2GAME_SaveItems_I
+		jmp D2Ptrs.D2GAME_SaveItems_I
 	}
 }
 
@@ -868,9 +870,8 @@ __declspec(naked) void __fastcall D2GAME_CastSkill(UnitAny *ptUnit, Skill *ptSki
 {
 	__asm
 	{
-	mov eax, edx
-	jmp D2Ptrs::D2GAME_CastSkill_I
-
+		mov eax, edx
+		jmp D2Ptrs.D2GAME_CastSkill_I
 	}
 }
 
@@ -878,8 +879,8 @@ __declspec(naked) int __fastcall D2GAME_CastSkillOnUnit(UnitAny *ptUnit, Skill *
 {
 	__asm
 	{
-	mov eax, edx
-	jmp D2Ptrs::D2GAME_CastSkillOnUnit_I
+		mov eax, edx
+		jmp D2Ptrs.D2GAME_CastSkillOnUnit_I
 	}
 }
 
@@ -895,7 +896,7 @@ __declspec(naked) UnitAny* __fastcall D2GAME_SpawnMonsterInCurrentRoom(int MIdx,
 		push [esp+20] //pRoom
 		push [esp+20] //pGame
 
-		call D2Ptrs::D2GAME_SpawnMonsterInCurrentRoom_I
+		call D2Ptrs.D2GAME_SpawnMonsterInCurrentRoom_I
 
 		ret 24
 	}
@@ -906,7 +907,7 @@ __declspec(naked) StatList* __fastcall D2GAME_CreateAuraStatList(CurseStateParam
 	__asm
 	{
 		mov eax, ecx
-		call D2Ptrs::D2GAME_CreateAuraStatList_I
+		call D2Ptrs.D2GAME_CreateAuraStatList_I
 		ret
 	}
 }
@@ -919,7 +920,7 @@ __declspec(naked) void __stdcall D2GAME_UpdateBonuses(UnitAny *pUnit)
 
 		mov ebx, [esp+8]
 
-		call D2Ptrs::D2GAME_UpdateBonuses_I
+		call D2Ptrs.D2GAME_UpdateBonuses_I
 		
 		pop ebx
 
@@ -939,7 +940,7 @@ __declspec(naked) void __fastcall D2GAME_SetSkills(int SkillId, UnitAny* pUnit, 
 		push [esp+12]
 		push [esp+12]
 
-		call D2Ptrs::D2GAME_SetSkill_I
+		call D2Ptrs.D2GAME_SetSkill_I
 
 		pop esi
 
@@ -960,7 +961,7 @@ __declspec(naked) void __stdcall D2GAME_Send0x21_UpdateSkills(ClientData* pClien
 		push [esp+20+ 8]
 		push [esp+20+ 8]
 
-		call D2Ptrs::D2GAME_Send0x21_I
+		call D2Ptrs.D2GAME_Send0x21_I
 
 		pop ebx
 		pop esi
@@ -978,7 +979,7 @@ __declspec(naked) void __fastcall D2GAME_RemoveItem(Game* pGame, UnitAny* pUnit,
 		push ecx
 		mov eax, [esp+8]
 		mov ecx, edx
-		call D2Ptrs::D2GAME_RemoveItem_I
+		call D2Ptrs.D2GAME_RemoveItem_I
 
 		ret 4
 	}
@@ -993,7 +994,7 @@ __declspec(naked) void __fastcall D2GAME_LevelAwards(UnitAny *pUnit, Game* pGame
 		mov esi, ecx
 		push edx
 
-		call D2Ptrs::D2GAME_LevelAwards_I
+		call D2Ptrs.D2GAME_LevelAwards_I
 
 		pop esi
 
@@ -1014,7 +1015,7 @@ __declspec(naked) int __stdcall D2GAME_GetExpGained(int PlayerExp, UnitAny *pPla
 		push [esp+20+8]
 		push [esp+20+8]
 
-		call D2Ptrs::D2GAME_GetExpGained_I
+		call D2Ptrs.D2GAME_GetExpGained_I
 
 		pop edi
 		pop ebx
@@ -1034,7 +1035,7 @@ __declspec(naked) void __fastcall D2GAME_ForEachInParty(UnitAny *pMonster, Game 
 		push [esp+12]
 		push [esp+12]
 
-		call D2Ptrs::D2GAME_ForEachInParty_I
+		call D2Ptrs.D2GAME_ForEachInParty_I
 
 		pop ebx
 
@@ -1047,19 +1048,19 @@ __declspec(naked) void __fastcall D2GAME_ForEach(Game *pGame, void (__fastcall *
 	__asm
 	{
 	
-	push edi
-	push ebx
+		push edi
+		push ebx
 
-	push [esp+4+8]
-	mov edi, ecx
-	mov ebx, edx
+		push [esp+4+8]
+		mov edi, ecx
+		mov ebx, edx
 
-	call D2Ptrs::D2GAME_ForEach_I
+		call D2Ptrs.D2GAME_ForEach_I
 
-	pop ebx
-	pop edi
+		pop ebx
+		pop edi
 
-	ret 4
+		ret 4
 
 	}
 }
@@ -1068,12 +1069,12 @@ __declspec(naked) int __fastcall D2GAME_NodesUnk(UnitAny* pUnit1, int _1, UnitAn
 {
 	__asm
 	{
-	mov eax, edx
-	push [esp+4]
+		mov eax, edx
+		push [esp+4]
 
-	call D2Ptrs::D2GAME_NodesUnk_I
+		call D2Ptrs.D2GAME_NodesUnk_I
 
-	ret 4
+		ret 4
 	}
 }
 
@@ -1081,13 +1082,13 @@ __declspec(naked) int __fastcall D2GAME_GetDistanceFromXY(UnitAny* pUnit, int aX
 {
 	__asm
 	{
-	mov eax, ecx  //pUnit
-	push [esp+4] //aY
-	push edx	 //aX
+		mov eax, ecx  //pUnit
+		push [esp+4] //aY
+		push edx	 //aX
 
-	call D2Ptrs::D2GAME_GetDistanceFromXY_I
+		call D2Ptrs.D2GAME_GetDistanceFromXY_I
 
-	ret 4
+		ret 4
 	}
 }
 
@@ -1095,13 +1096,13 @@ __declspec(naked) UnitAny* __fastcall D2GAME_DupeItem(Game* ptGame, UnitAny* ptI
 {
 	__asm
 	{
-	mov eax, ecx // pGame
-	push [esp+4] //bInitUnit
-	push edx	 // ptItem
+		mov eax, ecx // pGame
+		push [esp+4] //bInitUnit
+		push edx	 // ptItem
 
-	call D2Ptrs::D2GAME_DupeItem_I
+		call D2Ptrs.D2GAME_DupeItem_I
 
-	ret 4
+		ret 4
 	}
 }
 
@@ -1110,25 +1111,25 @@ __declspec(naked) int __fastcall D2GAME_DeleteItem(Game* ptGame, UnitAny* ptItem
 {
 	__asm
 	{
-push ebx
-push edi
-push ecx
-push edx
+		push ebx
+		push edi
+		push ecx
+		push edx
 
-mov ebx, D2Ptrs::D2GAME_FE_Remove
-mov edi, ecx
-push edx
+		mov ebx, D2Ptrs.D2GAME_FE_Remove
+		mov edi, ecx
+		push edx
 
-call D2Ptrs::D2GAME_ForEach_I
+		call D2Ptrs.D2GAME_ForEach_I
 
-pop edx
-pop ecx
+		pop edx
+		pop ecx
 
-call D2Funcs::D2GAME_DeleteUnit
+		call D2Funcs.D2GAME_DeleteUnit
 
-pop edi
-pop ebx
-ret
+		pop edi
+		pop ebx
+		ret
 	}
 }
 
@@ -1146,7 +1147,7 @@ __declspec(naked) void __fastcall D2GAME_UpdateClient(WORD ItemFormat, UnitAny *
 		push [esp+20] //SomeBool
 		push [esp+20] //pClient
 
-		call D2Ptrs::D2GAME_UpdateClient_I
+		call D2Ptrs.D2GAME_UpdateClient_I
 		
 		pop ebx
 
@@ -1159,17 +1160,17 @@ __declspec(naked) void __fastcall D2GAME_DropItem(UnitAny* ptItem, Room1* ptRoom
 {
 	__asm
 	{
-	push ebx
-	mov eax, [esp+20] //yPos
-	mov ebx, edx	  //ptRoom
-	push [esp+16]
-	push [esp+16]
-	push [esp+16]
+		push ebx
+		mov eax, [esp+20] //yPos
+		mov ebx, edx	  //ptRoom
+		push [esp+16]
+		push [esp+16]
+		push [esp+16]
 
-	call D2Ptrs::D2GAME_DropItem_I
+		call D2Ptrs.D2GAME_DropItem_I
 
-	pop ebx
-	ret 16
+		pop ebx
+		ret 16
 	}
 }
 
@@ -1177,20 +1178,20 @@ __declspec(naked) UnitAny* __stdcall D2GAME_CreateItem(int iLvl, int a2, int a3,
 {
 	__asm
 	{
-	mov eax, [esp+4] // iLvl
-	mov ecx, [esp+8] // a2
-	mov edx, [esp+12]//a3
-	push [esp+44] // a11
-	push [esp+44] // a10
-	push [esp+44] // a9
-	push [esp+44] // iQual
-	push [esp+44] // InitMode
-	push [esp+44] // pGame
-	push [esp+44] // a5
-	push [esp+44] // pOwner
+		mov eax, [esp+4] // iLvl
+		mov ecx, [esp+8] // a2
+		mov edx, [esp+12]//a3
+		push [esp+44] // a11
+		push [esp+44] // a10
+		push [esp+44] // a9
+		push [esp+44] // iQual
+		push [esp+44] // InitMode
+		push [esp+44] // pGame
+		push [esp+44] // a5
+		push [esp+44] // pOwner
 
-	call D2Ptrs::D2GAME_CreateItem_I
-	ret 44
+		call D2Ptrs.D2GAME_CreateItem_I
+		ret 44
 	}
 }
 
@@ -1198,14 +1199,14 @@ __declspec(naked) Room1* __fastcall D2GAME_FindFreeCoords(POINT* Desired, Room1*
 {
 	__asm
 	{
-	push esi
-	mov esi, ecx
-	push [esp+12]
-	push [esp+12]
-	push edx
-	call D2Ptrs::D2GAME_FindFreeCoords_I
-	pop esi
-	ret 8
+		push esi
+		mov esi, ecx
+		push [esp+12]
+		push [esp+12]
+		push edx
+		call D2Ptrs.D2GAME_FindFreeCoords_I
+		pop esi
+		ret 8
 	}
 }
 
@@ -1219,7 +1220,7 @@ __declspec(naked) Room1* __fastcall D2GAME_CheckXYOccupy(Room1* ptRoom, int xPos
 		mov ebx, edx
 		mov edi, [esp+12]
 		
-		call D2Ptrs::D2GAME_CheckXYOccupy_I
+		call D2Ptrs.D2GAME_CheckXYOccupy_I
 		pop edi
 		pop ebx
 		ret 4
@@ -1228,15 +1229,15 @@ __declspec(naked) Room1* __fastcall D2GAME_CheckXYOccupy(Room1* ptRoom, int xPos
 
 int __declspec(naked) __fastcall D2GAME_isUnitInRange(Game *pGame, DWORD UnitId, DWORD UnitType, UnitAny *pUnit, int Range)
 {
-	__asm {
+	__asm 
+	{
+		push [esp+12] // Range
+		push [esp+12] // pUnit
+		mov eax, [esp+12] // UnitType
 
-	push [esp+12] // Range
-	push [esp+12] // pUnit
-	mov eax, [esp+12] // UnitType
+		call D2Ptrs.D2GAME_isUnitInRange_I
 
-	call D2Ptrs::D2GAME_isUnitInRange_I
-
-	ret 12
+		ret 12
 	}
 }
 
@@ -1244,13 +1245,13 @@ void __declspec(naked) __fastcall D2GAME_CreatePlayer(Game* ptGame, ClientData* 
 {
 	__asm
 	{
-	push edi
-	mov edi, ecx
-	push [esp+12]
-	push [edx]
-	call D2Ptrs::D2GAME_CreatePlayer_I
-	pop edi
-	ret 8
+		push edi
+		mov edi, ecx
+		push [esp+12]
+		push [edx]
+		call D2Ptrs.D2GAME_CreatePlayer_I
+		pop edi
+		ret 8
 	}
 }
 
@@ -1258,21 +1259,21 @@ short __declspec(naked) __fastcall D2GAME_GetPartyID(UnitAny* ptUnit)
 {
 	__asm
 	{
-	mov eax, ecx
-	jmp D2Ptrs::D2GAME_GetPartyId_I
+		mov eax, ecx
+		jmp D2Ptrs.D2GAME_GetPartyId_I
 	}
 }
 
 int __stdcall D2COMMON_GetUnitX(Path* ptPath)
 {
-if(!ptPath) return 0;
-return ptPath->xPos;
+	if(!ptPath) return 0;
+	return ptPath->xPos;
 }
 
 int __stdcall D2COMMON_GetUnitY(Path* ptPath)
 {
-if(!ptPath) return 0;
-return ptPath->yPos;
+	if(!ptPath) return 0;
+	return ptPath->yPos;
 }
 
 void __declspec(naked) __fastcall D2GAME_MoveUnitToLevelId(UnitAny *ptUnit, int LevelId, Game *ptGame)
@@ -1288,7 +1289,7 @@ __asm
 
 		push 0
 		push ecx
-		call D2Ptrs::D2GAME_MoveUnitToLevelId_I
+		call D2Ptrs.D2GAME_MoveUnitToLevelId_I
 
 		popad
 
@@ -1301,14 +1302,14 @@ int __declspec(naked) __fastcall D2GAME_TeleportUnit(int pX, int pY, Room1 *pRoo
 {
 	__asm
 	{
-mov eax, edx //pY
-mov edx, DWORD PTR SS:[esp+4] // pRoom1
-push 0
-push 0
-push DWORD PTR SS: [esp+20]
-push DWORD PTR SS: [esp+20]
-call D2Ptrs::D2GAME_MoveUnitToXY_I
-retn 12
+		mov eax, edx //pY
+		mov edx, DWORD PTR SS:[esp+4] // pRoom1
+		push 0
+		push 0
+		push DWORD PTR SS: [esp+20]
+		push DWORD PTR SS: [esp+20]
+		call D2Ptrs.D2GAME_MoveUnitToXY_I
+		retn 12
 	}
 }
 
@@ -1317,7 +1318,7 @@ retn 12
 	__asm {
 		push esi
 		mov esi, ecx
-		call D2Ptrs::D2GAME_GetGameByClientID_I
+		call D2Ptrs.D2GAME_GetGameByClientID_I
 		pop esi
 		ret
 	}
@@ -1328,7 +1329,7 @@ void __declspec(naked) __fastcall D2GAME_LeaveCriticalSection(Game* pGame)
 	__asm {
 		push eax
 		mov eax, ecx
-		call D2Ptrs::D2GAME_LeaveCriticalSection_I
+		call D2Ptrs.D2GAME_LeaveCriticalSection_I
 		pop eax
 		ret
 	}
@@ -1341,39 +1342,51 @@ DWORD __declspec(naked) __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Le
 		mov esi, ecx
 		mov eax, edx
 		push Packet
-		call D2Ptrs::D2GAME_Send0XAEPacket_I
+		call D2Ptrs.D2GAME_Send0XAEPacket_I
 
 		pop esi
 		ret 4
 	}
 }
 
- UnitAny* __fastcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, DWORD dwUnitType)
+ UnitAny* __stdcall D2GAME_FindUnit(Game* ptGame, DWORD dwUnitId, BYTE dwUnitType)
  {
-	 UnitAny **ptList, *ptUnit;
+	 UnitAny *ptUnit;
 	 ASSERT(ptGame)
-	 if(dwUnitId == -1) return 0;
+
+	 if (dwUnitId == 0 || (dwUnitId>127 && dwUnitId<1000))
+	 {
+		 DEBUGMSG("WARNING: dwUnitId = %d", dwUnitId);
+	 }
+	 if (dwUnitType > 5)
+	 {
+		 DEBUGMSG("WARNING: dwType = %d", dwUnitType);
+	 }
 
 	 switch(dwUnitType)
 	 {
 		case 0:
 		case 1:
 		case 2:
-			ptList = (UnitAny **)&(ptGame->pUnitList[dwUnitType][dwUnitId & 127]);
+			ptUnit = ptGame->pUnitList[dwUnitType][dwUnitId & 127];
 			break;
 		case 3:
-			ptList = (UnitAny **)&(ptGame->pUnitList[4][dwUnitId & 127]);
+			ptUnit = ptGame->pUnitList[4][dwUnitId & 127];
 			break;
 		case 4:
-			ptList = (UnitAny **)&(ptGame->pUnitList[3][dwUnitId & 127]);
+			ptUnit = ptGame->pUnitList[3][dwUnitId & 127];
 			break;
 		case 5:
-			ptList = (UnitAny **)&ptGame->pTileList;
+			ptUnit = (UnitAny *)ptGame->pTileList;
 			break;
 		default:
 			return 0;
 	 }
-	 ptUnit = *ptList;
+	 if(!ptUnit)
+	 {
+		// DEBUGMSG("WARNING: ptUnit is NULL, dwUnitId = %d, type = %d", dwUnitId, dwUnitType);
+		 return 0;
+	 }
 	 while(ptUnit->dwUnitId != dwUnitId) 
 	 {
 		 ptUnit = ptUnit->pRoomNext;
@@ -1386,7 +1399,7 @@ DWORD __declspec(naked) __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Le
 //{
 //	__asm {
 //		mov eax,[esp+4]
-//		call D2Ptrs::D2GAME_GameFindUnitFunc_I
+//		call D2Ptrs.D2GAME_GameFindUnitFunc_I
 //		retn 4
 //	}
 //}
@@ -1394,12 +1407,13 @@ DWORD __declspec(naked) __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Le
 
 DWORD __declspec(naked) __fastcall D2GAME_SendPacket(ClientData *pClientData, BYTE *aPacket, int aLen)
 {
-	__asm {
+	__asm 
+	{
 		mov eax,[esp+4]
 		push eax
 		push edx
 		mov eax, ecx
-		call D2Ptrs::D2GAME_SendPacket_I
+		call D2Ptrs.D2GAME_SendPacket_I
 		retn 4
 	}
 }

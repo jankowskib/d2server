@@ -58,7 +58,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">D:\Inne\D2 Stuff\D2GS\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../tmp/d2warden/Debug\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">../tmp/d2warden/Debug\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Inne\D2 Stuff\D2GS\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../tmp/d2warden/Release\</IntDir>
@@ -78,17 +78,18 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <CompileAs>CompileAsCpp</CompileAs>
       <StringPooling>false</StringPooling>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
       <CompileAsManaged>false</CompileAsManaged>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
       <SDLCheck>true</SDLCheck>
+      <CallingConvention>StdCall</CallingConvention>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)d2warden.dll</OutputFile>
@@ -101,16 +102,16 @@
       <ImportLibrary>$(OutDir)d2warden.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateMapFile>false</GenerateMapFile>
+      <GenerateMapFile>true</GenerateMapFile>
       <AssemblyDebug>true</AssemblyDebug>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>sc start D2GS</Command>
+      <Command>net start D2GS</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>sc stop D2GS 
-ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirectory)\Build.h</Command>
+      <Command>net stop D2GS
+sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirectory)\Build.h</Command>
       <Message>Stopping D2GS</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -124,17 +125,18 @@ ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <CompileAs>CompileAsCpp</CompileAs>
       <StringPooling>false</StringPooling>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
       <CompileAsManaged>false</CompileAsManaged>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
       <SDLCheck>true</SDLCheck>
+      <CallingConvention>StdCall</CallingConvention>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)d2warden.dll</OutputFile>
@@ -230,6 +232,7 @@ ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
+    <ClCompile Include="D2Patches.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
     <ClCompile Include="D2Warden.cpp" />
@@ -252,7 +255,7 @@ ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Vars.cpp" />
-    <ClCompile Include="WardenMisc.cpp" />
+    <ClCompile Include="Misc.cpp" />
     <ClCompile Include="WardenThread.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -275,16 +278,17 @@ ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%
   <ItemGroup>
     <ClInclude Include="Build.h" />
     <ClInclude Include="D2Consts.h" />
+    <ClInclude Include="D2DataTables.h" />
     <ClInclude Include="D2Handlers.h" />
     <ClInclude Include="D2Patches_111B.h" />
     <ClInclude Include="D2Patches_113D.h" />
-    <ClInclude Include="D2Ptrs_111B.h" />
-    <ClInclude Include="D2Ptrs_113D.h" />
     <ClInclude Include="D2Structs_111B.h" />
     <ClInclude Include="D2Structs_113D.h" />
     <ClInclude Include="D2Stubs.h" />
     <ClInclude Include="D2Warden.h" />
     <ClInclude Include="ExMemory.h" />
+    <ClInclude Include="ExPointers_111B.h" />
+    <ClInclude Include="ExPointers_113D.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="introtate.h" />
     <ClInclude Include="LEvents.h" />
@@ -302,7 +306,8 @@ ping -n 5 127.0.0.1 &gt;NUL &amp;&amp; sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%
     <ClInclude Include="StatDumpThread.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Vars.h" />
-    <ClInclude Include="WardenMisc.h" />
+    <ClInclude Include="WardenChecks.h" />
+    <ClInclude Include="Misc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
