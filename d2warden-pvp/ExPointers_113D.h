@@ -43,6 +43,7 @@ _d2f D2Funcs = { 0 }; void SetupD2Funcs() {
 #endif
 EXFUNCPTR(D2GAME, GetGameByNetSocket, Game*, __stdcall, (DWORD NetSocket), 0xBC700) //1.13d -- Uwaga ! Kazde uzycie zostawia watek w sekcji krytycznej!!!
 EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (signed int MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int a7, int a8), 0xC8D70) // 1.13d
+EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (srCreateMonster* pPreset), 0xCA320)
 EXFUNCPTR(D2GAME, GetUnitX, int, __fastcall, (UnitAny* ptUnit), 0x10F0) // 1.13d
 EXFUNCPTR(D2GAME, GetUnitY, int, __fastcall, (UnitAny* ptUnit), 0x1120) // 1.13d
 EXFUNCPTR(D2GAME, ExecuteEvent, int, __stdcall, (Game *pGame, int EventNo, UnitAny *pUnit, void *Data), 0x9C780) // 1.13d
@@ -109,7 +110,7 @@ EXFUNCPTR(D2COMMON, GetSkillLevel, int, __stdcall, (UnitAny* ptUnit, Skill* ptSk
 EXFUNCPTR(D2COMMON, GetLeftSkill, Skill*, __stdcall, (UnitAny* ptUnit), -10909) //k
 EXFUNCPTR(D2COMMON, GetRightSkill, Skill*, __stdcall, (UnitAny* ptUnit), -10942) //k
 EXFUNCPTR(D2COMMON, GetCurrentSkill, Skill*, __stdcall, (UnitAny* ptUnit), -10459) //k
-EXFUNCPTR(D2COMMON, GetSkillId, int, __stdcall, (Skill* ptSkill, char* szFile, int aLine), -11151) //k
+EXFUNCPTR(D2COMMON, GetSkillId, short, __stdcall, (Skill* ptSkill, char* szFile, int aLine), -11151) //k
 EXFUNCPTR(D2COMMON, GetMissileSkillId, int, __stdcall, (UnitAny* ptUnit), -11155) // 1.13d
 EXFUNCPTR(D2COMMON, EvaluateSkill, int, __stdcall, (UnitAny* ptUnit, int FormulaNo, int SkillId, int SkillLvl), -11081) //k
 EXFUNCPTR(D2COMMON, AddSkillToUnit, int, __stdcall, (UnitAny *ptUnit, DWORD SkillNo, DWORD SkillLvl, BOOL a4, char *szFile, int aLine), -10335) // 1.13d
@@ -121,6 +122,8 @@ EXFUNCPTR(D2COMMON, GetPlayerSkillCount, int, __stdcall, (int ClassId), -10407) 
 EXFUNCPTR(D2COMMON, GetPlayerSkillIdFromList, int, __stdcall, (int ClassId, int SkillNo), -10340) // 1.13d
 
 EXFUNCPTR(D2COMMON, isInShapeForm, int, __stdcall, (UnitAny* ptUnit), -10535) // 1.13d
+EXFUNCPTR(D2COMMON, GetStateNoBySkillId, int, __stdcall, (WORD SkillId), -11162) // 1.13d
+EXFUNCPTR(D2COMMON, RefreshAura, int, __stdcall, (UnitAny* pUnit, WORD SkillId), -10374) // 1.13d
 
 //Levels, Act etc
 EXFUNCPTR(D2COMMON, GetLevelNoByRoom, int, __stdcall, (Room1* ptRoom), -10691) // k
@@ -144,6 +147,7 @@ EXFUNCPTR(D2COMMON, isUnitInMeleeRange, int, __stdcall, (UnitAny* pUnit1, UnitAn
 EXFUNCPTR(D2COMMON, GetPortalFlags, int, __stdcall, (UnitAny* pUnit), -10040) // 1.13d
 EXFUNCPTR(D2COMMON, SetPortalFlags, void, __stdcall, (UnitAny* pUnit, int Flags), -10033) // 1.13d
 EXFUNCPTR(D2COMMON, UpdateRoomWithPortal, void, __stdcall, (Room1* pRoom, int bUnk), -10907) // 1.13d
+
 //QUESTS
 
 //D2LANG
@@ -266,11 +270,12 @@ _d2v D2Vars = { 0 };
 void SetupD2Vars() {
 #endif
 	EXVARPTR(D2GAME, pSpell, pSpellTbl, 0x108690) // 1.13d
-	EXVARPTR(D2GAME, ClientDataLock, CRITICAL_SECTION*, 0x1109E0) //1.13d only for now, use when wanna search client by pure id
+	EXVARPTR(D2GAME, ClientDataLock, CRITICAL_SECTION*, 0x1109E0) // 1.13d only for now, use when wanna search client by pure id
 	EXVARPTR(D2GAME, ClientDataById, ClientData*, 0x1105E0) // 1.13d only for now testing ^^
 	EXVARPTR(D2NET, ToSrvPacketSizes, int, 0xABD8) // 1.13d
+	EXVARPTR(D2GAME, ClientPacketTable, PacketTbl, 0xFA698)
 	EXVARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11173) // 1.13d
-
+	EXVARPTR(D2GAME, PartyButtonCallbacks, int, 0xFA294)
 #ifndef __DEFINE_EXPTRS
 };
 extern _d2v D2Vars;

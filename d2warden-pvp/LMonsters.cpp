@@ -20,6 +20,17 @@
 #include "stdafx.h"
 #include "LMonsters.h"
 
+
+UnitAny* __fastcall OnMonsterSpawn(srCreateMonster * pSetup)
+{
+	UnitAny* pMonster =  D2Funcs.D2GAME_SpawnPresetMonster(pSetup);
+	if (pMonster)
+	{
+		DEBUGMSG("Created monster %d on [%d, %d]!", pMonster->dwClassId, D2Funcs.D2GAME_GetUnitX(pMonster), D2Funcs.D2GAME_GetUnitY(pMonster))
+	}
+	return pMonster;
+}
+
 bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 {
 	int ClientID = pUnit->pPlayerData->pClientData->ClientID;

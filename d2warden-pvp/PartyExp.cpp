@@ -95,12 +95,12 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 			int pX = D2Funcs.D2GAME_GetUnitX(pPartyMember);
 			int pY = D2Funcs.D2GAME_GetUnitY(pPartyMember);
 
-			if(GetRange(pX,pY,mX,mY)>ExpRange && ExpRange != -1) return;
+			if(GetRange(pX,pY,mX,mY)>wcfgExpRange && wcfgExpRange != -1) return;
 
 			int nMembers = pnPartyExp->nMembers;
-			if(nMembers>Max_Players)
+			if(nMembers>wcfgMaxPlayers)
 			{
-				D2ERROR("nMember>Max_Players")
+				D2ERROR("nMember>wcfgMaxPlayers")
 			}
 			pnPartyExp->pPartyMembers[nMembers] = pPartyMember;
 			pnPartyExp->PartyLevels[nMembers] =  D2Funcs.D2COMMON_GetStatSigned(pPartyMember,STAT_LEVEL,0);
@@ -207,7 +207,7 @@ void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, in
 //				
 //			int pX = D2Funcs.D2GAME_GetUnitX(pMember);
 //			int pY = D2Funcs.D2GAME_GetUnitY(pMember);
-//			if(GetRange(pX,pY,mX,mY)>ExpRange) continue;	//Nasz zasieg expa
+//			if(GetRange(pX,pY,mX,mY)>wcfgExpRange) continue;	//Nasz zasieg expa
 //			if(pMember->dwMode && pMember->dwMode!=PLAYER_MODE_DEAD)
 //			{
 //			int ExpLvl = D2Funcs.D2COMMON_GetStatSigned(pMember,STAT_LEVEL,0);

@@ -22,5 +22,6 @@
 
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent);
 void DoRoundEndStuff(Game* pGame, UnitAny* pUnit);
+DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, int PacketSize);
 
 #endif

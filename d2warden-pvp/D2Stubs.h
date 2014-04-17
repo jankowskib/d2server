@@ -58,6 +58,7 @@ namespace D2Stubs
 // -- ASM SUBS -- 
 namespace D2ASMFuncs 
 {
+void __stdcall D2GAME_BroadcastLeavingEvent(ClientData *ptClient, Game *ptGame, BYTE MsgType);
 void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter);
 void __fastcall D2GAME_UpdateClientInventory(ClientData* pClient, UnitAny* pPlayer);
 void __fastcall D2GAME_DeleteTimer(Game* pGame, Timer* pTimer);

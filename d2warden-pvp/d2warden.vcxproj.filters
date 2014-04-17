@@ -104,6 +104,9 @@
     <ClCompile Include="Misc.cpp">
       <Filter>Source Files\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="LParty.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -201,6 +204,12 @@
     </ClInclude>
     <ClInclude Include="ExPointers_111B.h">
       <Filter>Header Files\1.11b</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonStructs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LParty.h">
+      <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

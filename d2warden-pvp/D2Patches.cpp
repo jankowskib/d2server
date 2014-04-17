@@ -32,12 +32,16 @@
 #include "PartyExp.h"
 #include "LSpectator.h"
 #include "LWorldEvent.h"
+#include "LEvents.h"
+#include "LMonsters.h"
+#include "LItems.h"
 #include "NodesEx.h"
+#include "LParty.h"
 
 void PatchD2()
 {
 
-	int NEU_NODE = Max_Players + 3;
+	int NEU_NODE = wcfgMaxPlayers + 3;
 
 #define JUMP 0xE9
 #define CALL 0xE8
@@ -67,25 +71,36 @@ void PatchD2()
 	PatchGS(NOP, GetDllOffset("D2Game.dll", 0xBC082), 0x90, 10, "pfnValidateSaveTime Fix");
 #endif
 
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_MONSTERSPAWN_I), (DWORD)OnMonsterSpawn, 5, "On Create Monster");
+
+	if (wcfgHostileLevel)
+	{
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_I + 2), wcfgHostileLevel, 1, "Hostile Level I");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_II + 2), wcfgHostileLevel, 1, "Hostile Level II");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_III + 2), wcfgHostileLevel, 1, "Hostile Level III");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_IV + 2), wcfgHostileLevel, 1, "Hostile Level IV");
+	}
+
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_LASTHITINTERCEPT), (DWORD)D2Stubs::D2GAME_LastHitIntercept_STUB, 5, "LastHitIntercept");
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_ONDAMAGECREATION), (DWORD)D2Stubs::D2GAME_OnCreateDamage_STUB, 6, "OnDamageCreation");
 	PatchGS(CALL, GetDllOffset("D2Net.dll", D2NET_CLIENT_PACKET_WRAPPER), (DWORD)D2Stubs::D2NET_ReceivePacket_STUB, 5, "Client Packet Wrapper");
-	if (AllowD2Ex)
+
+	if (wcfgAllowD2Ex)
 	{
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_D2EX_CONNECT), (DWORD)OnD2ExPacket, 5, "D2Ex Connect");
-		 D2Vars.D2NET_ToSrvPacketSizes[0x0B] = 5;
+		D2Vars.D2NET_ToSrvPacketSizes[0x0B] = 5;
 	}
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ACT_LOAD), (DWORD)OnActLoad, 5, "Act Load");
-	if (MoveToTown)
+	if (wcfgMoveToTown)
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_MOVE_PLAYER_CORPSE_TO_TOWN), (DWORD)OnCreateCorpse, 5, "Move Player Corpse To Town"); // 1.13d = 	0x93BCB 
 
-	if (DisableHostileDelay)
+	if (wcfgDisableHostileDelay)
 	{
 		PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_HOSTILE_WP_DELAY), 0, 19, "Hostile WP Delay");
 		PatchGS(0x33, GetDllOffset("D2Game.dll", D2GAME_HOSTILE_BUTTON_DELAY), 0xF6, 2, "Hostile Button Delay"); //0x33F6 xor esi, esi
 	}
 
-	if (DropEarGold)
+	if (wcfgDropEarGold)
 	{
 		PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_GOLD_DROP_ON_DEATH), 0, 7, "Gold drop on death");
 		PatchGS(0xEB, GetDllOffset("D2Game.dll", D2GAME_EAR_DROP_ON_DEATH), 0, 1, "Ear drop on death");
@@ -95,12 +110,13 @@ void PatchD2()
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_PLAYER_MODE_INTERCEPT),(DWORD)D2Stubs::D2GAME_OnPlayerModeChange_I,5,"Player mode intercept");
 
-	if (StrBugFix)
+	if (wcfgStrBugFix)
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_STRDEX_BUG_FIX), (DWORD)D2Stubs::D2GAME_SendStatToOther_STUB, 5, "Str/dex bug fix");
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_CHAT_WRAPPER), (DWORD)D2Stubs::D2GAME_Chat_STUB, 6, "Chat Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_NPC_SLOW_MISSILE_HEAL), (DWORD)D2Stubs::D2GAME_NPCHeal_STUB, 61, "NPC Slow Missile Heal");
-	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_RESSURECT_FIX), (DWORD)D2Stubs::D2GAME_Ressurect_STUB, 39, "Ressurect Fix");
+	//PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_RESSURECT_FIX), (DWORD)D2Stubs::D2GAME_Ressurect_STUB, 39, "Ressurect Fix");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X41_WRAPPER), (DWORD)OnResurrect, 6, "0x41 Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ROSTER_WRAPPER), (DWORD)D2Stubs::D2GAME_DeathMsg_STUB, 5, "Roster Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ON_MONSTER_DEATH), (DWORD)D2Stubs::D2GAME_OnMonsterDeath_STUB, 9, "On Monster Death");
 
@@ -131,12 +147,16 @@ void PatchD2()
 	//-----------
 
 	//On Run to Location
-
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X03_WRAPPER), (DWORD)OnRunToLocation, 6, "0x03 Wrapper");
+
+	if (wcfgSpectator)
+	{
+		WriteDword((DWORD*)&D2Vars.D2GAME_ClientPacketTable[0x5E].Callback, (DWORD)&OnPartyRelationChange);
+	}
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_LOCK_HACK_WRAPPER),(DWORD)D2Stubs::D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");
 
-	if (FFAMode)
+	if (wcfgFFAMode)
 	{
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_I), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_II), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
@@ -169,11 +189,11 @@ void PatchD2()
 	PatchGS(CALL, GetDllOffset("D2Common.dll", D2COMMON_COLOUR_ITEM_INTERCEPT_IV), (DWORD)DYES_DrawItem, 5, "Colour Item Intercept IV");
 	PatchGS(CALL, GetDllOffset("D2Common.dll", D2COMMON_COLOUR_ITEM_INTERCEPT_V), (DWORD)DYES_DrawItem, 5, "Colour Item Intercept V");
 
-	 D2Vars.D2GAME_pSpell[12].SpellPrepareFunc = &DYES_Prepare;
-	 D2Vars.D2GAME_pSpell[12].SpellDoFunc = &DYES_Colorize;
-	 D2Vars.D2GAME_pSpell[13].SpellDoFunc = &WE_Spawn;
+	D2Vars.D2GAME_pSpell[12].SpellPrepareFunc = &DYES_Prepare;
+	D2Vars.D2GAME_pSpell[12].SpellDoFunc = &DYES_Colorize;
+	D2Vars.D2GAME_pSpell[13].SpellDoFunc = &WE_Spawn;
 
-	//PatchGS(CALL,GetDllOffset("D2Game.dll",D2GAME_TRESURE_CLASS_CREATE_HNDLR),(DWORD)ITEMS_AddKillerId,5,"Tresure Class Create Hndlr");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_TRESURE_CLASS_CREATE_HNDLR), (DWORD)ITEMS_AddKillerId, 5, "Tresure Class Create Hndlr");
 
 
 	//	PatchGS(JUMP,GetDllOffset("Fog.dll",FOG_MEM_ALLOC_OVERRIDE),(DWORD)ExMemory::Alloc_STUB,5,"Mem Alloc Override");
@@ -198,16 +218,16 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NODE_OFFSET_III), 0x1E00, 4, "NodesEX: Change node offset III");
 
 	//Basic fixes
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS), Max_Players, 1, "GameEnter: Check number of players");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS_II), Max_Players, 1, "GameEnter: Check number of players II");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS), wcfgMaxPlayers, 1, "GameEnter: Check number of players");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS_II), wcfgMaxPlayers, 1, "GameEnter: Check number of players II");
 #ifndef _SINGLEPLAYER
-	PatchGS(0, GetDllOffset("D2GS.exe", 0x240C), Max_Players, 1, "GameEnter: Check number of players III");
-	PatchGS(0, GetDllOffset("D2GS.exe", 0x4FD4), Max_Players, 1, "GameEnter: Check number of players IV");
+	PatchGS(0, GetDllOffset("D2GS.exe", 0x240C), wcfgMaxPlayers, 1, "GameEnter: Check number of players III");
+	PatchGS(0, GetDllOffset("D2GS.exe", 0x4FD4), wcfgMaxPlayers, 1, "GameEnter: Check number of players IV");
 #endif
 
 	//TREASURE Class
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP), Max_Players, 1, "NodesEX: Fix Treasure Class Drop");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP_II), Max_Players, 1, "NodesEX: Fix Treasure Class Drop II");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP), wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP_II), wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop II");
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CREATE_UNITANY_CHANGE_NEUTRAL_NODE), NEU_NODE, 4, "NodesEX: Create UnitAny: Change neutral Node");
 
@@ -255,7 +275,7 @@ void PatchD2()
 
 	//Teraz potwory
 
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_PLAYERS_NODES_FROM_8), Max_Players, 1, "NodesEX: Change Players Nodes from 8");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_PLAYERS_NODES_FROM_8), wcfgMaxPlayers, 1, "NodesEX: Change Players Nodes from 8");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE), NEU_NODE, 1, "NodesEX: Change neutral Node");
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEMONSTER_I_F1), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateMonster I - f1");
@@ -269,13 +289,13 @@ void PatchD2()
 
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_MONSTERS), NEU_NODE, 1, "NodesEX: Change neutral Node: Monsters");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_SAME_FUNC_AS_ABOVE), Max_Players, 4, "NodesEX: Change iteration to 16: same func as above");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_I), 0x1E00 + (4 * Max_Players), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_II), 0x1E00 + (4 * Max_Players), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_SAME_FUNC_AS_ABOVE), wcfgMaxPlayers, 4, "NodesEX: Change iteration to 16: same func as above");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_I), 0x1E00 + (4 * wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_II), 0x1E00 + (4 * wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
 
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16), Max_Players, 1, "NodesEX: Change iteration to 16");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16), wcfgMaxPlayers, 1, "NodesEX: Change iteration to 16");
 
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_16), Max_Players, 4, "NodesEX: Change Monster Node to 16");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_16), wcfgMaxPlayers, 4, "NodesEX: Change Monster Node to 16");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_17), NEU_NODE - 2, 4, "NodesEX: Change Monster Node to 17");
 
 	//Missiles

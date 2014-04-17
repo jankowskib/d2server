@@ -23,7 +23,7 @@
 
 void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild)  // 0xEDF00
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
 
   if (!ptGame) return;
   if (!ptUnit) return;
@@ -33,12 +33,12 @@ int NEU_NODE = Max_Players + 3;
          UnitNode** pNodes = ptGame->pNewNodes;
 		  
 		  int z = 0;
-		  for(;z<Max_Players;z++)			// Zmiana 24.02.2012 z 16
+		  for(;z<wcfgMaxPlayers;z++)			// Zmiana 24.02.2012 z 16
 		  {
 			if(!pNodes[z]) break;
 		  }
 
-        if (ptGame->nClients <= Max_Players && z < Max_Players)
+        if (ptGame->nClients <= wcfgMaxPlayers && z < wcfgMaxPlayers)
         {
           UnitNode* ptUNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
           if ( ptUNode )
@@ -57,7 +57,7 @@ int NEU_NODE = Max_Players + 3;
         }
 		  else
 		  {
-			  Log("NodesEX: nClients=%d <= Max_Players=%d || z=%d < MaxPlayers=%d",ptGame->nClients,Max_Players,z,Max_Players);
+			  Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d",ptGame->nClients,wcfgMaxPlayers,z,wcfgMaxPlayers);
 		  }
 
 }
@@ -65,7 +65,7 @@ int NEU_NODE = Max_Players + 3;
 
 void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
 
   if (!ptGame) return;
   if (!ptUnit) return;
@@ -77,7 +77,7 @@ int NEU_NODE = Max_Players + 3;
          UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
           if (!pNode) return;
 
-            if (aNodeIdx >= Max_Players )
+            if (aNodeIdx >= wcfgMaxPlayers )
             {
               while ( pNode->ptUnit != ptUnit )
               {
@@ -128,7 +128,7 @@ int NEU_NODE = Max_Players + 3;
 
 void __fastcall NODES_FreeUnitNode(Game* ptGame, UnitAny* ptUnit)
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
   if (!ptGame ) return;
   if (!ptUnit) return;
   if (ptUnit->dwType>1) return;
@@ -153,7 +153,7 @@ int NEU_NODE = Max_Players + 3;
 
 UnitNode *__fastcall NODES_GetUnitNode(UnitAny *ptUnit, Game *ptGame)  //0x6FD0DC50
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
   if (!ptGame || !ptUnit) return 0;
   if (ptUnit->dwType>1) return 0;
   if (ptUnit->dwNodeIdx==NEU_NODE) return 0;
@@ -167,7 +167,7 @@ int NEU_NODE = Max_Players + 3;
 
 void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNode, int NodeIdx) ///6FD0DDE0
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
   UnitNode *pParentNode; 
   UnitNode *pCurrentNode;
   if (!ptGame) return;
@@ -203,10 +203,10 @@ int NEU_NODE = Max_Players + 3;
 
 void __fastcall NODES_AddAsParentNode(Game *ptGame, UnitAny *ptUnit, UnitNode *ptNode, int NodeIdx) //0x6FD0DE70
 {
-int NEU_NODE = Max_Players + 3;
+int NEU_NODE = wcfgMaxPlayers + 3;
   if (!ptGame || !ptUnit) return;
   if (ptUnit->dwNodeIdx !=NEU_NODE) return; 
-  if (NodeIdx>=Max_Players) return;
+  if (NodeIdx>=wcfgMaxPlayers) return;
   if (ptUnit->dwType>1) return;
 
            UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
@@ -241,7 +241,7 @@ if(!ptGame) return;
 UnitNode** pNodes = ptGame->pNewNodes;
 UnitNode* pFirstNode = ptGame->pNewNodes[0];
 
-	for(int i = Max_Players + 3; i != 0; --i) // 25.01.2014 change to + 3
+	for(int i = wcfgMaxPlayers + 3; i != 0; --i) // 25.01.2014 change to + 3
 	{
 		if (pFirstNode)
 		{
@@ -388,7 +388,7 @@ L109:
   MOV DWORD PTR SS:[ESP+0x2C],EAX
   MOV EAX,DWORD PTR SS:[ESP+0x24]
   INC EAX
-  CMP AL, BYTE PTR DS:[Max_Players]			// Zamiana z 8 do 16
+  CMP AL, BYTE PTR DS:[wcfgMaxPlayers]			// Zamiana z 8 do 16
   MOV DWORD PTR SS:[ESP+0x24],EAX
   JGE L128
   XOR EBX,EBX
@@ -637,7 +637,7 @@ L109:
   MOV DWORD PTR SS:[ESP+0x2C],EAX
   MOV EAX,DWORD PTR SS:[ESP+0x24]
   INC EAX
-  CMP AL, BYTE PTR DS:[Max_Players]			// Zamiana z 8 do 16
+  CMP AL, BYTE PTR DS:[wcfgMaxPlayers]			// Zamiana z 8 do 16
   MOV DWORD PTR SS:[ESP+0x24],EAX
   JGE L128
   XOR EBX,EBX

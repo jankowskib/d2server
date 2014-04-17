@@ -22,6 +22,7 @@
 #include "LRoster.h"
 #include "LEvents.h"
 
+
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile)
 {
 	if(!pDefender) return;
@@ -37,24 +38,24 @@ void COMBAT_Free(Game* pGame, UnitAny* pUnit)
 	Combat* pCombat = pUnit->ptCombat;
 	Combat * pDiffCombat = 0;
 	Combat * pNext;
-    do
-    {
-      pNext = pCombat->ptNext;
-      if ( pCombat->dwAttackerType != pUnit->dwType || pCombat->dwAttackerId != pUnit->dwUnitId )
-      {
-        pDiffCombat = pCombat;
-      }
-      else
-      {
-        if ( pDiffCombat )
-          pDiffCombat->ptNext = pNext;
-        else
-          pUnit->ptCombat = pNext;
-        D2Funcs.FOG_FreeServerMemory(pGame->pMemPool, pCombat, __FILE__, __LINE__, 0);
-      }
-      pCombat = pNext;
-    }
-    while ( pNext );
+	do
+	{
+	  pNext = pCombat->ptNext;
+	  if ( pCombat->dwAttackerType != pUnit->dwType || pCombat->dwAttackerId != pUnit->dwUnitId )
+	  {
+		pDiffCombat = pCombat;
+	  }
+	  else
+	  {
+		if ( pDiffCombat )
+		  pDiffCombat->ptNext = pNext;
+		else
+		  pUnit->ptCombat = pNext;
+		D2Funcs.FOG_FreeServerMemory(pGame->pMemPool, pCombat, __FILE__, __LINE__, 0);
+	  }
+	  pCombat = pNext;
+	}
+	while ( pNext );
 }
 
 Combat* COMBAT_Find(UnitAny* pAttacker, UnitAny* pDefender)
@@ -62,7 +63,8 @@ Combat* COMBAT_Find(UnitAny* pAttacker, UnitAny* pDefender)
 	if(!pAttacker || !pDefender) return 0;
 	for(Combat* pCombat = pDefender->ptCombat; pCombat; pCombat = pCombat->ptNext)
 	{ 
-		if(pCombat->dwAttackerId == pAttacker->dwUnitId && pCombat->dwAttackerType == pAttacker->dwType) return pCombat;
+		if(pCombat->dwAttackerId == pAttacker->dwUnitId && pCombat->dwAttackerType == pAttacker->dwType) 
+			return pCombat;
 	}
 return 0; 
 }
@@ -93,7 +95,7 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 		}
 		
 		if(!D2Funcs.D2COMMON_GetUnitState(pVictim,playerbody))  pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
-		D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
+			D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
 		return;
 	}
 
@@ -111,12 +113,13 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 
 void __fastcall OnGameDestroy(Game* ptGame)
 {
-	DEBUGMSG("Zamykam gre %s", ptGame->GameName);
+	DEBUGMSG("Closing game %s", ptGame->GameName);
 	LRost::Clear(ptGame);
 }
 
 void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 {
+	DEBUGMSG(__FUNCTION__)
 	if(!ptVictim || !ptKiller) return;
 	if(ptVictim->dwType) return;
 
@@ -125,7 +128,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	aPacket.Color=4;
 	aPacket.MsgType=6;
 
-	if(ptKiller->dwType==UNIT_MONSTER)
+	if(ptKiller->dwType == UNIT_MONSTER)
 	{
 		UnitAny* ptParent = D2ASMFuncs::D2GAME_FindUnit(ptGame,ptKiller->pMonsterData->pAiGeneral->OwnerGUIDEq,ptKiller->pMonsterData->pAiGeneral->eOwnerTypeEq);
 		if(ptParent)
@@ -133,22 +136,26 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 				ptKiller = ptParent;
 	}
 
-	if(ptKiller->dwType==0) 
+	if(ptKiller->dwType == UNIT_PLAYER) 
 		LRost::UpdateRoster(ptGame,ptKiller->pPlayerData->szName,1);
 	LRost::UpdateRoster(ptGame,ptVictim->pPlayerData->szName,2);
 
 	*(DWORD*)&aPacket.Param1=ptKiller->dwClassId;
 
 	strcpy_s(aPacket.Name1,16,ptVictim->pPlayerData->szName);
-	if(ptKiller->dwType==0) 
+	if (ptKiller->dwType == UNIT_PLAYER)
 		strcpy_s(aPacket.Name2,16,ptKiller->pPlayerData->szName);
-	else if(ptKiller->dwType==1)
+	else if(ptKiller->dwType == UNIT_MONSTER)
 	{
 		aPacket.Param2=1;
 		if(ptKiller->pMonsterData->fSuperUniq) *(WORD*)&aPacket.Name2=ptKiller->pMonsterData->wUniqueNo;
 	}
+
+	ptVictim->pPlayerData->tDeathTime = GetTickCount();
+	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, wcfgRespawnTimer);
+
 	//Invisible hit
-	if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER) 
+	if(ptKiller->dwType==UNIT_PLAYER) 
 	{
 	int KillCount = 0;
 	bool check = false;
@@ -187,7 +194,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	}
 
 		
-		if(ptKiller->dwType==UNIT_PLAYER && ptVictim->dwType==UNIT_PLAYER)
+		if(ptKiller->dwType==UNIT_PLAYER)
 		{
 		if(ptGame->bFestivalMode == 1) {
 			ptVictim->pPlayerData->CanAttack = 0;

@@ -46,6 +46,7 @@ EXFUNCPTR(D2GAME, Send0X92Packet, void, __fastcall, (Game *pGame, UnitAny *pUnit
 EXFUNCPTR(D2GAME, KickCharFromGame, void, __stdcall, (DWORD ClientID), -10037)
 EXFUNCPTR(D2GAME, SpawnUniqMon, UnitAny*, __stdcall, (Game *ptGame, Room1 *ptRoom, int _1, int _2, signed int MonIdx), 0xECE80)
 EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (signed int MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int a7, int a8), 0xEF870)
+EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (srCreateMonster* pPreset), 0xEF150)
 EXFUNCPTR(D2GAME, GetUnitX, int, __fastcall, (UnitAny* ptUnit), 0x1370)
 EXFUNCPTR(D2GAME, GetUnitY, int, __fastcall, (UnitAny* ptUnit), 0x13A0)
 EXFUNCPTR(D2GAME, ExecuteEvent, int, __stdcall, (Game *pGame, int EventNo, UnitAny *pUnit, void *Data), 0xC3170)
@@ -144,6 +145,8 @@ EXFUNCPTR(D2COMMON, GetPlayerSkillCount, int, __stdcall, (int ClassId), -10631)
 EXFUNCPTR(D2COMMON, GetPlayerSkillIdFromList, int, __stdcall, (int ClassId, int SkillNo), -10229)
 
 EXFUNCPTR(D2COMMON, isInShapeForm, int, __stdcall, (UnitAny* ptUnit), -10351)
+EXFUNCPTR(D2COMMON, GetStateNoBySkillId, int, __stdcall, (WORD SkillId), -10721)
+EXFUNCPTR(D2COMMON, RefreshAura, int, __stdcall, (UnitAny* pUnit, WORD SkillId), -10105)
 
 //Levels, Act etc
 EXFUNCPTR(D2COMMON, GetLevelNoByRoom, int, __stdcall, (Room1* ptRoom), -11021)
@@ -325,11 +328,10 @@ void SetupD2Vars() {
 #endif
 
 //EXVARPTR(D2GAME, pUnitListOffset, DWORD*, 0xFB2B4)
-EXVARPTR(D2GAME, PacketTable, PacketTbl, 0xFA7C0)
+EXVARPTR(D2GAME, ClientPacketTable, PacketTbl, 0xFA7C0)
 EXVARPTR(D2GAME, pSpell, pSpellTbl, 0x105098)
 
 EXVARPTR(D2NET, ToSrvPacketSizes, int, 0xABD8)
-
 EXVARPTR(D2COMMON, SkillTxt, SkillsTxt*, 0xA1328)
 EXVARPTR(D2COMMON, SkillDescTxt, BYTE*, 0xA131C)
 EXVARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11170)

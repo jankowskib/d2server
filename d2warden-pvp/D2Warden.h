@@ -42,10 +42,10 @@
 
 struct WardenPacket
 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	DWORD SendTime;
 	DWORD ReceiveTime;
-#endif
+//#endif
 	DWORD ClientID;
 	DWORD PacketLen;
 	BYTE *ThePacket;

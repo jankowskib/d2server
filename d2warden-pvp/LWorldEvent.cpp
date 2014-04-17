@@ -89,7 +89,7 @@ void WE_GenerateNextDC()
 	ostringstream str;
 	str << NxtDC;
 	NextDC = NxtDC;
-	WritePrivateProfileString("World Event","NextDC",str.str().c_str(),ConfigFile.c_str());
+	WritePrivateProfileString("World Event","NextDC",str.str().c_str(),wcfgConfigFile.c_str());
 }
 
 void WE_CreateDCKey(UnitAny* pUnit)
@@ -164,7 +164,7 @@ void WE_UpdateCounter(int Value)
 	ostringstream str;
 	str << Value;
 	LOCK
-	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(),ConfigFile.c_str());
+	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(),wcfgConfigFile.c_str());
 	UNLOCK
 }
 

@@ -27,7 +27,7 @@ unsigned __stdcall StatThread(void* Params)
 {
 while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
 {
-if(!DumpInterval) return 0;
+if(!wcfgDumpInterval) return 0;
 remove("RealmStats.txt");
 int Time = GetTickCount();
 LogToFile("RealmStats.txt",1,"Creating dump...");
@@ -93,7 +93,7 @@ for(WardenClient_i ptCurrentClient = hWarden.Clients.begin(); ptCurrentClient !=
 }
 UNLOCK
 LogToFile("RealmStats.txt",1,"Dumping end (%d) ms...",GetTickCount()-Time);
-Sleep(DumpInterval * 1000);
+Sleep(wcfgDumpInterval * 1000);
 }
 #ifdef _ENGLISH_LOGS
 Log("End of dump thread!");

@@ -49,9 +49,9 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	{
 		DeleteCriticalSection(&hWarden.WardenLock);
 #ifdef _ENGLISH_LOGS
-				LogNoLock("No memory to allocate critical section!");
+		LogNoLock("No memory to allocate critical section!");
 #else
-				LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
+		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
 #endif
 		return -1;
 	}

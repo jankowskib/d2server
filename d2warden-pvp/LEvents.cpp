@@ -23,82 +23,88 @@
 #include "LRoster.h"
 #include "D2Warden.h"
 
-/*
+
 DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, int PacketSize) // Replacement for 0x41 parse (1.11b: D2Game.6FC51F60)
 {
-	UnitAny *pUnit; // ebx@1
-	Game *v5; // edi@1
-	Skill *v8; // eax@10
-	Skill *v9; // esi@10
-	Room1 *pRoom; // eax@10
-	int LevelNo; // eax@10
-	int TownLvl; // eax@10
-	int v16; // ST5C_4@11
-	int v17; // eax@11
-	Skill *RightSkill; // eax@12
-	Skill *v19; // esi@12
-	int v20; // ST5C_4@13
-	int SkillId; // eax@13
-	Game *a2; // [sp+6Ch] [bp-4h]@1
-
 	ClientData *pClientData = 0;
-
-	v5 = pGame;
-	pUnit = pPlayer;
-	a2 = pGame;
+	DEBUGMSG(__FUNCTION__)
 	if (PacketSize != 1)
 		return 3;
-	if (pPlayer && pPlayer->dwMode == PLAYER_MODE_DEAD)
-	{
+	
+	if (!pPlayer || pPlayer->dwMode != PLAYER_MODE_DEAD)
+		return 0;
+
+	
 		if (pPlayer->dwType == UNIT_PLAYER)
 			pClientData = pPlayer->pPlayerData->pClientData;
 		if (!pClientData)
 			return 3;
 		if (pClientData->PlayerStatus & 4)
 		{
-			D2Funcs.(pClientData, v5, 3u);
+			D2ASMFuncs::D2GAME_BroadcastLeavingEvent(pClientData, pGame, EVENT_LEFT);
 			return 0;
 		}
-		sub_6FC2D440(pUnit);                        // Something with skill and changes state
-		int dwMaxLife = D2Common_GetMaxLife_10983(pUnit);
-		int dwMaxMana = D2Common_GetMaxMana(pUnit);
-		int dwMaxStamina = D2Common_GetMaxStamina_11022(pUnit);
-		D2Common_SetStat_10590(pUnit, STAT_HITPOINTS, dwMaxLife, 0);
-		D2Common_SetStat_10590(pUnit, STAT_MANA, dwMaxMana, 0);
-		D2Common_SetStat_10590(pUnit, STAT_STAMINA, dwMaxStamina, 0);
-		UpdatePlayerStats_6FC4D2E0(pUnit, 6, dwMaxLife, pUnit);
-		UpdatePlayerStats_6FC4D2E0(pUnit, 8, dwMaxMana, pUnit);
-		UpdatePlayerStats_6FC4D2E0(pUnit, 10, dwMaxStamina, pUnit);
-		pUnit->dwFlags |= 2u;                       // Make unit selectable
-		D2Common_SetGfxState_10702(pUnit, 54, 1);   // Uninterrupable
-		D2Common_SetGfxState_10702(pUnit, 54, 0);
-		D2Common_GetActNoByLvl_10026(0);
-		pRoom = D2Common_GetUnitRoom_10933(pUnit);
-		LevelNo = D2Common_GetLvlNoByRoom_11021(pRoom);
-		LOBYTE(PacketSize) = D2Common_GetActNoByLvl_10026(LevelNo);
-		TownLvl = D2Common_GetTownLvl_10394(PacketSize);
-		TeleportUnitToLevel_6FC822C0(pUnit, TownLvl, a2, 0);
-		SetUnitMode_6FC61990(a2, pUnit, 0, PLAYER_MODE_STAND_OUTTOWN, 0, 0, 1);
-		v8 = D2Common_GetLeftSkill_10064(pUnit);
-		v9 = v8;
-		if (v8)
+		
+		if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (wcfgRespawnTimer * 1000))
+			return 0;
+
+		if (pPlayer->pSkills)
 		{
-			v16 = D2Common_GetSkillFlags_10427(v8);
-			v17 = D2Common_GetSkillId_10170(v9, "..\\Source\\D2Game\\PLAYER\\PlrMsg.cpp", 4509);
-			SetMonsterSkill_6FC31C20(pUnit, 1, v17, v16);
+			for (Skill* s = pPlayer->pSkills->pFirstSkill; s; s = s->pNextSkill)
+			{
+				WORD nSkill = D2Funcs.D2COMMON_GetSkillId(s, __FILE__, __LINE__);
+				int nState = D2Funcs.D2COMMON_GetStateNoBySkillId(nSkill);
+				if (nState > 0)
+				{
+					D2Funcs.D2COMMON_SetGfxState(pPlayer, nState, 1);
+					D2Funcs.D2COMMON_RefreshAura(pPlayer, nSkill);
+				}
+			}
 		}
-		RightSkill = D2Common_GetRightSkill_11036(pUnit);
-		v19 = RightSkill;
-		if (RightSkill)
+		
+		int dwMaxLife = D2Funcs.D2COMMON_GetUnitMaxLife(pPlayer);
+		int dwMaxMana = D2Funcs.D2COMMON_GetUnitMaxMana(pPlayer);
+		int dwMaxStamina = D2Funcs.D2COMMON_GetStatSigned(pPlayer, STAT_MAXSTAMINA, 0);
+
+		D2Funcs.D2COMMON_SetStat(pPlayer, STAT_HP, dwMaxLife, 0);
+		D2Funcs.D2COMMON_SetStat(pPlayer, STAT_MANA, dwMaxMana, 0);
+		D2Funcs.D2COMMON_SetStat(pPlayer, STAT_STAMINA, dwMaxStamina, 0);
+
+		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_HP, dwMaxLife, pPlayer);
+		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_MANA, dwMaxMana, pPlayer);
+		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_STAMINA, dwMaxStamina, pPlayer);
+		pPlayer->dwFlags |= 2u;								  // Make unit selectable
+
+		D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 1);   // Uninterrupable
+		D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 0);
+
+		int aLevel = D2Funcs.D2COMMON_GetTownLevel(pPlayer->dwAct);
+
+		//Room1* aRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pRoom->pAct, aLevel, 0, &aX, &aY, 2);
+		//D2ASMFuncs::D2GAME_TeleportUnit(aX, aY, aRoom, pGame, pUnit);
+
+		D2ASMFuncs::D2GAME_MoveUnitToLevelId(pPlayer, aLevel, pGame);
+		D2Funcs.D2GAME_SetUnitMode(pGame, pPlayer, 0, PLAYER_MODE_STAND_OUTTOWN, 0, 0, 1);
+
+		Skill* pLeftSkill = D2Funcs.D2COMMON_GetLeftSkill(pPlayer);
+		Skill* pRightSkill = D2Funcs.D2COMMON_GetRightSkill(pPlayer);
+		if (pLeftSkill)
 		{
-			v20 = D2Common_GetSkillFlags_10427(RightSkill);
-			SkillId = D2Common_GetSkillId_10170(v19, "..\\Source\\D2Game\\PLAYER\\PlrMsg.cpp", 4514);
-			SetMonsterSkill_6FC31C20(pUnit, 0, SkillId, v20);
+			DWORD nFlags = pLeftSkill->dwFlags;
+			WORD nSkill = D2Funcs.D2COMMON_GetSkillId(pLeftSkill, __FILE__, __LINE__);
+
+			D2Funcs.D2GAME_SetMonSkill(pPlayer, 1, nSkill, nFlags);
 		}
-	}
+
+		if(pRightSkill)
+		{
+			DWORD nFlags = pRightSkill->dwFlags;
+			WORD nSkill = D2Funcs.D2COMMON_GetSkillId(pRightSkill, __FILE__, __LINE__);
+			D2Funcs.D2GAME_SetMonSkill(pPlayer, 0, nSkill, nFlags);
+		}
+
 	return 0;
 }
-*/
 
 /*
 0x00 - "%Name1(%Name2) dropped due to time out."
@@ -177,7 +183,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 
 void DoRoundEndStuff(Game* pGame, UnitAny* pUnit) //Sprawdz czy wskaznik jest ok przed wywolaniem, WardenClient = Victim
 {
-	DEBUGMSG("DEBUG: Robie DoRoundEndStuff");
+	DEBUGMSG("DEBUG: Doing DoRoundEndStuff");
 	if(!pGame || !pUnit) return;
 
 	ostringstream str; 

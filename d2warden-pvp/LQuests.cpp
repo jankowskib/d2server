@@ -43,9 +43,9 @@ BYTE * __stdcall DYES_DrawItem(UnitAny *ptPlayer, UnitAny* ptItem, BYTE* out, BO
 
 	if(col)
 	{
-	ItemsTxt* pTxt = D2Funcs.D2COMMON_GetItemTxt(ptItem->dwClassId);
-	*out= GetDyeRealCol(col);
-	return D2Funcs.D2CMP_MixPalette(a4 ? pTxt->bInvTrans : pTxt->bTransform,GetDyeRealCol(col));
+		ItemsTxt* pTxt = D2Funcs.D2COMMON_GetItemTxt(ptItem->dwClassId);
+		*out= GetDyeRealCol(col);
+		return D2Funcs.D2CMP_MixPalette(a4 ? pTxt->bInvTrans : pTxt->bTransform,GetDyeRealCol(col));
 	}
 
 	return D2Funcs.D2COMMON_GetItemColor(ptPlayer,ptItem,out,a4);

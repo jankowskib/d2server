@@ -42,10 +42,12 @@ void BroadcastMsg(Game* pGame,char *Msg...);
 void BroadcastEventMsgEx(Game* pGame, int Color, string EngMsg, string PolMsg);
 void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string szPath);
 void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg);
+void SendExEvent(ClientData* pClient, ExEventOption op, DWORD value);
 void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg);
 void BroadcastEventMsg(Game* pGame, int Color, char *Msg...);
 void BroadcastPacket(Game* pGame, BYTE * aPacket, int aLen);
 
+BOOL WriteDword(DWORD* lpAddr, DWORD lpBuffer);
 BOOL WriteBytes(void* lpAddr, void* lpBuffer, DWORD dwLen);
 void PatchGS(BYTE bInst, DWORD pAddr, DWORD pFunc, DWORD dwLen,char* Type);
 void UpdatePlayerXY(UnitAny* ptUnit);

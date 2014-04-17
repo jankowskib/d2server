@@ -51,7 +51,7 @@ bool isAnAdmin(string szAcc)
 {
  boost::to_lower(szAcc);
 
- for(list<std::string>::iterator i = Admins.begin(); i != Admins.end(); ++i) if(szAcc == *i) return true;
+ for(list<std::string>::iterator i = wcfgAdmins.begin(); i != wcfgAdmins.end(); ++i) if(szAcc == *i) return true;
 
  return false;
 }
@@ -152,12 +152,12 @@ DWORD TransCode(const char* ptCode) // taken from afj666
    {
 	  char NewStr[5];
 	  _snprintf_s(NewStr,5,5,"%s ",ptCode);
-      ItemCode =TransCode(NewStr);
+	  ItemCode =TransCode(NewStr);
    }
    else
    {
 	ItemCode = (DWORD)(ptCode[3]<<24) + (DWORD)(ptCode[2]<<16) +
-                  (DWORD)(ptCode[1]<<8) + (DWORD)(ptCode[0]); 
+				  (DWORD)(ptCode[1]<<8) + (DWORD)(ptCode[0]); 
    }
 
    return ItemCode;
@@ -186,8 +186,8 @@ void KickPlayer(ClientData* pClient)
 
 void KickPlayer(DWORD ClientID)
 {
-	BYTE Packet = 0x06;
-	D2Funcs.D2NET_SendPacket(0,ClientID,&Packet,1);
+	static BYTE Packet = 0xb0;
+	D2Funcs.D2NET_SendPacket(0, ClientID, &Packet, 1);
 }
 
 void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue)
@@ -265,8 +265,8 @@ void BroadcastPacket(Game* pGame, BYTE * aPacket, int aLen)
 void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg)
 {
 
-	ExEvent hEvent = {0};
-	hEvent.MsgType = 1;
+	ExEventTextMsg hEvent;
+	hEvent.MsgType = EXEVENT_TEXTMSG;
 	hEvent.Color = Color;
 	hEvent.wX = X;
 	hEvent.wY = Y;
@@ -291,15 +291,15 @@ void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, shor
 void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string szPath)
 {
 
-	ExEvent hEvent = {0};
-	hEvent.MsgType = 2;
+	ExEventOverhead hEvent;
+	hEvent.MsgType = EXEVENT_OVERHEAD;
 	hEvent.Color = Color;
 	hEvent.UnitId = UnitId;
-	hEvent.Sound = nCell;
+	hEvent.CellID = nCell;
 	hEvent.P_A6 = 0xA6;
 
-	_snprintf_s(hEvent.szMsg,255,255,szPath.c_str());
-	hEvent.PacketLen = 0xE + strlen(hEvent.szMsg) +1;
+	_snprintf_s(hEvent.szCellPath,255,255,szPath.c_str());
+	hEvent.PacketLen = 0xE + strlen(hEvent.szCellPath) + 1;
 
 	if(!pGame) return;
 	ClientData * pClientList = pGame->pClientList;
@@ -315,8 +315,8 @@ void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string sz
 void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg)
 {
 	if(!pClient) return;
-	ExEvent hEvent = {0};
-	hEvent.MsgType = 1;
+	ExEventTextMsg hEvent;
+	hEvent.MsgType = EXEVENT_TEXTMSG;
 	hEvent.Color = Color;
 	hEvent.wX = X;
 	hEvent.wY = Y;
@@ -329,6 +329,23 @@ void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, s
 
 	if(pClient->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClient,(BYTE*)&hEvent,hEvent.PacketLen);
 }
+
+void SendExEvent(ClientData* pClient, ExEventOption op, DWORD value)
+{
+	DEBUGMSG("Sending ExOption %d: %d", op, value)
+	if (!pClient) return;
+	ExEventGameOptions hEvent;
+	memset(&hEvent, 0, sizeof(ExEventGameOptions));
+	hEvent.P_A6 = 0xA6;
+	hEvent.MsgType = EXEVENT_OPTIONS;
+	hEvent.bOption = op;
+	hEvent.nValue = value;
+
+	hEvent.PacketLen = sizeof(ExEventGameOptions);
+
+	if (pClient->InitStatus == 4) D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, hEvent.PacketLen);
+}
+
 
 
 void BroadcastEventMsg(Game* pGame, int Color, char *Msg...)
@@ -430,6 +447,23 @@ BOOL WriteBytes(void* lpAddr, void* lpBuffer, DWORD dwLen)
 	if(!VirtualProtect(lpAddr, dwLen, dwOldProtect, &dwOldProtect))
 		return FALSE;
 
+	return TRUE;
+}
+
+
+BOOL WriteDword(DWORD* lpAddr, DWORD lpBuffer)
+{
+	DWORD dwOldProtect;
+	if (!VirtualProtect(lpAddr, 4, PAGE_READWRITE, &dwOldProtect))
+	{
+		ASSERT("Failed to patch %d with %d", lpAddr, lpBuffer)
+	}
+	*lpAddr = lpBuffer;
+
+	if (!VirtualProtect(lpAddr, 4, dwOldProtect, &dwOldProtect))
+	{
+		ASSERT("Failed to patch %d with %d", lpAddr, lpBuffer)
+	}
 	return TRUE;
 }
 

@@ -41,8 +41,8 @@ using namespace std;
 #include <urlmon.h>
 #include <math.h>
 
-
 #include "D2DataTables.h"
+#include "CommonStructs.h"
 
 #ifdef VER_113D
 #include "D2Structs_113D.h"

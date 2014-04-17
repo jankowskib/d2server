@@ -90,69 +90,73 @@ void Warden_Config()
 	char URL[255] = {0};
 	char ITEM[255] = {0};
 	GetCurrentDirectory(MAX_PATH,filename);
-	ConfigFile.assign(filename);
-	ConfigFile+="\\D2Warden.ini";
+	wcfgConfigFile.assign(filename);
+	wcfgConfigFile+="\\D2Warden.ini";
 
-	GetPrivateProfileString("Warden","AllowTeleport","1,5",temp,100,ConfigFile.c_str());
-	for(rt = strtok_s(temp,", ",&tk);rt;rt = strtok_s(NULL,", ",&tk))
-		if(atoi(rt)<7) TeleChars[atoi(rt)]=TRUE;
-	
-	RespawnTimer = GetPrivateProfileInt("Warden", "RespawnTimer", 0, ConfigFile.c_str());
-	DisableHostileDelay = GetPrivateProfileInt("Warden", "DisableHostileDelay", 1, ConfigFile.c_str());
-	AllowTourMode = GetPrivateProfileInt("Warden","AllowTourMode",1,ConfigFile.c_str());
-	AllowVanilla = GetPrivateProfileInt("Warden","AllowVanilla",0,ConfigFile.c_str());
-	AllowGU = GetPrivateProfileInt("Warden","AllowGU",0,ConfigFile.c_str());
-	AllowHB = GetPrivateProfileInt("Warden","AllowHB",1,ConfigFile.c_str());
-	AllowNLWW = GetPrivateProfileInt("Warden","AllowNLWW",0,ConfigFile.c_str());
-	AllowLoggin = GetPrivateProfileInt("Warden","LogChat",1,ConfigFile.c_str());
-	DumpInterval = GetPrivateProfileInt("Warden","ResDumpInterval",0,ConfigFile.c_str());
-	Max_Players = GetPrivateProfileInt("Warden","MaxPlayers",8,ConfigFile.c_str());
-	MoveToTown = GetPrivateProfileInt("Warden","MoveToTown",1,ConfigFile.c_str());
-	DropEarGold = GetPrivateProfileInt("Warden","DontDropEarGold",1,ConfigFile.c_str());
-	StrBugFix = GetPrivateProfileInt("Warden","StrBugFix",1,ConfigFile.c_str());
-	FFAMode= GetPrivateProfileInt("Warden","FFAMode",1,ConfigFile.c_str());
-	EnableSeed= GetPrivateProfileInt("Warden","EnableSeedChange",1,ConfigFile.c_str());
-	AllowD2Ex = GetPrivateProfileInt("Warden","AllowD2Ex",1,ConfigFile.c_str());
-	DetectTrick = GetPrivateProfileInt("Warden","DetectTrick",1,ConfigFile.c_str());
-	ExpRange = GetPrivateProfileInt("Warden","ExpRange",6400,ConfigFile.c_str());
-	//DmgRekord = GetPrivateProfileInt("Warden","DmgRekord",1,ConfigFile.c_str());
-	GetPrivateProfileString("Warden","ClanDataURL","http://www.lolet.yoyo.pl/Clans.ini",URL,255,ConfigFile.c_str());
-	ClansURL = URL;
-	GetPrivateProfileString("Warden","UpdateURL","",URL,255,ConfigFile.c_str());
-	UpdateURL = URL;
-	//GetPrivateProfileString("Warden","DmgOwner","N/A",URL,255,ConfigFile.c_str());
+	GetPrivateProfileString("Warden", "AllowTeleport", "1,5", temp, 100, wcfgConfigFile.c_str());
+	for (rt = strtok_s(temp, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
+		if (atoi(rt) < 7) TeleChars[atoi(rt)] = TRUE;
+
+	wcfgSpectator = GetPrivateProfileInt("Warden", "EnableSpectator", 1, wcfgConfigFile.c_str());
+	wcfgAddKillerClass = GetPrivateProfileInt("Warden", "AddKillerClass", 0, wcfgConfigFile.c_str());
+	wcfgAutoIdentify = GetPrivateProfileInt("Warden", "AutoIdentify", 0, wcfgConfigFile.c_str());
+	wcfgHostileLevel = GetPrivateProfileInt("Warden", "HostileLevel", 0, wcfgConfigFile.c_str());
+	wcfgRespawnTimer = GetPrivateProfileInt("Warden", "RespawnTimer", 0, wcfgConfigFile.c_str());
+	wcfgDisableHostileDelay = GetPrivateProfileInt("Warden", "DisableHostileDelay", 1, wcfgConfigFile.c_str());
+	wcfgAllowTourMode = GetPrivateProfileInt("Warden", "AllowTourMode", 1, wcfgConfigFile.c_str());
+	wcfgAllowVanilla = GetPrivateProfileInt("Warden", "AllowVanilla", 0, wcfgConfigFile.c_str());
+	wcfgAllowGU = GetPrivateProfileInt("Warden", "AllowGU", 0, wcfgConfigFile.c_str());
+	wcfgAllowHB = GetPrivateProfileInt("Warden", "AllowHB", 1, wcfgConfigFile.c_str());
+	wcfgAllowNLWW = GetPrivateProfileInt("Warden", "AllowNLWW", 0, wcfgConfigFile.c_str());
+	wcfgAllowLoggin = GetPrivateProfileInt("Warden", "LogChat", 1, wcfgConfigFile.c_str());
+	wcfgDumpInterval = GetPrivateProfileInt("Warden", "ResDumpInterval", 0, wcfgConfigFile.c_str());
+	wcfgMaxPlayers = GetPrivateProfileInt("Warden", "MaxPlayers", 8, wcfgConfigFile.c_str());
+	wcfgMoveToTown = GetPrivateProfileInt("Warden", "MoveToTown", 1, wcfgConfigFile.c_str());
+	wcfgDropEarGold = GetPrivateProfileInt("Warden", "DontDropEarGold", 1, wcfgConfigFile.c_str());
+	wcfgStrBugFix = GetPrivateProfileInt("Warden", "StrBugFix", 1, wcfgConfigFile.c_str());
+	wcfgFFAMode = GetPrivateProfileInt("Warden", "FFAMode", 1, wcfgConfigFile.c_str());
+	wcfgEnableSeed = GetPrivateProfileInt("Warden", "EnableSeedChange", 1, wcfgConfigFile.c_str());
+	wcfgAllowD2Ex = GetPrivateProfileInt("Warden", "AllowD2Ex", 1, wcfgConfigFile.c_str());
+	wcfgDetectTrick = GetPrivateProfileInt("Warden", "DetectTrick", 1, wcfgConfigFile.c_str());
+	wcfgExpRange = GetPrivateProfileInt("Warden", "ExpRange", 6400, wcfgConfigFile.c_str());
+	//DmgRekord = GetPrivateProfileInt("Warden","DmgRekord",1,wcfgConfigFile.c_str());
+	GetPrivateProfileString("Warden", "ClanDataURL", "http://www.lolet.yoyo.pl/Clans.ini", URL, 255, wcfgConfigFile.c_str());
+	wcfgClansURL = URL;
+	GetPrivateProfileString("Warden", "UpdateURL", "", URL, 255, wcfgConfigFile.c_str());
+	wcfgUpdateURL = URL;
+	//GetPrivateProfileString("Warden","DmgOwner","N/A",URL,255,wcfgConfigFile.c_str());
 	//DmgOwner = URL;
-	GetPrivateProfileString("Warden","GSName","N/A",URL,255,ConfigFile.c_str());
-	GSName = URL;
-	GetPrivateProfileString("Warden","Admins","LOLET",URL, 255, ConfigFile.c_str());
+	GetPrivateProfileString("Warden", "GSName", "N/A", URL, 255, wcfgConfigFile.c_str());
+	wcfgGSName = URL;
+	GetPrivateProfileString("Warden", "Admins", "LOLET", URL, 255, wcfgConfigFile.c_str());
 	tk = 0;
-	for(rt = strtok_s(URL,", ",&tk); rt; rt = strtok_s(NULL,", ",&tk))
+	for (rt = strtok_s(URL, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
 	{
-	boost::to_lower(rt);
-	if(rt[0]) Admins.push_back(rt);
+		boost::to_lower(rt);
+		if (rt[0]) wcfgAdmins.push_back(rt);
 	}
 
 	//World Event Stuff
-	EnableWE = GetPrivateProfileInt("World Event","Enabled",0,ConfigFile.c_str());
+	wcfgEnableWE = GetPrivateProfileInt("World Event", "Enabled", 0, wcfgConfigFile.c_str());
 
 
-	if(EnableWE)
+	if (wcfgEnableWE)
 	{
-		SellCount = GetPrivateProfileInt("World Event","SellCount",0,ConfigFile.c_str());
-		NextDC =  GetPrivateProfileInt("World Event","NextDC",0,ConfigFile.c_str());
-		MinSell =  GetPrivateProfileInt("World Event","MinSell",10,ConfigFile.c_str());
-		MaxSell =  GetPrivateProfileInt("World Event","MaxSell",50,ConfigFile.c_str());
-		InfoDelay =  GetPrivateProfileInt("World Event","InfoDelay",10,ConfigFile.c_str());
-		if (!InfoDelay) 
+		SellCount = GetPrivateProfileInt("World Event", "SellCount", 0, wcfgConfigFile.c_str());
+		NextDC = GetPrivateProfileInt("World Event", "NextDC", 0, wcfgConfigFile.c_str());
+		MinSell = GetPrivateProfileInt("World Event", "MinSell", 10, wcfgConfigFile.c_str());
+		MaxSell = GetPrivateProfileInt("World Event", "MaxSell", 50, wcfgConfigFile.c_str());
+		InfoDelay = GetPrivateProfileInt("World Event", "InfoDelay", 10, wcfgConfigFile.c_str());
+		if (!InfoDelay)
 		{
 			Log("Invalid InfoDelay value. Defaulting to 1.");
 			InfoDelay = 1;
 		}
-		GetPrivateProfileString("World Event","Trigger","rin, unique, 122",ITEM,255,ConfigFile.c_str());
+		GetPrivateProfileString("World Event", "Trigger", "rin, unique, 122", ITEM, 255, wcfgConfigFile.c_str());
 
 		string sItem = ITEM;
 		boost::to_lower(sItem);
-	
+
 		typedef boost::tokenizer<boost::char_separator<char>>   tokenizer;
 		boost::char_separator<char> sep(", ");
 		boost::char_separator<char> subsep(": ");
@@ -215,7 +219,7 @@ void Warden_Init()
 	int i = 0;
 
 #ifdef _ENGLISH_LOGS
-	Log("Warden ver. 1.6a build %d (%s) by Lolet has started. Compiled on %s, %s", __BUILDNO__,
+	Log("Warden ver. 1.6b build %d (%s) by Lolet has started. Compiled on %s, %s", __BUILDNO__,
 #ifdef VER_111B
 		"1.11b",
 #elif defined VER_113D
@@ -236,9 +240,9 @@ void Warden_Init()
 
 	//Zmieniam dozwolona liczbê graczy
 #ifdef _ENGLISH_LOGS
-	Log("Setting allowed player limit on %d", Max_Players);
+	Log("Setting allowed player limit on %d", wcfgMaxPlayers);
 #else
-	Log("Ustalam dozwolona liczbe graczy w grze na %d", Max_Players);
+	Log("Ustalam dozwolona liczbe graczy w grze na %d", wcfgMaxPlayers);
 #endif
 
 #ifdef _ENGLISH_LOGS
@@ -349,15 +353,15 @@ void Warden_Init()
 	Log("Modul '%s' wczytany!",Warden_MOD);
 #endif
 
-	if(DumpInterval)
+	if(wcfgDumpInterval)
 	{
 		if(!DumpHandle)
 			DumpHandle = (HANDLE)_beginthreadex(0,0,&StatThread,0,0,&StatID);
 		if(DumpHandle)
 	#ifdef _ENGLISH_LOGS
-			Log("Started stat dump, every %d second(s).",DumpInterval);
+			Log("Started stat dump, every %d second(s).",wcfgDumpInterval);
 	#else
-			Log("Rozpoczeto zrzut statystyk, co %d sekund(y).",DumpInterval);
+			Log("Rozpoczeto zrzut statystyk, co %d sekund(y).",wcfgDumpInterval);
 	#endif
 	}
 	else
@@ -385,7 +389,7 @@ DWORD WardenLoop()
 			continue;
 		}
 		
-		DEBUGMSG("MAINLOOP: Checking client %s (*%s) reason: %s, counter: %d", pWardenClient->CharName.c_str(),  pWardenClient->AccountName.c_str(), WardenStatusToString(pWardenClient->WardenStatus), pWardenClient->CheckCounter);
+		//DEBUGMSG("MAINLOOP: Checking client %s (*%s) reason: %s, counter: %d", pWardenClient->CharName.c_str(),  pWardenClient->AccountName.c_str(), WardenStatusToString(pWardenClient->WardenStatus), pWardenClient->CheckCounter);
 		DWORD NetClient = D2Funcs.D2NET_GetClient(pWardenClient->ClientID);
 
 		if(!NetClient)
@@ -486,7 +490,7 @@ DWORD WardenLoop()
 				else
 				{
 					RemoveWardenPacket(pWardenClient);
-					DEBUGMSG("WARDENLOOP: DOWNLOAD_MOD DL status : [%d/%d]", pWardenClient->MOD_Position, MOD_Length);
+					//DEBUGMSG("WARDENLOOP: DOWNLOAD_MOD DL status : [%d/%d]", pWardenClient->MOD_Position, MOD_Length);
 					pWardenClient->MOD_Position = SendPartOfMOD2Client(pWardenClient->ClientID, pWardenClient->RC4_KEY_0XAE, pWardenClient->MOD_Position);
 					pWardenClient->NextCheckTime = CurrentTick; // Speed up upload process, by manipulation of this parameter
 					DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD for %s (*%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
@@ -713,7 +717,7 @@ DWORD WardenLoop()
 						if(pWardenClient->CheckCounter==12 && pWardenClient->GMDetected) pWardenClient->CheckCounter++;
 						if(pWardenClient->CheckCounter==13 && pWardenClient->LPDetected) pWardenClient->CheckCounter++;
 						if(pWardenClient->CheckCounter>13) pWardenClient->CheckCounter=0;
-						if(pWardenClient->CheckCounter == 0 && !DetectTrick && !pWardenClient->MyIp.empty()
+						if(pWardenClient->CheckCounter == 0 && !wcfgDetectTrick && !pWardenClient->MyIp.empty()
 							&& pWardenClient->AnimData && pWardenClient->AnimData2 && pWardenClient->TMCDetected
 							&& pWardenClient->StingDetected && pWardenClient->WtfDetected && pWardenClient->RCVDetected
 							&& pWardenClient->ptSkillsTxt  && pWardenClient->GMDetected && pWardenClient->LPDetected)
@@ -724,7 +728,7 @@ DWORD WardenLoop()
 #else
 						if (pWardenClient->CheckCounter == 1 && pWardenClient->RedVexDetected) pWardenClient->CheckCounter++;
 						if (pWardenClient->CheckCounter>1) pWardenClient->CheckCounter = 0;
-						if (pWardenClient->CheckCounter == 0 && !DetectTrick && pWardenClient->RedVexDetected)
+						if (pWardenClient->CheckCounter == 0 && !wcfgDetectTrick && pWardenClient->RedVexDetected)
 						{
 							pWardenClient->NextCheckTime = 0xFFFFFFFF;
 							pWardenClient->WardenStatus = WARDEN_NOTHING;
@@ -732,7 +736,7 @@ DWORD WardenLoop()
 						}
 #endif
 						pWardenClient->NextCheckTime = GetTickCount() + random();
-						Debug("Next check for %s in %.2f secs",pWardenClient->AccountName.c_str(),(float)(pWardenClient->NextCheckTime - GetTickCount()) / 1000);
+					//	Debug("Next check for %s in %.2f secs",pWardenClient->AccountName.c_str(),(float)(pWardenClient->NextCheckTime - GetTickCount()) / 1000);
 						pWardenClient->WardenStatus=WARDEN_SEND_REQUEST;
 						pWardenClient->ErrorCount=0;
 					}
@@ -913,7 +917,7 @@ void SendPtrRequest(WardenClient_i pWardenClient, char* DllName1, DWORD Addr, ch
 {
 	//BYTE Pack[] = {0x02,0x0C,'D','2','C','l','i','e','n','t','.','d','l','l',0x0c,'D','2','C','l','i','e','n','t','.','d','l','l',0x00,0xec,0x01,0xFF,0xFF,0xFF,0xFF,0x04,0xec,0x02,0xFF,0xFF,0xFF,0xFF,0x04,0xd9};
 	unsigned char WardenCMD2_local[100] = { 0 };
-	DEBUGMSG("Sending Warden request...")
+	//DEBUGMSG("Sending Warden request...")
 		BYTE s1 = strlen(DllName1);
 	BYTE s2 = strlen(DllName2);
 	WORD PacketSize = s1 + s2 + 19;
@@ -949,7 +953,7 @@ void SendPtrRequest(WardenClient_i pWardenClient, char* DllName1, DWORD Addr, BY
 {
 	//BYTE Pack[] = {0x02,0x0C,'D','2','C','l','i','e','n','t','.','d','l','l',0x0c,'D','2','C','l','i','e','n','t','.','d','l','l',0x00,0xec,0x01,0xFF,0xFF,0xFF,0xFF,0x04,0xec,0x02,0xFF,0xFF,0xFF,0xFF,0x04,0xd9};
 	unsigned char WardenCMD2_local[100] = { 0 };
-	DEBUGMSG("Sending Warden request...")
+	//DEBUGMSG("Sending Warden request...")
 		BYTE s1 = strlen(DllName1);
 	BYTE s2 = strlen(DllName2);
 	WORD PacketSize = s1 + s2 + 19;
@@ -983,7 +987,7 @@ void SendPtrRequest(WardenClient_i pWardenClient, char* DllName1, DWORD Addr, BY
 
 void SendPtrRequest(WardenClient_i pWardenClient, char* DllName1, DWORD Addr, BYTE Bytes)
 {
-	DEBUGMSG("Sending Warden request...")
+	//DEBUGMSG("Sending Warden request...")
 		unsigned char WardenCMD2_local[100] = { 0 };
 	//02 0c 62 6E 63 6C 69 65 6E 74 2E 64 6C 6C 00 ec 01 30 D3 01 00 04 d9
 	BYTE s1 = strlen(DllName1);
@@ -1012,7 +1016,7 @@ void SendPtrRequest(WardenClient_i pWardenClient, char* DllName1, DWORD Addr, BY
 void SendPtrRequest(WardenClient_i pWardenClient, DWORD Addr, BYTE Bytes)
 {
 	//{0x02,0x00,0xec,0x00,0xff,0xff,0xff,0xff,0x40,0xd9 };
-	DEBUGMSG("Sending Warden request...")
+	//DEBUGMSG("Sending Warden request...")
 		unsigned char WardenCMD2_local[100] = { 0 };
 	WORD PacketSize = 10;
 	BYTE * Packet = new BYTE[10];

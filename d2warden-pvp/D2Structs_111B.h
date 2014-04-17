@@ -76,7 +76,7 @@ struct pSpellTbl
 struct PacketTbl
 {
   int (__fastcall *Callback)(Game *pGame, UnitAny *pUnit, BYTE *aPacket, int PacketLen);
-  int _1;
+  BOOL _1; // Maybe validate?
 };
 
 
@@ -110,91 +110,7 @@ struct PlayerTrade		//size 0x18 -> resized to 0x20
 
 #pragma pack(push, 1)
 
-struct EventPacket
-{
-BYTE P_5A;		//0x00
-BYTE MsgType;	//0x01
-BYTE Color;		//0x02
-DWORD Param1;   //0x03 
-BYTE Param2;	//0x07
-char Name1[16]; //0x08
-char Name2[16]; //0x18
-};
 
-struct SendDWORDStatPacket  //0x1F
-{
-	BYTE Header;	//0x00
-	BYTE Attrib;	//0x01
-	DWORD Amount;	//0x02
-};
-
-struct PostTradePacket //0x92
-{
-	BYTE Header;
-	BYTE UnitType;
-	DWORD UnitId;
-};
-
-struct GoldPacket	//0x2C, size = 18
-{
-	BYTE Header;
-	char szPass[16];
-};
-
-struct TradeGold	//0x79, size = 0x06
-{
-	BYTE Header;
-	BYTE bMyUnit;
-	DWORD nGold;
-};
-
-struct TradeData // 0x78, size = 0x15 (21)
-{
-	BYTE Header;
-	char szName[16];
-	DWORD UnitId;
-};
-
-struct TradePacket // 0x7
-{
-  BYTE Header;
-  WORD ButtonId;
-  WORD Arg1;
-  WORD Arg2;
-};
-
-struct SkillPacket
-{
-    BYTE Header;
-    WORD xPos;
-    WORD yPos;
-};
-
-struct SkillTargetPacket
-{
-    BYTE Header;
-	DWORD UnitType;
-	DWORD UnitId;
-};
-
-
-struct RosterPacket //0x066, size = 0x07
-{
-	BYTE Header;
-	DWORD UnitId;
-	BYTE EventType;
-	BYTE EventCount;
-};
-
-struct ReassignPacket
-{
-	BYTE Header;
-	BYTE UnitType;
-	DWORD UnitId;
-	WORD xPos;
-	WORD yPos;
-	BYTE Reassign;
-};
 
 struct bItemFlags //Taken from Necrolis post & Hero Editor
 {
@@ -233,25 +149,6 @@ struct bItemFlags //Taken from Necrolis post & Hero Editor
 };
 
 #pragma pack(pop)
-
-struct ExEvent //(size 0xD++)
-{
-BYTE P_A6;		//0x00
-BYTE MsgType;	//0x01
-WORD PacketLen;	//0x02
-BYTE Argument;	//0x04
-BYTE Color;		//0x05
-union {
-	struct {
-WORD wX;		//0x06
-WORD wY;		//0x08
-	};
-DWORD UnitId;
-};
-WORD Sound;		//0x0A // Also CellID
-char szMsg[255];//0x0E // Also CellPath
-};
-
 
 
 struct PacketData //size 0x208
@@ -421,49 +318,6 @@ struct Attack
    DWORD _1;					//0x1C
    DWORD DamageReduced256;		//0x20
    DWORD MagDmgReduced256;		//0x24
-};
-
-struct PlayerData { //size 0x16C
-	char szName[16];				//0x00
-	QuestFlags *QuestsFlags[3];		//0x10
-	Waypoint *pNormalWaypoint[3];	//0x1C
-	DWORD _1;						//0x28
-	DWORD _2[2];					//0x2C
-	WORD* KillCounter;				//0x34 Monster
-	DWORD _2b;						//0x38
-	DWORD _3[4];					//0x3C 3[2] is merc related
-	DWORD dwTradeTick;				//0x4C
-	DWORD nTradeState;				//0x50
-	DWORD _4;						//0x54
-	DWORD dwAcceptTradeTick;		//0x58
-	PlayerTrade* pTrade;			//0x5C
-	DWORD _5[3];					//0x60
-	DWORD dwBoughtItemId;			//0x6C
-	DWORD dwRightSkill;				//0x70
-	DWORD dwLeftSkill;				//0x74
-	DWORD dwRightSkillFlags;		//0x78
-	DWORD dwLeftSkillFlags;			//0x7C
-	DWORD dwSwitchRightSkill;		//0x80
-	DWORD dwSwitchLeftSkill;		//0x84
-	DWORD dwSwitchRightSkillFlags;	//0x88
-	DWORD dwSwitchLeftSkillFlags;	//0x8C
-	DWORD _6[3];					//0x90
-	ClientData* pClientData;		//0x9C
-	DWORD _7[48];					//0x100
-	DWORD dwHostileDelay;			//0x160
-	DWORD _8;						//0x164
-	DWORD GameFrame;				//0x168
-//---My additions to original struct
-	BOOL isPlaying;					//0x16C
-	DWORD LastHitSkillId;			//0x170			
-	BOOL CanAttack;					//0x174
-	BOOL SaidGO;					//0x178
-	DWORD FirstKillTick;			//0x17C
-	DWORD KillCount;				//0x180
-	DWORD LastDamage;				//0x184
-	DWORD LastDamageId;				//0x188
-	DWORD LastDamageTick;			//0x18C
-	BYTE isSpecing;					//0x190
 };
 
 struct AiGeneral
@@ -724,16 +578,16 @@ DWORD nNpcs2;		//0x10
 
 struct NPCInfo //size 0xC - thx to SVR
 {
-        DWORD   NpcID;          //0x00
-        WORD    MsgIndex;	    //0x04
+		DWORD   NpcID;          //0x00
+		WORD    MsgIndex;	    //0x04
 		WORD    nPad;			//0x06
-        DWORD   MenuIndex;      //0x08
+		DWORD   MenuIndex;      //0x08
 };				               
 
 struct NPCMsgs  //size 0xC4 - Quest message table entry.
 {              
-        NPCInfo aMsgs[16];      //0x00
-        DWORD msgCount;         // number of valid NPCInfo items in array.
+		NPCInfo aMsgs[16];      //0x00
+		DWORD msgCount;         // number of valid NPCInfo items in array.
 };
 
 struct QuestBytes  //  thx to SVR
@@ -750,38 +604,38 @@ struct QuestFlags //size 0x60;
 struct QParam // 0x18 D2QuestArgStrc
 {
 		Game* pGame;	    	    //0x00
-        DWORD   eCallback;	        //0x04 Callback ID
-        UnitAny*   ptTarget;		//0x08 - NPC/Monster/Object... other Player ?
-        UnitAny*   ptPlayer;        //0x0C
-        DWORD dwUnk10;              //0x10
-        void*  pTextHead;           //0x14 - Used in CB 0 to show msg
+		DWORD   eCallback;	        //0x04 Callback ID
+		UnitAny*   ptTarget;		//0x08 - NPC/Monster/Object... other Player ?
+		UnitAny*   ptPlayer;        //0x0C
+		DWORD dwUnk10;              //0x10
+		void*  pTextHead;           //0x14 - Used in CB 0 to show msg
 		DWORD _1;				    //0x18 - some vary data
 };
 
 struct Quest	//size 0xF4 - thx to SVR - D2QuestDataStrc 
 {			
-        DWORD QuestID;          //0x00
-        Game   *pGame;			//0x04
-        BYTE    bAct;           //0x08 - act the quest is for
-        BYTE    bNotIntro;      //0x09 - checked in Callback 0 (+A0)
-        BYTE    bActive;        //0x0A - checked in dispatch, if(!=1) skip callbacks
-        BYTE    bLastState;     //0x0B - gets tweaked in Callback CC (which then calls0xA0)
-        BYTE    bState;         //0x0C - Quest state counter
-        BYTE    nInitNo;        //0x0D -
-        WORD    _1;		        //0x0E -
-        DWORD   nSeqId;         //0x10 - used in pSequence, calls Quest[nId]->pSequence
-        DWORD   dwFlags;        //0x14
-        void* pQuestEx;		    //0x18 - quest specific data
-        DWORD nPlayerGUID[32];  //0x1C - playerID's - either players active in quest or completed ? (probably the later)
-        WORD nPlayerCount;      //0x9C - playerID count
+		DWORD QuestID;          //0x00
+		Game   *pGame;			//0x04
+		BYTE    bAct;           //0x08 - act the quest is for
+		BYTE    bNotIntro;      //0x09 - checked in Callback 0 (+A0)
+		BYTE    bActive;        //0x0A - checked in dispatch, if(!=1) skip callbacks
+		BYTE    bLastState;     //0x0B - gets tweaked in Callback CC (which then calls0xA0)
+		BYTE    bState;         //0x0C - Quest state counter
+		BYTE    nInitNo;        //0x0D -
+		WORD    _1;		        //0x0E -
+		DWORD   nSeqId;         //0x10 - used in pSequence, calls Quest[nId]->pSequence
+		DWORD   dwFlags;        //0x14
+		void* pQuestEx;		    //0x18 - quest specific data
+		DWORD nPlayerGUID[32];  //0x1C - playerID's - either players active in quest or completed ? (probably the later)
+		WORD nPlayerCount;      //0x9C - playerID count
 		WORD _2;				//0x9E
-        DWORD (__fastcall *pCallback[15])(Quest *pQuest,QParam *pqParam);      //0xA0 - CallBack functions
-        NPCMsgs* pNPCMsgs;      //0xDC - ptr to NPC Messages
-        DWORD eFilter;          //0xE0 - index used in bit calls (#11107 etc)
-        void* pStatusFilter;     //0xE4 - function ptr
-        void* pActiveFilter;     //0xE8 - function ptr - return 1 to activate (!) bubble
-        void* pSequence;         //0xEC - function ptr
-        Quest* pPrev;	         //0xF0
+		DWORD (__fastcall *pCallback[15])(Quest *pQuest,QParam *pqParam);      //0xA0 - CallBack functions
+		NPCMsgs* pNPCMsgs;      //0xDC - ptr to NPC Messages
+		DWORD eFilter;          //0xE0 - index used in bit calls (#11107 etc)
+		void* pStatusFilter;     //0xE4 - function ptr
+		void* pActiveFilter;     //0xE8 - function ptr - return 1 to activate (!) bubble
+		void* pSequence;         //0xEC - function ptr
+		Quest* pPrev;	         //0xF0
 
 };				            
 
@@ -1054,79 +908,6 @@ TimerList* pFirstTimerList;  //+7080 - pFirstTimerList - points to self
 TimerList* pNextTimerList;	 //+7084 - pNextTimerList - unknown whenever it actually points to another TimerList, always NULL
 };
 
-
-
-struct UnitAny 
-{
-	DWORD dwType;					//0x00
-	DWORD dwClassId;				//0x04
-	void* pMemPool;					//0x08
-	DWORD dwUnitId;					//0x0C
-	DWORD dwMode;					//0x10
-	union
-	{
-		PlayerData*  pPlayerData;
-		ItemData*    pItemData;
-		MonsterData* pMonsterData;
-		ObjectData*  pObjectData;
-	};								//0x14
-	DWORD dwAct;					//0x18
-	Act * pAct;						//0x1C
-	DWORD dwSeed[2];				//0x20
-	DWORD dwInitSeed;				//0x28
-	union
-	{
-		Path*       pPath;
-		StaticPath* pStaticPath;
-	};								//0x2C
-	DWORD _3[5];					//0x30
-	DWORD dwGfxFrame;				//0x44
-	DWORD dwFrameRemain;			//0x48
-	WORD wFrameRate;				//0x4C
-	WORD _4;						//0x4E
-	BYTE*  pGfxUnk;					//0x50
-	DWORD* pGfxInfo;				//0x54
-	DWORD _5;						//0x58
-	StatListEx*  pStatsEx;			//0x5C
-	Inventory* pInventory;			//0x60
-	DWORD  dwInteractId;			//0x64
-	DWORD  dwInteractType;			//0x68
-	BYTE   bInteracting;			//0x6C
-	BYTE   _6;						//0x6D
-	WORD UpdateType;				//0x6E
-	UnitAny *pUpdateUnit;			//0x70
-	DWORD *pQuestRecord;			//0x74
-	BYTE bSparkyChest;				//0x78
-	BYTE _6a[3];					//0x79
-	DWORD pTimerArgs;				//0x7C
-	Game* pGame;					//0x80
-	DWORD _7[2];					//0x84
-	WORD wX;						//0x8C
-	WORD wY;						//0x8E
-	UnitEvent* pEvent;				//0x90
-	DWORD dwOwnerType;				//0x94
-	DWORD dwOwnerId;				//0x98
-	DWORD _8[3];					//0x9C
-	SkillData* pSkills;				//0xA8
-	Combat* ptCombat;				//0xAC
-	DWORD dwLastHitClass;			//0xB0
-	DWORD _9;						//0xB4
-	DWORD ItemCodeToDrop;			//0xB8
-	DWORD _10[2];					//0xBC
-	DWORD dwFlags;					//0xC4
-	DWORD dwFlags2;					//0xC8
-	DWORD _11;						//0xCC
-	DWORD dwNodeIdx;				//0xD0
-	DWORD dwOverlayTick;			//0xD4
-	DWORD dwDoorTick;				//0xD8
-	Timer* pTimer;					//0xDC
-	UnitAny* pChangedNext;			//0xE0
-	UnitAny*  pRoomNext;			//0xE4
-	UnitAny*  pListNext;			//0xE8
-	UnitMsg* pMsgFirst;				//0xEC
-	UnitMsg* pMsgLast;				//0xF0
-};
-
 struct Skill		//size 0x40
 {
 	SkillsTxt* pTxt;				//0x00
@@ -1186,9 +967,9 @@ struct CreateItem //size 0x84
 	DWORD dwInitSeed2;		//0x4C a11
 	DWORD OwnerLvl;			//0x50 ear lvl
 	DWORD dwValueMax;		//0x54 Quantity
-    char  szName[16];		//0x58
-    DWORD nPrefix[3];		//0x68
-    DWORD nSuffix[3];		//0x74
+	char  szName[16];		//0x58
+	DWORD nPrefix[3];		//0x68
+	DWORD nSuffix[3];		//0x74
 	DWORD _26;				//0x80 Some flags can be 2 | 8, a2 | a3 Flag 1 -> More magic items - thx Nefarius
 };
 

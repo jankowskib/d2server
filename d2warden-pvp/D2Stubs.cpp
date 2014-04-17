@@ -637,6 +637,24 @@ __declspec(naked) UnitAny* __fastcall D2GAME_FindUnit_STUB()
 
 namespace D2ASMFuncs 
 {
+	// __userpurge BroadcastLeaving5A_6FD06CA0<eax>(ClientData *ptClient<esi>, Game *ptGame, BYTE MsgType)
+	__declspec(naked) void __stdcall D2GAME_BroadcastLeavingEvent(ClientData *pClient, Game *pGame, BYTE bMsgType)
+	{
+		__asm
+		{
+			push esi
+
+			mov esi, [esp + 8] // pClient
+			push[esp + 16]
+			push[esp + 16]
+
+			call D2Ptrs.D2GAME_Broadcast5A_I
+
+			pop esi
+
+			ret 12
+		}
+	}
 
 //(Game *pGame<eax>, UnitAny *pUnit<edi>, Skill *pSkill, int nMode, signed int UnitType, int UnitId, int bAllowReEnter)
 __declspec(naked) void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter)
@@ -1354,13 +1372,14 @@ DWORD __declspec(naked) __fastcall D2GAME_Send0XAEPacket(void *ptPlayer,DWORD Le
 	 UnitAny *ptUnit;
 	 ASSERT(ptGame)
 
-	 if (dwUnitId == 0 || (dwUnitId>127 && dwUnitId<1000))
-	 {
-		 DEBUGMSG("WARNING: dwUnitId = %d", dwUnitId);
-	 }
+	 //if (dwUnitId == 0 || (dwUnitId>127 && dwUnitId<1000))
+	 //{
+		// DEBUGMSG("WARNING: dwUnitId = %d", dwUnitId);
+	 //}
 	 if (dwUnitType > 5)
 	 {
 		 DEBUGMSG("WARNING: dwType = %d", dwUnitType);
+		 return 0;
 	 }
 
 	 switch(dwUnitType)

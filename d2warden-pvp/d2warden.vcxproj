@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -58,7 +58,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">D:\Inne\D2 Stuff\D2GS\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../tmp/d2warden/Debug\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">../tmp/d2warden/Debug\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Inne\D2 Stuff\D2GS\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../tmp/d2warden/Release\</IntDir>
@@ -78,7 +78,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <CompileAs>CompileAsCpp</CompileAs>
       <StringPooling>false</StringPooling>
@@ -233,6 +233,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
     <ClCompile Include="D2Patches.cpp" />
+    <ClCompile Include="LParty.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
     <ClCompile Include="D2Warden.cpp" />
@@ -277,6 +278,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Build.h" />
+    <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="D2Consts.h" />
     <ClInclude Include="D2DataTables.h" />
     <ClInclude Include="D2Handlers.h" />
@@ -294,6 +296,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
     <ClInclude Include="LEvents.h" />
     <ClInclude Include="LItems.h" />
     <ClInclude Include="LMonsters.h" />
+    <ClInclude Include="LParty.h" />
     <ClInclude Include="LQuests.h" />
     <ClInclude Include="LRoster.h" />
     <ClInclude Include="LWorldEvent.h" />

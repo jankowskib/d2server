@@ -20,7 +20,14 @@
 #ifndef D2LITEMS_H__
 #define D2LITEMS_H__
 
-UnitAny* __stdcall ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5);
+UnitAny*
+#ifdef VER_111B
+__stdcall
+#else
+__fastcall
+#endif
+ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5);
+
 void CreateFFAItems(UnitAny* pUnit);
 bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t);
 

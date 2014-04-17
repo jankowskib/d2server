@@ -56,6 +56,7 @@ struct PlayerTrade;
 struct Timer;
 struct TimerList;
 struct TimerQuene;
+struct ObjectRegion;
 
 struct LRoster
 {
@@ -69,15 +70,15 @@ struct LRoster
 
 struct pSpellTbl
 {
-	int(__fastcall *SpellPrepareFunc)(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *ptItem, int a5, int a6, int SkillId);
-	int(__fastcall *SpellDoFunc)(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *ptItem, int a5, int a6, int SkillId);
+	int (__fastcall *SpellPrepareFunc)(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *ptItem, int a5, int a6, int SkillId);
+	int (__fastcall *SpellDoFunc)(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *ptItem, int a5, int a6, int SkillId);
 };
 
 
 struct PacketTbl
 {
-	int(__fastcall *Callback)(Game *pGame, UnitAny *pUnit, BYTE *aPacket, int PacketLen);
-	int _1;
+	DWORD (__fastcall *Callback)(Game *pGame, UnitAny *pUnit, BYTE *aPacket, int PacketLen);
+	BOOL _1;
 };
 
 
@@ -110,92 +111,6 @@ struct PlayerTrade		//size 0x18 -> resized to 0x20 // Need to check
 };
 
 #pragma pack(push, 1)
-
-struct EventPacket // (1.13d)
-{
-	BYTE P_5A;		//0x00
-	BYTE MsgType;	//0x01
-	BYTE Color;		//0x02
-	DWORD Param1;   //0x03 
-	BYTE Param2;	//0x07
-	char Name1[16]; //0x08
-	char Name2[16]; //0x18
-};
-
-struct SendDWORDStatPacket  //0x1F (1.13d)
-{
-	BYTE Header;	//0x00
-	BYTE Attrib;	//0x01
-	DWORD Amount;	//0x02
-};
-
-struct PostTradePacket //0x92 (1.13d)
-{
-	BYTE Header;
-	BYTE UnitType;
-	DWORD UnitId;
-};
-
-struct GoldPacket	//0x2C, size = 18 (1.13d)
-{
-	BYTE Header;
-	char szPass[16];
-};
-
-struct TradeGold	//0x79, size = 0x06 (1.13d)
-{
-	BYTE Header;
-	BYTE bMyUnit;
-	DWORD nGold;
-};
-
-struct TradeData // 0x78, size = 0x15 (21) (1.13d)
-{
-	BYTE Header;
-	char szName[16];
-	DWORD UnitId;
-};
-
-struct TradePacket // 0x7 (1.13d)
-{
-	BYTE Header;
-	WORD ButtonId;
-	WORD Arg1;
-	WORD Arg2;
-};
-
-struct SkillPacket // (1.13d)
-{
-	BYTE Header;
-	WORD xPos;
-	WORD yPos;
-};
-
-struct SkillTargetPacket // (1.13d)
-{
-	BYTE Header;
-	DWORD UnitType;
-	DWORD UnitId;
-};
-
-
-struct RosterPacket //0x066, size = 0x07  (1.13d)
-{
-	BYTE Header;
-	DWORD UnitId;
-	BYTE EventType;
-	BYTE EventCount;
-};
-
-struct ReassignPacket // (1.13d)
-{
-	BYTE Header;
-	BYTE UnitType;
-	DWORD UnitId;
-	WORD xPos;
-	WORD yPos;
-	BYTE Reassign;
-};
 
 struct bItemFlags //Taken from Necrolis post & Hero Editor  (1.13d)
 {
@@ -234,24 +149,6 @@ struct bItemFlags //Taken from Necrolis post & Hero Editor  (1.13d)
 };
 
 #pragma pack(pop)
-
-struct ExEvent //(size 0xD++)  (1.13d)
-{
-	BYTE P_A6;		//0x00
-	BYTE MsgType;	//0x01
-	WORD PacketLen;	//0x02
-	BYTE Argument;	//0x04
-	BYTE Color;		//0x05
-	union {
-		struct {
-			WORD wX;		//0x06
-			WORD wY;		//0x08
-		};
-		DWORD UnitId;
-	};
-	WORD Sound;		//0x0A // Also CellID
-	char szMsg[255];//0x0E // Also CellPath
-};
 
 
 
@@ -425,48 +322,6 @@ struct Attack
 	DWORD MagDmgReduced256;		//0x24
 };
 
-struct PlayerData { //size 0x16C same as 1.11b (1.13d) -- probably --
-	char szName[16];				//0x00
-	QuestFlags *QuestsFlags[3];		//0x10
-	Waypoint *pNormalWaypoint[3];	//0x1C
-	DWORD _1;						//0x28
-	DWORD _2[2];					//0x2C
-	WORD* KillCounter;				//0x34 Monster
-	DWORD _2b;						//0x38
-	DWORD _3[4];					//0x3C 3[2] is merc related
-	DWORD dwTradeTick;				//0x4C
-	DWORD nTradeState;				//0x50
-	DWORD _4;						//0x54
-	DWORD dwAcceptTradeTick;		//0x58
-	PlayerTrade* pTrade;			//0x5C
-	DWORD _5[3];					//0x60
-	DWORD dwBoughtItemId;			//0x6C
-	DWORD dwRightSkill;				//0x70
-	DWORD dwLeftSkill;				//0x74
-	DWORD dwRightSkillFlags;		//0x78
-	DWORD dwLeftSkillFlags;			//0x7C
-	DWORD dwSwitchRightSkill;		//0x80
-	DWORD dwSwitchLeftSkill;		//0x84
-	DWORD dwSwitchRightSkillFlags;	//0x88
-	DWORD dwSwitchLeftSkillFlags;	//0x8C
-	DWORD _6[3];					//0x90
-	ClientData* pClientData;		//0x9C
-	DWORD _7[48];					//0x100
-	DWORD dwHostileDelay;			//0x160
-	DWORD _8;						//0x164
-	DWORD GameFrame;				//0x168
-	//---My additions to original struct
-	BOOL isPlaying;					//0x16C
-	DWORD LastHitSkillId;			//0x170			
-	BOOL CanAttack;					//0x174
-	BOOL SaidGO;					//0x178
-	DWORD FirstKillTick;			//0x17C
-	DWORD KillCount;				//0x180
-	DWORD LastDamage;				//0x184
-	DWORD LastDamageId;				//0x188
-	DWORD LastDamageTick;			//0x18C
-	BYTE isSpecing;					//0x190
-};
 
 struct AiGeneral
 {
@@ -836,7 +691,7 @@ struct Game
 	SmallRoom1* pDrlgRoomList[5];	//0xD8
 	DWORD MonSeed;				//0xEC - seed used for monster spawning
 	DWORD* pMonsterRegion[1024];  //0xF0 - one pointer for each of the 1024 possible levels
-	DWORD* pObjectControl;		//0x10F0 - a controller holding all object region structs
+	ObjectRegion* pObjectRegion;		//0x10F0 - a controller holding all object region structs
 	QuestControl* pQuestControl;	//0x10F4 - a controller holding all quest info
 	UnitNode* pOldNodes[10];		//0x10F8 - ten lists of unit node lists, this is used by the AI target seeking code (and other stuff)
 	UnitAny* pUnitList[5][128];	//0x1120 - 5 lists of 128 lists of units (see pUnit documentation), second index is GUID & 127, BEWARE: since ever, missiles are array #4 and items are array #3 (so type3=index4 and type4=index3)
@@ -1045,77 +900,6 @@ struct TimerList	 //size 0x7088
 };
 
 
-
-struct UnitAny
-{
-	DWORD dwType;					//0x00
-	DWORD dwClassId;				//0x04
-	void* pMemPool;					//0x08
-	DWORD dwUnitId;					//0x0C
-	DWORD dwMode;					//0x10
-	union
-	{
-		PlayerData*  pPlayerData;
-		ItemData*    pItemData;
-		MonsterData* pMonsterData;
-		ObjectData*  pObjectData;
-	};								//0x14
-	DWORD dwAct;					//0x18
-	Act * pAct;						//0x1C
-	DWORD dwSeed[2];				//0x20
-	DWORD dwInitSeed;				//0x28
-	union
-	{
-		Path*       pPath;
-		StaticPath* pStaticPath;
-	};								//0x2C
-	DWORD _3[5];					//0x30
-	DWORD dwGfxFrame;				//0x44
-	DWORD dwFrameRemain;			//0x48
-	WORD wFrameRate;				//0x4C
-	WORD _4;						//0x4E
-	BYTE*  pGfxUnk;					//0x50
-	DWORD* pGfxInfo;				//0x54
-	DWORD _5;						//0x58
-	StatListEx*  pStatsEx;			//0x5C
-	Inventory* pInventory;			//0x60
-	DWORD  dwInteractId;			//0x64
-	DWORD  dwInteractType;			//0x68
-	BYTE   bInteracting;			//0x6C
-	BYTE   _6;						//0x6D
-	WORD UpdateType;				//0x6E
-	UnitAny *pUpdateUnit;			//0x70
-	DWORD *pQuestRecord;			//0x74
-	BYTE bSparkyChest;				//0x78
-	BYTE _6a[3];					//0x79
-	DWORD pTimerArgs;				//0x7C
-	Game* pGame;					//0x80
-	DWORD _7[2];					//0x84
-	WORD wX;						//0x8C
-	WORD wY;						//0x8E
-	UnitEvent* pEvent;				//0x90
-	DWORD dwOwnerType;				//0x94
-	DWORD dwOwnerId;				//0x98
-	DWORD _8[3];					//0x9C
-	SkillData* pSkills;				//0xA8
-	Combat* ptCombat;				//0xAC
-	DWORD dwLastHitClass;			//0xB0
-	DWORD _9;						//0xB4
-	DWORD ItemCodeToDrop;			//0xB8
-	DWORD _10[2];					//0xBC
-	DWORD dwFlags;					//0xC4
-	DWORD dwFlags2;					//0xC8
-	DWORD _11;						//0xCC
-	DWORD dwNodeIdx;				//0xD0
-	DWORD dwOverlayTick;			//0xD4
-	DWORD dwDoorTick;				//0xD8
-	Timer* pTimer;					//0xDC
-	UnitAny* pChangedNext;			//0xE0
-	UnitAny*  pRoomNext;			//0xE4
-	UnitAny*  pListNext;			//0xE8
-	UnitMsg* pMsgFirst;				//0xEC
-	UnitMsg* pMsgLast;				//0xF0
-};
 
 struct Skill		//size 0x40
 {

@@ -29,8 +29,8 @@ struct D2BodyLocsTxt
 {
    union
    {
-      DWORD dwCode;               //0x00
-      char szCode[4];               //0x00
+	  DWORD dwCode;               //0x00
+	  char szCode[4];               //0x00
    };
 };
 
