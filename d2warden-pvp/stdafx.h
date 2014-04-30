@@ -17,6 +17,9 @@
  * limitations under the License.
  * ========================================================== */
 #define _ENGLISH_LOGS
+#define D2EX_COLOR_STAT		189					// ItemStatCost.Txt record which stores item color value
+#define D2EX_LOOTED_STAT	190					// ItemStatCost.Txt record which stores monster id which gave the item 
+
 #define WIN32_LEAN_AND_MEAN
 //******** SET HERE WORKING VERSION *********
 #define VER_113D

@@ -39,7 +39,7 @@ return 0;
 
 BYTE * __stdcall DYES_DrawItem(UnitAny *ptPlayer, UnitAny* ptItem, BYTE* out, BOOL a4)
 {
-	int col = D2Funcs.D2COMMON_GetStatSigned(ptItem,183,0);
+	int col = D2Funcs.D2COMMON_GetStatSigned(ptItem, D2EX_COLOR_STAT, 0);
 
 	if(col)
 	{
@@ -206,34 +206,34 @@ int __fastcall DYES_Colorize(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, Unit
 	switch(iCode)
 	{
 		case ' 1yd':	//White Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,1,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 1, 0);
 		break;
 		case ' 2yd':	//Black Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,2,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 2, 0);
 		break;
 		case ' 3yd':	//Blue Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,3,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 3, 0);
 		break;
 		case ' 4yd':	//Gold Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,4,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 4, 0);
 		break;
 		case ' 5yd':	//Green Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,5,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 5, 0);
 		break;
 		case ' 6yd':	//Orange Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,6,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 6, 0);
 		break;
 		case ' 7yd':	//Purple Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,7,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 7, 0);
 		break;
 		case ' 8yd':	//Red Dye
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,8,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 8, 0);
 		break;
 		case ' clb':	//Bleach
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,0,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 0, 0);
 		break;
 		case ' 2lb':	//Super Bleach
-		D2Funcs.D2COMMON_AddStatToStatList(ptList,183,60,0);
+			D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_COLOR_STAT, 60, 0);
 		break;
 	}
 	strcpy_s(ptItem->pItemData->szPlayerName,16,iCode == ' clb' ? "" : pUnit->pPlayerData->pClientData->AccountName);

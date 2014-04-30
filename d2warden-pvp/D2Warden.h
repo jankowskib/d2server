@@ -75,7 +75,7 @@ struct WardenClient
 	BYTE NewPatch;
 	BYTE DebugTrick;
 
-    WardenPacket pWardenPacket;
+	WardenPacket pWardenPacket;
 	DWORD MOD_Position;
 
 	unsigned char RC4_KEY_0X66[258];
@@ -117,13 +117,6 @@ struct Vote
 	WardenClient* pVoter;
 	DWORD Time;
 	DWORD ThreadID;
-};
-
-struct Spec
-{
-	Game * ptGame;
-	DWORD RequesterID;
-	DWORD SpecID;
 };
 
 struct WEItem

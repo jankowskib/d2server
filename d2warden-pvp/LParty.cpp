@@ -59,19 +59,7 @@ DWORD __fastcall OnPartyRelationChange(Game* pGame, UnitAny* pPlayer, BYTE *pPac
 	}
 	else if (p->nButton == PB_SPECATE)
 	{
-		Spec * Data = new Spec;
-		Data->ptGame = pGame;
-		Data->RequesterID = pPlayer->dwUnitId;
-		Data->SpecID = p->dwUnitId;
-
-		if (!pPlayer->pPlayerData->isSpecing && !pDestUnit->pPlayerData->isSpecing)
-		{
-			_beginthreadex(0, 0, &SpecThread, &Data, 0, 0);
-		}
-		else
-		{
-			SendMsgToClient(pPlayer->pPlayerData->pClientData, "You're already watching someone!");
-		}
+		return OnClickSpecate(pGame, pPlayer, pDestUnit);
 	}
 	return 0;
 }

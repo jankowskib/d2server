@@ -196,6 +196,7 @@ EXFUNCPTR(FOG, Error, void, __cdecl, (const char* File, void* Addr, int Line), -
 EXFUNCPTR(FOG, GetErrorData, void*, __cdecl, (), -10265)
 EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (void *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
 EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (void *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
+EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
 
 //D2NET 0xa30000+0xFA7C0 +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
 EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10018) // Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)

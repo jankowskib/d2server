@@ -22,6 +22,8 @@
 
 // -- Warden checks end
 
+#define D2GAME_CLIENT_PACKET_WRAPPER_NEW 0x703B5
+
 #define D2GAME_MONSTERSPAWN_I 0x6F551 // mby crash
 
 #define D2GAME_LASTHITINTERCEPT	0x7D66D

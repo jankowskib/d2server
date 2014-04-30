@@ -363,183 +363,6 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 	return true;
 }
 
-
-//Valid for 0x06*, 0x07, 0x09*, 0x0A,  || 0x0D*, 0x0E, 0x10*, 0x11
-DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen)
-{
-	int InRange = 0;
-	if (PacketLen != 9) return 3;
-	if (!ptGame) return 3;
-	if (ptPlayer->dwType != UNIT_PLAYER) return 3;
-	if (ptPacket->UnitType > 5) return 3;
-
-	InRange = D2ASMFuncs::D2GAME_isUnitInRange(ptGame, ptPacket->UnitId, ptPacket->UnitType, ptPlayer, 50);
-	if (InRange == 2)
-	{
-		DEBUGMSG("OnClickUnit: Over the range (3)")
-			return 2;
-	}
-	if (InRange == 3)
-	{
-		DEBUGMSG("OnClickUnit: Over the range (3)");
-		return 3;
-	}
-	Skill * ptSkill = (ptPacket->Header == 6 || ptPacket->Header == 7 || ptPacket->Header == 9 || ptPacket->Header == 0xA) ? D2Funcs.D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs.D2COMMON_GetRightSkill(ptPlayer);
-	if (!ptSkill)
-	{
-		DEBUGMSG("%s: ptSkill not found!. Packet id is = %d", __FUNCTION__, ptPacket->Header);
-		return 3;
-	}
-	int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
-
-	PlayerData* pPlayerData = ptPlayer->pPlayerData;
-	if (!pPlayerData) return 2;
-
-	if (TeleChars[ptPlayer->dwClassId] == FALSE && ptPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
-	{
-		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
-		return 0;
-	}
-
-	if (SkillId == 0x65 && !wcfgAllowHB)
-	{
-		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
-		return 0;
-	}
-	if (SkillId == 151 && !wcfgAllowNLWW)
-	{
-		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" : "NLWW Is Not Allowed On This Server");
-		return 0;
-	}
-
-	static int AttackCount;
-
-	if (ptGame->bFestivalMode == 1 && pPlayerData->CanAttack == 0 && (!isSafeSkill(SkillId) && SkillId != D2S_CHARGE))
-	{
-		if (AttackCount == 0)
-		{
-			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");
-		}
-		AttackCount++;
-		if (AttackCount > 4) AttackCount = 0;
-		return 0;
-	}
-
-
-	int nPierceIdx = D2Funcs.D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-	D2Funcs.D2COMMON_SetStat(ptPlayer, 328, nPierceIdx + 1, 0);
-
-	D2ASMFuncs::D2GAME_CastSkillOnUnit(ptPlayer, ptSkill, ptGame, ptPacket->UnitType, ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10) ? 1 : 0);
-	return 0;
-}
-
-
-DWORD __fastcall OnClickLoc(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen)
-{
-	bool InRange = false;
-	static int AttackCount;
-	if (PacketLen != 5) return 3; // zwroc hack
-	if (!ptGame) return 3;
-	if (ptPlayer->dwType != UNIT_PLAYER) return 3;
-
-	WORD UnitX = D2Funcs.D2GAME_GetUnitX(ptPlayer);
-	WORD UnitY = D2Funcs.D2GAME_GetUnitY(ptPlayer);
-
-	int xOffset = UnitX - ptPacket->xPos;
-	if (xOffset < 0) xOffset = -xOffset;
-	int yOffset = UnitY - ptPacket->yPos;
-	if (yOffset < 0) yOffset = -yOffset;
-
-	if (yOffset < 50 && xOffset < 50) InRange = true;
-
-	PlayerData* pPlayerData = ptPlayer->pPlayerData;
-	if (!pPlayerData)
-	{
-		DEBUGMSG("Didn't find a PlayerData, function %s, %d", __FUNCTION__, __LINE__);
-		return 2;
-	}
-
-	if (InRange)
-	{
-		pPlayerData->GameFrame = ptGame->GameFrame;
-		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2Funcs.D2COMMON_GetLeftSkill(ptPlayer) : D2Funcs.D2COMMON_GetRightSkill(ptPlayer);
-		if (!ptSkill) return 3;
-		int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
-
-		if (TeleChars[ptPlayer->dwClassId] == FALSE && ptPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
-		{
-			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
-			return 0;
-		}
-
-		if (SkillId == 0x65 && !wcfgAllowHB) {
-			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
-			return 0;
-		}
-
-		int nPierceIdx = D2Funcs.D2COMMON_GetBaseStatSigned(ptPlayer, 328, 0);
-		D2Funcs.D2COMMON_SetStat(ptPlayer, 328, nPierceIdx + 1, 0);
-
-		if (ptGame->bFestivalMode && !pPlayerData->CanAttack && !isSafeSkill(SkillId))
-		{
-			if (AttackCount == 0)
-			{
-				SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Wpisz #go aby rozpoczac runde!" : "Type #go to start round");
-			}
-			AttackCount++;
-			if (AttackCount > 4)
-				AttackCount = 0;
-			return 0;
-		}
-
-		D2ASMFuncs::D2GAME_CastSkill(ptPlayer, ptSkill, ptGame, ptPacket->xPos, ptPacket->yPos);
-
-		if (!wcfgDetectTrick)
-			return 0;
-
-		WardenClient_i ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
-		if (ptWardenClient == hWarden.Clients.end()) return 0;
-
-		if (GetTickCount() > ptWardenClient->UIModesTime + 500) { UNLOCK return 0; }
-
-		if ((ptWardenClient->UIModes[UI_CHARACTER] || ptWardenClient->UIModes[UI_QUEST]) && (ptWardenClient->MouseXPosition >= 0 && ptWardenClient->MouseXPosition <= 200) && (ptWardenClient->MouseYPosition >= 0 && ptWardenClient->MouseYPosition <= 550))
-		{
-			if (ptWardenClient->DebugTrick)
-				SendMsgToClient(ptWardenClient->ptClientData, "Trick (Left window) X=%d Y=%d, LAG= %d ms", ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition, GetTickCount() - ptWardenClient->UIModesTime);
-			Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]", ptWardenClient->CharName.c_str(), ptWardenClient->AccountName.c_str(), ptWardenClient->UIModes[UI_CHARACTER] ? "Character Stats" : "Quests", ConvertSkill(SkillId).c_str(), ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition);
-		}
-		else
-			if ((ptWardenClient->UIModes[UI_INVENTORY] || ptWardenClient->UIModes[UI_SKILL]) && (ptWardenClient->MouseXPosition >= 600 && ptWardenClient->MouseXPosition <= 800) && (ptWardenClient->MouseYPosition >= 0 && ptWardenClient->MouseYPosition <= 550))
-			{
-				if (ptWardenClient->DebugTrick)
-					SendMsgToClient(ptWardenClient->ptClientData, "Trick (Right window) X=%d Y=%d, LAG = %d ms", ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition, GetTickCount() - ptWardenClient->UIModesTime);
-				Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]", ptWardenClient->CharName.c_str(), ptWardenClient->AccountName.c_str(), ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory" : "Skill Tree", ConvertSkill(SkillId).c_str(), ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition);
-			}
-		UNLOCK
-			return 0;
-	}
-	else
-	{
-		if ((signed int)(ptGame->GameFrame - pPlayerData->GameFrame) > 25)
-		{
-			ClientData * pClient = pPlayerData->pClientData;
-			if (pClient)
-			{
-				ReassignPacket hReassign = { 0 };
-				hReassign.Header = 0x15;
-				hReassign.UnitId = ptPlayer->dwUnitId;
-				hReassign.xPos = UnitX;
-				hReassign.yPos = UnitY;
-				hReassign.Reassign = 1;
-
-				D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hReassign, 11);
-			}
-		}
-		return 1;
-	}
-	return 3;
-}
-
 int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 {
 	//if(pClient->InitStatus!=4)
@@ -886,7 +709,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				if (pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player is not in the same game!"); UNLOCK return false; }
 				//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
 				SendMsgToClient(psUnit->ptClientData, "%s started watching you!", pUnit->pPlayerData->pClientData->AccountName);
-				Spec * Data = new Spec;
+			/*	Spec * Data = new Spec;
 				Data->ptGame = pUnit->pGame;
 				Data->RequesterID = pUnit->dwUnitId;
 				Data->SpecID = psUnit->ptPlayer->dwUnitId;
@@ -898,7 +721,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				else
 				{
 					SendMsgToClient(pUnit->pPlayerData->pClientData, "You're already watching someone!");
-				}
+				}*/
 				UNLOCK
 					return false;
 			}
@@ -974,14 +797,27 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#dumpunits") == 0)
 			{
+				/*map<DWORD, UnitAny*> hmap;
 				for (int i = 0; i < 128; ++i)
+				{	
+					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pListNext)
 					{
-						UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i];
-						if (u)
-						{
-							DEBUGMSG("%d:, %d @ [%d,%d]", u->dwType, u->dwClassId, D2Funcs.D2GAME_GetUnitX(u), D2Funcs.D2GAME_GetUnitY(u));
-						}
+						hmap[u->dwUnitId] = u;
 					}
+					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pRoomNext)
+					{
+						hmap[u->dwUnitId] = u;
+					}
+				}*/
+				for (InactiveRoom * r = pUnit->pGame->pDrlgRoomList[0]; r; r = r->pNextRoom)
+					for (InactiveObject *o = r->pObject; o; o = o->pNext)
+				{
+						DEBUGMSG("Class [%d], xy= [%d,%d]", o->dwClassId, o->xPos, o->yPos)
+				}
+			/*	for (auto u = hmap.begin(); u != hmap.end(); ++u)
+				{
+					DEBUGMSG("%d:, %d @ [%d,%d]", u->second->dwUnitId, u->second->dwClassId, D2Funcs.D2GAME_GetUnitX(u->second), D2Funcs.D2GAME_GetUnitY(u->second));
+				}*/
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "OK!");
 				return false;
 			}
@@ -1260,6 +1096,51 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				if (LvlId > 136) return false;
 				SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to level '%d'...", aUnit->pPlayerData->szName, LvlId);
 				D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit, LvlId, aUnit->pGame);
+				return false;
+			}
+			if (_stricmp(str, "#move2obj") == 0)
+			{
+				UnitAny* aUnit = pUnit;
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#move <object class id> [account]"); return false; }
+				int ObjId = atoi(str);
+				str = strtok_s(NULL, " ", &t);
+				if (str) {
+					WardenClient_i ptCurrentClient = GetClientByName(str);
+					if (ptCurrentClient == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (!ptCurrentClient->ptPlayer) { UNLOCK return false; }
+					if (aUnit == ptCurrentClient->ptPlayer){ UNLOCK return false; }
+					aUnit = ptCurrentClient->ptPlayer;
+					UNLOCK
+				}
+				if (!ObjId) return false;
+				if (ObjId > (*D2Vars.D2COMMON_ObjectTxtRecs))
+				{
+					SendMsgToClient(aUnit->pPlayerData->pClientData, "Object '%d' is out of range (%d)...", ObjId, *D2Vars.D2COMMON_ObjectTxtRecs);
+					return false;
+				}
+				for (int i = 0; i < 128; ++i)
+					for (UnitAny * obj = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; obj; obj = obj->pListNext)
+				{
+						if (obj->dwClassId == ObjId)
+						{
+							Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(obj);
+							if (!mRoom)
+							{
+								SendMsgToClient(pUnit->pPlayerData->pClientData, "Room not found!"); return false;
+							}
+							POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
+							POINT Out = { 0, 0 };
+
+							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
+							SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
+							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
+							return false;
+						}
+
+				}
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Object not found!"); return false;
 				return false;
 			}
 

@@ -133,7 +133,7 @@ EXFUNCPTR(D2COMMON, GetTownLevel, int, __stdcall, (int dwActNo), -10353) //k
 EXFUNCPTR(D2COMMON, GetUnitMaxLife, unsigned int, __stdcall, (UnitAny *ptUnit), -10574) //k
 EXFUNCPTR(D2COMMON, GetUnitMaxMana, unsigned int, __stdcall, (UnitAny *ptUnit), -10084) //k
 EXFUNCPTR(D2COMMON, LoadAct, Act*, __stdcall, (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, DWORD* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2), -10024) // 1.13d
-EXFUNCPTR(D2COMMON, GetRoomXYByLevel, Room1*, __stdcall, (Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitAlign), -10632) // 1.13d
+EXFUNCPTR(D2COMMON, GetRoomXYByLevel, Room1*, __stdcall, (Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitSize), -10632) // 1.13d
 EXFUNCPTR(D2COMMON, ChangeCurrentMode, int, __stdcall, (UnitAny* ptUnit, int Mode), -10193) // 1.13d
 EXFUNCPTR(D2COMMON, GetUnitRoom, Room1*, __stdcall, (UnitAny *ptUnit), -10846) //k
 EXFUNCPTR(D2COMMON, GetPathX, int, __stdcall, (Path* ptPath), -10465) // 1.13d
@@ -162,6 +162,7 @@ EXFUNCPTR(FOG, Error, void, __cdecl, (const char* File, void* Addr, int Line), -
 EXFUNCPTR(FOG, GetErrorData, void*, __cdecl, (), -10265)
 EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (void *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
 EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (void *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
+EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
 
 //D2NET 0xa30000+ 0x??? +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
 EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10012) // 1.13d Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
@@ -276,6 +277,8 @@ void SetupD2Vars() {
 	EXVARPTR(D2GAME, ClientPacketTable, PacketTbl, 0xFA698)
 	EXVARPTR(D2COMMON, sgptDataTables, sgptDataTable*, -11173) // 1.13d
 	EXVARPTR(D2GAME, PartyButtonCallbacks, int, 0xFA294)
+	EXVARPTR(D2COMMON, ObjectTxt, ObjectTxt*, 0xA5830)
+	EXVARPTR(D2COMMON, ObjectTxtRecs, DWORD, 0xA5830 + 4)
 #ifndef __DEFINE_EXPTRS
 };
 extern _d2v D2Vars;

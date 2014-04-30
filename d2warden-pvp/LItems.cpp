@@ -42,7 +42,7 @@ ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5)
 	{
 		if (ptItem)
 		{
-			D2Funcs.D2COMMON_SetStat(ptItem, 184, srCreateItem->pOwner->dwClassId, 0);
+			D2Funcs.D2COMMON_SetStat(ptItem, D2EX_LOOTED_STAT, srCreateItem->pOwner->dwClassId, 0);
 			//StatList* ptList = ptItem->pStatsEx->pMyLastList;
 			//if (ptList)
 			//{
@@ -50,7 +50,7 @@ ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5)
 			//	{
 			//		for (; ptList; ptList = ptList->pPrevLink) if (ptList->dwOwnerId == ptItem->dwUnitId) break;
 			//	}
-			//	D2Funcs.D2COMMON_AddStatToStatList(ptList, 184, srCreateItem->pOwner->dwClassId, 0);
+			//	D2Funcs.D2COMMON_AddStatToStatList(ptList, D2EX_LOOTED_STAT, srCreateItem->pOwner->dwClassId, 0);
 			//}
 		}
 	}

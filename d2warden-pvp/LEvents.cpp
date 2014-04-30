@@ -73,7 +73,7 @@ DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, int P
 		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_HP, dwMaxLife, pPlayer);
 		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_MANA, dwMaxMana, pPlayer);
 		D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_STAMINA, dwMaxStamina, pPlayer);
-		pPlayer->dwFlags |= 2u;								  // Make unit selectable
+		pPlayer->dwFlags |= UNITFLAG_SELECTABLE;				  // Make unit selectable
 
 		D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 1);   // Uninterrupable
 		D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 0);
@@ -144,7 +144,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 				else 
 					DEBUGMSG("Nie znalazlem struktury WardenClient w %s",__FUNCTION__);
 			}
-			if(pEvent->MsgType == 2) // Join packet
+			if(pEvent->MsgType == EVENT_JOINED) // Join packet
 			{
 				ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
 				if(pClient) 
@@ -170,6 +170,52 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 			{
 				DEBUGMSG("[REMOVECLIENT] Failed to find WardenClient!");
 				return;
+			}
+			LSpectator *l = pGame->pLSpectator;
+			while (l)
+			{
+				if (l->UnitUID == pWardenClient->ptClientData->UnitId || l->WatcherUID == pWardenClient->ptClientData->UnitId)
+				{
+					UnitAny *pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, l->WatcherUID, UNIT_PLAYER);
+					if (pWatcher)
+					{
+						DEBUGMSG("Cleaning the specer")
+						pWatcher->dwFlags |= UNITFLAG_SELECTABLE;
+						D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::invis, 0);
+						D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::uninterruptable, 0);
+						int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
+						int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
+						if (aCurrLevel != aLevel) D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, pGame);
+
+						ExEventSpecatorEnd msg;
+						msg.P_A6 = 0xA6;
+						msg.MsgType = EXEVENT_SPECTATOR_END;
+						msg.PacketLen = sizeof(ExEventSpecatorEnd);
+						D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorEnd));
+						pWatcher->pPlayerData->isSpecing = 0;
+
+					}
+					LSpectator *d = l;
+					if (l->pPrev)
+					{
+						DEBUGMSG("Removing neighbour spec node...")
+							l->pPrev->pNext = l->pNext;
+						l = l->pNext;
+						delete d;
+						continue;
+					}
+					else
+					{
+						DEBUGMSG("Removing single spec node...")
+							pGame->pLSpectator = l->pNext;
+						l = l->pNext;
+						if (l)
+							l->pPrev = 0;
+						delete d;
+						continue;
+					}
+				}
+				l = l->pNext;
 			}
 			RemoveWardenPacket(pWardenClient);
 			pWardenClient = hWarden.Clients.erase(pWardenClient);

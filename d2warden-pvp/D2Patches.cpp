@@ -83,7 +83,9 @@ void PatchD2()
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_LASTHITINTERCEPT), (DWORD)D2Stubs::D2GAME_LastHitIntercept_STUB, 5, "LastHitIntercept");
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_ONDAMAGECREATION), (DWORD)D2Stubs::D2GAME_OnCreateDamage_STUB, 6, "OnDamageCreation");
-	PatchGS(CALL, GetDllOffset("D2Net.dll", D2NET_CLIENT_PACKET_WRAPPER), (DWORD)D2Stubs::D2NET_ReceivePacket_STUB, 5, "Client Packet Wrapper");
+	PatchGS(CALL, GetDllOffset("D2Net.dll", D2NET_CLIENT_PACKET_WRAPPER), (DWORD)D2Stubs::D2NET_ReceivePacket_STUB, 5, "Client Packet Wrapper DEPRACATED");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_CLIENT_PACKET_WRAPPER_NEW), (DWORD)D2Stubs::D2GAME_OnPacketReceive_STUB, 5, "Client Packet Wrapper NEW ");
+
 
 	if (wcfgAllowD2Ex)
 	{
@@ -129,10 +131,10 @@ void PatchD2()
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X66_WARDEN_PACKET_WRAPPER), (DWORD)d2warden_0X66Handler, 5, "0x66 Warden Packet Wrapper");
 	//Pakiety skilli
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X05_WRAPPER), (DWORD)OnClickLoc, 8, "0x05 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0C_WRAPPER), (DWORD)OnClickLoc, 8, "0x0C Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X08_WRAPPER), (DWORD)OnClickLoc, 5, "0x08 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0F_WRAPPER), (DWORD)OnClickLoc, 5, "0x0F Wrapper");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X05_WRAPPER), (DWORD)OnClickLocation, 8, "0x05 Wrapper");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0C_WRAPPER), (DWORD)OnClickLocation, 8, "0x0C Wrapper");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X08_WRAPPER), (DWORD)OnClickLocation, 5, "0x08 Wrapper");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0F_WRAPPER), (DWORD)OnClickLocation, 5, "0x0F Wrapper");
 	//--------------
 	//Pakiety skill on Unit 0x06*, 0x07, 0x09*, 0x0A,  || 0x0D*, 0x0E, 0x10*, 0x11
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X06_WRAPPER), (DWORD)OnClickUnit, 6, "0x06 Wrapper");

@@ -260,18 +260,9 @@ struct Act
 
 
 
-struct SmallRoom1 // sizeof(0x18)
+
+struct Path 
 {
-	DWORD dwXStart;					//0x00
-	DWORD dwYStart;					//0x04
-	DWORD dwXSize;					//0x08
-	DWORD dwYSize;					//0x0C
-	DWORD _1;						//0x10
-	SmallRoom1* pNextRoom;			//0x14
-};
-
-
-struct Path {
 	WORD xOffset;					//0x00
 	WORD xPos;						//0x02
 	WORD yOffset;					//0x04
@@ -697,7 +688,7 @@ struct Game
   TimerQuene* pTimerQueue;       //0xB8 a queue of all current active and inactive timers
   Act* pDrlgAct[5];			//0xBC
   DWORD GameSeed[2];			//0xD0
-  SmallRoom1* pDrlgRoomList[5];	//0xD8
+  InactiveRoom* pDrlgRoomList[5];	//0xD8
   DWORD MonSeed;				//0xEC - seed used for monster spawning
   DWORD* pMonsterRegion[1024];  //0xF0 - one pointer for each of the 1024 possible levels
   DWORD* pObjectControl;		//0x10F0 - a controller holding all object region structs
@@ -721,7 +712,7 @@ struct Game
   BOOL bKilledDia;				//0x1DEC - killed uber diablo
   BOOL bKilledMeph;				//0x1DF0 - killed uber mephisto
   //Additions to original struct
-  LRoster *ptLRoster;			//0x1DF4 added by me
+  LRoster *pLRoster;			//0x1DF4 added by me
   DWORD dwKillCount;			//0x1DF8 
   DWORD dwGameState;			//0x1DFC 
   UnitNode* pNewNodes[130];		//0x1E00

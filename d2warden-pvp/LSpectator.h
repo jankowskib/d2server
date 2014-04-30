@@ -20,7 +20,10 @@
 #ifndef SPECTATOR_H__
 #define SPECTATOR_H__
 
-unsigned int __stdcall SpecThread(void* Params);
+DWORD OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit);
+
 DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
+DWORD __fastcall OnClickLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
+DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen);
 
 #endif

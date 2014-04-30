@@ -107,6 +107,9 @@
     <ClCompile Include="LParty.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
+    <ClCompile Include="LPackets.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -209,6 +212,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LParty.h">
+      <Filter>Header Files\ModuLes</Filter>
+    </ClInclude>
+    <ClInclude Include="LPackets.h">
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
   </ItemGroup>

@@ -74,47 +74,66 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 	bool bDruid = false;
 
 	ASSERT(pGame)
+	if(pVictim)
+		if(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5) bDruid = true;
+	if(pVictim)
+	if(!D2Funcs.D2COMMON_isInShapeForm(pVictim) || !bDruid)
+	{
+		COMBAT_Free(pGame,pVictim);
+		D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
+
+		ClientData* pClient = 0;
 		if(pVictim)
-			if(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5) bDruid = true;
-	if(pVictim)
-	if(!D2Funcs.D2COMMON_isInShapeForm(pVictim) || !bDruid) {
-	COMBAT_Free(pGame,pVictim);
-	D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
+			if(pVictim->dwType == UNIT_PLAYER) 
+				pClient = pVictim->pPlayerData->pClientData;
 
-	ClientData* pClient = 0;
-	if(pVictim)
-		if(pVictim->dwType == UNIT_PLAYER) pClient = pVictim->pPlayerData->pClientData;
-	if(pClient) pClient->PlayerStatus |= 8;
-	D2ASMFuncs::D2GAME_StopSequence(pVictim);
-	D2ASMFuncs::D2GAME_RemoveBuffs(pGame, pVictim);
-	D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
-	D2ASMFuncs::D2GAME_ResetTimers(pGame, pVictim);
+		if(pClient) 
+			pClient->PlayerStatus |= 8;
 
-		if(pKiller && pVictim) { 
-		OnDeath(pKiller,pVictim,pGame);
+		D2ASMFuncs::D2GAME_StopSequence(pVictim);
+		D2ASMFuncs::D2GAME_RemoveBuffs(pGame, pVictim);
+		D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
+		D2ASMFuncs::D2GAME_ResetTimers(pGame, pVictim);
+
+		if(pKiller && pVictim)
+		{ 
+			OnDeath(pKiller,pVictim,pGame);
 		}
 		
-		if(!D2Funcs.D2COMMON_GetUnitState(pVictim,playerbody))  pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
-			D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
+		if(!D2Funcs.D2COMMON_GetUnitState(pVictim,playerbody))  
+			pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
+	
+		D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
 		return;
 	}
 
 	if(pVictim)
-	if(!pVictim->pInventory || !D2Funcs.D2COMMON_GetCursorItem(pVictim->pInventory)) {
-		int eMode = 1;
-		Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pVictim);
-		if(pRoom) D2Funcs.D2COMMON_isRoomInTown(pRoom) ? eMode = PLAYER_MODE_STAND_INTOWN : eMode = PLAYER_MODE_STAND_OUTTOWN;
-		D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
-		COMBAT_Free(pGame,pVictim);
-		D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,eMode);
-		D2Funcs.D2COMMON_ResetFlag(pVictim, 0);
-	}
+		if(!pVictim->pInventory || !D2Funcs.D2COMMON_GetCursorItem(pVictim->pInventory)) 
+		{
+			int eMode = PLAYER_MODE_STAND_OUTTOWN;
+			Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pVictim);
+			if (pRoom && D2Funcs.D2COMMON_isRoomInTown(pRoom))
+				eMode = PLAYER_MODE_STAND_INTOWN;
+
+			D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
+			COMBAT_Free(pGame,pVictim);
+			D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,eMode);
+			D2Funcs.D2COMMON_ResetFlag(pVictim, 0);
+		}
 }
 
 void __fastcall OnGameDestroy(Game* ptGame)
 {
 	DEBUGMSG("Closing game %s", ptGame->GameName);
 	LRost::Clear(ptGame);
+	LSpectator *l = ptGame->pLSpectator;
+	while (l)
+	{
+		LSpectator *d = l;
+		l = l->pNext;
+		delete d;
+	}
+	ptGame->pLSpectator = 0;
 }
 
 void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
@@ -155,21 +174,68 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, wcfgRespawnTimer);
 
 	//Invisible hit
-	if(ptKiller->dwType==UNIT_PLAYER) 
+	if(ptKiller->dwType == UNIT_PLAYER) 
 	{
-	int KillCount = 0;
-	bool check = false;
-			if(!ptKiller->pPlayerData->FirstKillTick) {	ptKiller->pPlayerData->FirstKillTick = GetTickCount();	}	
-			if(GetTickCount() - ptKiller->pPlayerData->FirstKillTick < 1500) {ptKiller->pPlayerData->KillCount++; KillCount = ptKiller->pPlayerData->KillCount;}
-			if(KillCount>1) {	ptKiller->pPlayerData->FirstKillTick = 0; ptKiller->pPlayerData->KillCount = 0; check = true;}
-
-		if(check)  {
-		switch(KillCount)
+		LSpectator *l = ptGame->pLSpectator;
+		while (l)
+		{
+			if (l->UnitUID == ptVictim->dwUnitId)
 			{
-			case 2: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOUBLEKILL, 3, -1, 150, "PODWOJNE ZABÓJSTWO!", "DOUBLE KILL!"); 	BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
-			case 3: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_TRIPLEKILL, 3, -1, 150, "POTROJNE ZABÓJSTWO!", "TRIPPLE KILL!"); BroadcastExEvent(ptKiller->pGame,COL_GOLD,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
-			case 5:
-			case 4: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOMINATION, 3, -1, 150, "ZABOJCA DRU¯YNY!", "TEAM KILL!"); BroadcastExEvent(ptKiller->pGame,COL_RED,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
+				UnitAny* pWatcher = D2ASMFuncs::D2GAME_FindUnit(ptGame, l->WatcherUID, UNIT_PLAYER);
+				if (pWatcher)
+				{
+					DEBUGMSG("Cleaning the specer")
+					pWatcher->dwFlags |= UNITFLAG_SELECTABLE;
+					D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::invis, 0);
+					D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::uninterruptable, 0);
+					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
+					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
+					if (aCurrLevel != aLevel) D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, ptGame);
+
+					ExEventSpecatorEnd msg;
+					msg.P_A6 = 0xA6;
+					msg.MsgType = EXEVENT_SPECTATOR_END;
+					msg.PacketLen = sizeof(ExEventSpecatorEnd);
+					D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorEnd));
+					pWatcher->pPlayerData->isSpecing = 0;
+				}
+				LSpectator *d = l;
+				if (l->pPrev)
+				{
+					DEBUGMSG("Removing neighbour spec node...")
+					l->pPrev->pNext = l->pNext;
+					l = l->pNext;
+					delete d;
+					continue;
+				}
+				else
+				{
+					DEBUGMSG("Removing single spec node...")
+					ptGame->pLSpectator = l->pNext;
+					l = l->pNext;
+					if (l)
+						l->pPrev = 0;
+					delete d;
+					continue;
+				}
+			}
+			l = l->pNext;
+		}
+
+		int KillCount = 0;
+		bool check = false;
+		if(!ptKiller->pPlayerData->FirstKillTick) {	ptKiller->pPlayerData->FirstKillTick = GetTickCount();	}	
+		if(GetTickCount() - ptKiller->pPlayerData->FirstKillTick < 1500) {ptKiller->pPlayerData->KillCount++; KillCount = ptKiller->pPlayerData->KillCount;}
+		if(KillCount>1) {	ptKiller->pPlayerData->FirstKillTick = 0; ptKiller->pPlayerData->KillCount = 0; check = true;}
+
+		if(check) 
+		{
+			switch(KillCount)
+			{
+				case 2: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOUBLEKILL, 3, -1, 150, "PODWOJNE ZABÓJSTWO!", "DOUBLE KILL!"); 	BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
+				case 3: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_TRIPLEKILL, 3, -1, 150, "POTROJNE ZABÓJSTWO!", "TRIPPLE KILL!"); BroadcastExEvent(ptKiller->pGame,COL_GOLD,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
+				case 5:
+				case 4: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOMINATION, 3, -1, 150, "ZABOJCA DRU¯YNY!", "TEAM KILL!"); BroadcastExEvent(ptKiller->pGame,COL_RED,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
 			}
 		}
 
@@ -278,7 +344,7 @@ void LRost::SyncClient(Game *ptGame, DWORD UnitId, LRoster* pRoster) // Wysyla r
 
 LRoster * LRost::Find(Game * ptGame, char* szName)
 {
-	for(LRoster * LR = ptGame->ptLRoster; LR; LR = LR->ptNext)
+	for(LRoster * LR = ptGame->pLRoster; LR; LR = LR->ptNext)
 	{
 		if(_stricmp(LR->szName,szName)==0) return LR;
 	}
@@ -294,8 +360,8 @@ void LRost::UpdateRoster(Game* ptGame, char * szName, BYTE Type)
 		{
 		Player = new LRoster;
 		memset(Player,0,sizeof(LRoster));
-		Player->ptNext=ptGame->ptLRoster;
-		ptGame->ptLRoster=Player;
+		Player->ptNext=ptGame->pLRoster;
+		ptGame->pLRoster=Player;
 		strcpy_s(Player->szName,16,szName);
 		}
 		switch(Type)
@@ -308,12 +374,12 @@ void LRost::UpdateRoster(Game* ptGame, char * szName, BYTE Type)
 
 void LRost::Clear(Game * ptGame)
 {
-	LRoster * LR = ptGame->ptLRoster; 
+	LRoster * LR = ptGame->pLRoster; 
 	while(LR)
 	{
 		LRoster * Next = LR ->ptNext;
 		delete LR;
 		LR = Next;
 	}
-	ptGame->ptLRoster = 0;
+	ptGame->pLRoster = 0;
 }

@@ -58,16 +58,6 @@ struct TimerList;
 struct TimerQuene;
 struct ObjectRegion;
 
-struct LRoster
-{
-	char szName[16];
-	int Assists;
-	int Kills;
-	int Deaths;
-	LRoster *ptNext;
-};
-
-
 struct pSpellTbl
 {
 	int (__fastcall *SpellPrepareFunc)(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *ptItem, int a5, int a6, int SkillId);
@@ -250,7 +240,8 @@ struct ActMisc // CHECKED
 
 struct Act // need to find: pEnviroment, pMemPool, pfnCallBack
 {
-	DWORD _1[3];					//0x00
+	DWORD _1[2];					//0x00
+	DWORD dwTownLvl;				//0x08
 	DWORD dwMapSeed;				//0x0C
 	Room1* pRoom1;					//0x10
 	DWORD dwAct;					//0x14
@@ -259,16 +250,6 @@ struct Act // need to find: pEnviroment, pMemPool, pfnCallBack
 	DWORD _2[2];					//0x4C
 };
 
-
-struct SmallRoom1 // sizeof(0x18)
-{
-	DWORD dwXStart;					//0x00
-	DWORD dwYStart;					//0x04
-	DWORD dwXSize;					//0x08
-	DWORD dwYSize;					//0x0C
-	DWORD _1;						//0x10
-	SmallRoom1* pNextRoom;			//0x14
-};
 
 
 struct Path  // same as 1.11b (1.13d)
@@ -654,77 +635,6 @@ struct QuestControl //size 0x24
 	DWORD HighSeed;			//0x1C
 	DWORD _8;				//0x20
 };
-
-struct Game
-{
-	DWORD _1[3];				//0x00
-	DWORD * ptGameData8;		//0x0C
-	Game * pNext;				//0x10
-	DWORD _1a;				//0x14
-	CRITICAL_SECTION* ptLock; //0x18 (see MSDN please)
-	void * pMemPool;			//0x1C - not used, always NULL
-	void * GameData;			//0x20
-	DWORD _2;					//0x24
-	WORD  nServerToken;		//0x28 called 'Server Ticket' aswell
-	char GameName[16];		//0x2A
-	char GamePass[16];		//0x3A
-	char GameDesc[32];		//0x4A
-	BYTE GameType;			//0x6A - whenever this is single player (etc)
-	BYTE _3a[2];				//0x6B _3a[0] - Arena's _2;
-	BYTE DifficultyLevel;		//0x6D
-	BYTE _4[2];				//0x6E
-	DWORD bExpansion;			//0x70
-	DWORD ldGameType;			//0x74
-	WORD  ItemFormat;         //0x78
-	WORD  _5;					//0x7A
-	DWORD InitSeed;			//0x7C
-	DWORD ObjSeed;            //0x80 - seed used for object spawning
-	DWORD InitSeed2;          //0x84 (another instance, dunno why)
-	ClientData* pClientList;  //0x88 - (pClient structure of last player that entered the game)
-	DWORD nClients;			//0x8C
-	DWORD nUnits[6];          //0x90 - array of 6 counters, one for each unit type, this is the next GUID used too
-	DWORD GameFrame;          //0xA8 - the current frame of the game, used for timers (buff duration etc)
-	DWORD _6[3];				//0xAC
-	TimerQuene* pTimerQueue;       //0xB8 a queue of all current active and inactive timers
-	Act* pDrlgAct[5];			//0xBC
-	DWORD GameSeed[2];			//0xD0
-	SmallRoom1* pDrlgRoomList[5];	//0xD8
-	DWORD MonSeed;				//0xEC - seed used for monster spawning
-	DWORD* pMonsterRegion[1024];  //0xF0 - one pointer for each of the 1024 possible levels
-	ObjectRegion* pObjectRegion;		//0x10F0 - a controller holding all object region structs
-	QuestControl* pQuestControl;	//0x10F4 - a controller holding all quest info
-	UnitNode* pOldNodes[10];		//0x10F8 - ten lists of unit node lists, this is used by the AI target seeking code (and other stuff)
-	UnitAny* pUnitList[5][128];	//0x1120 - 5 lists of 128 lists of units (see pUnit documentation), second index is GUID & 127, BEWARE: since ever, missiles are array #4 and items are array #3 (so type3=index4 and type4=index3)
-	DWORD* pTileList;			    //0x1B20 - a list for all VisTile units
-	DWORD UniqueFlags[128];		//0x1B24 - 128 DWORDS worth of flags that control if a unique item got spawned [room for 4096]
-	NpcControl *pNpcControl;		//0x1D24 - a controller holding all npc info (like store inventories, merc list)
-	Arena *pArenaControl;			//0x1D28 - a controller for arena stuff, functional and also used in game init
-	Party *pPartyControl;			//0x1D2C - a controller for all party related stuff
-	BYTE BossFlags[64];			//0x1D30 - 64 bytes for handling 512 super unique monsters (if they were spawned etc)
-	DWORD MonModeData[17];		//0x1D70 - related to monsters changing mode
-	DWORD nMonModeData;			//0x1DB4 - counter related to the above
-	DWORD _7;						//0x1DB8
-	DWORD nCreateTick;			//0x1DBC
-	DWORD _8;						//0x1DC0
-	DWORD nSyncTimer;				//0x1DC4 - used to sync events
-	DWORD _9[8];					//0x1DC8
-	BOOL bKilledBaal;				//0x1DE8 - killed uber baal
-	BOOL bKilledDia;				//0x1DEC - killed uber diablo
-	BOOL bKilledMeph;				//0x1DF0 - killed uber mephisto
-	//Additions to original struct
-	LRoster *ptLRoster;			//0x1DF4 added by me
-	DWORD dwKillCount;			//0x1DF8 
-	DWORD dwGameState;			//0x1DFC 
-	UnitNode* pNewNodes[130];		//0x1E00
-	BOOL bSpawnedClone;			//0x2008
-	BOOL bFestivalMode;			//0x200C
-	int nPlaying;					//0x2010
-	int DmgRekord;				//0x2014
-	DWORD LastKiller;				//0x2018
-	DWORD LastVictim;				//0x201C
-	char szRekordHolder[16];		//0x2020
-};
-
 
 struct CurseStateParam {
 	UnitAny* pAttacker;			//0x00

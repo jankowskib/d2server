@@ -24,7 +24,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -175,7 +175,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -223,8 +223,8 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
       </Message>
     </PreBuildEvent>
     <PreLinkEvent>
-      <Command>
-      </Command>
+      <Command>net stop d2gs
+EXIT 0</Command>
     </PreLinkEvent>
     <PreLinkEvent>
       <Message>Stopping D2GS...</Message>
@@ -233,6 +233,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
     <ClCompile Include="D2Patches.cpp" />
+    <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
@@ -296,6 +297,7 @@ sed -i -r 's/^(.*) ([0-9]*)$/echo "\1" \%24((\2+1))/ge' $(MSBuildProjectDirector
     <ClInclude Include="LEvents.h" />
     <ClInclude Include="LItems.h" />
     <ClInclude Include="LMonsters.h" />
+    <ClInclude Include="LPackets.h" />
     <ClInclude Include="LParty.h" />
     <ClInclude Include="LQuests.h" />
     <ClInclude Include="LRoster.h" />

@@ -22,6 +22,7 @@
 
 namespace D2Stubs 
 {
+	void __stdcall D2GAME_OnPacketReceive_STUB();
 	void __fastcall D2GAME_OnCreateDamage_STUB();
 	void __fastcall D2GAME_LastHitIntercept_STUB();
 	void __fastcall D2GAME_OnJoinGame_STUB();
@@ -52,7 +53,7 @@ namespace D2Stubs
 	void __fastcall D2GAME_OnManaLeech_STUB();
 	void __fastcall D2GAME_OnLifeLeech_STUB();
 	void __fastcall D2GAME_OnPlayerModeChange_I();
-    UnitAny* __fastcall D2GAME_FindUnit_STUB();
+	UnitAny* __fastcall D2GAME_FindUnit_STUB();
 }
 
 // -- ASM SUBS -- 

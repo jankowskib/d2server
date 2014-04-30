@@ -456,13 +456,13 @@ BOOL WriteDword(DWORD* lpAddr, DWORD lpBuffer)
 	DWORD dwOldProtect;
 	if (!VirtualProtect(lpAddr, 4, PAGE_READWRITE, &dwOldProtect))
 	{
-		ASSERT("Failed to patch %d with %d", lpAddr, lpBuffer)
+		return FALSE;
 	}
 	*lpAddr = lpBuffer;
 
 	if (!VirtualProtect(lpAddr, 4, dwOldProtect, &dwOldProtect))
 	{
-		ASSERT("Failed to patch %d with %d", lpAddr, lpBuffer)
+		return FALSE;
 	}
 	return TRUE;
 }

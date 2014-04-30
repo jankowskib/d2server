@@ -493,7 +493,7 @@ DWORD WardenLoop()
 					//DEBUGMSG("WARDENLOOP: DOWNLOAD_MOD DL status : [%d/%d]", pWardenClient->MOD_Position, MOD_Length);
 					pWardenClient->MOD_Position = SendPartOfMOD2Client(pWardenClient->ClientID, pWardenClient->RC4_KEY_0XAE, pWardenClient->MOD_Position);
 					pWardenClient->NextCheckTime = CurrentTick; // Speed up upload process, by manipulation of this parameter
-					DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD for %s (*%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
+				//	DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD for %s (*%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
 					SetEvent(hWardenCheckEvent);
 				}
 			}
