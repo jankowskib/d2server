@@ -21,7 +21,7 @@
 
 #include "LRoster.h"
 #include "LEvents.h"
-
+#include "LSpectator.h"
 
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile)
 {
@@ -36,6 +36,9 @@ void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMis
 void COMBAT_Free(Game* pGame, UnitAny* pUnit)
 {
 	Combat* pCombat = pUnit->ptCombat;
+	if (!pCombat)
+		return;
+
 	Combat * pDiffCombat = 0;
 	Combat * pNext;
 	do
@@ -71,43 +74,38 @@ return 0;
 
 void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller)  //_6FC62F20
 {
-	bool bDruid = false;
-
 	ASSERT(pGame)
-	if(pVictim)
-		if(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5) bDruid = true;
-	if(pVictim)
-	if(!D2Funcs.D2COMMON_isInShapeForm(pVictim) || !bDruid)
-	{
-		COMBAT_Free(pGame,pVictim);
-		D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,PLAYER_MODE_DEATH);
 
-		ClientData* pClient = 0;
-		if(pVictim)
+	if(pVictim) {
+		if(!D2Funcs.D2COMMON_isInShapeForm(pVictim) || !(pVictim->dwType == UNIT_PLAYER && pVictim->dwClassId == 5))
+		{
+			COMBAT_Free(pGame,pVictim);
+			D2Funcs.D2COMMON_ChangeCurrentMode(pVictim, PLAYER_MODE_DEATH);
+
+			ClientData* pClient = 0;
 			if(pVictim->dwType == UNIT_PLAYER) 
 				pClient = pVictim->pPlayerData->pClientData;
 
-		if(pClient) 
-			pClient->PlayerStatus |= 8;
+			if(pClient) 
+				pClient->PlayerStatus |= 8;
 
-		D2ASMFuncs::D2GAME_StopSequence(pVictim);
-		D2ASMFuncs::D2GAME_RemoveBuffs(pGame, pVictim);
-		D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
-		D2ASMFuncs::D2GAME_ResetTimers(pGame, pVictim);
+			D2ASMFuncs::D2GAME_StopSequence(pVictim);
+			D2ASMFuncs::D2GAME_RemoveBuffs(pGame, pVictim);
+			D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
+			D2ASMFuncs::D2GAME_ResetTimers(pGame, pVictim);
 
-		if(pKiller && pVictim)
-		{ 
-			OnDeath(pKiller,pVictim,pGame);
-		}
+			if(pKiller)
+			{ 
+				OnDeath(pKiller, pVictim, pGame);
+			}
 		
-		if(!D2Funcs.D2COMMON_GetUnitState(pVictim,playerbody))  
-			pVictim->dwFlags &= -(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
+			if(!D2Funcs.D2COMMON_GetUnitState(pVictim,playerbody))  
+				pVictim->dwFlags &= ~(UNITFLAG_SELECTABLE|UNITFLAG_OPERATED);
 	
-		D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
-		return;
-	}
+			D2ASMFuncs::D2GAME_RemoveInteraction(pGame, pVictim);
+			return;
+		}
 
-	if(pVictim)
 		if(!pVictim->pInventory || !D2Funcs.D2COMMON_GetCursorItem(pVictim->pInventory)) 
 		{
 			int eMode = PLAYER_MODE_STAND_OUTTOWN;
@@ -118,198 +116,36 @@ void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, Un
 			D2ASMFuncs::D2GAME_DeleteTimers(pGame, pVictim);
 			COMBAT_Free(pGame,pVictim);
 			D2Funcs.D2COMMON_ChangeCurrentMode(pVictim,eMode);
-			D2Funcs.D2COMMON_ResetFlag(pVictim, 0);
+			D2Funcs.D2COMMON_SetCurrentSkill(pVictim, 0);
 		}
+	}
 }
 
 void __fastcall OnGameDestroy(Game* ptGame)
 {
 	DEBUGMSG("Closing game %s", ptGame->GameName);
-	LRost::Clear(ptGame);
+	LRoster::Clear(ptGame);
 	LSpectator *l = ptGame->pLSpectator;
 	while (l)
 	{
 		LSpectator *d = l;
 		l = l->pNext;
-		delete d;
+		D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, d, __FILE__, __LINE__, NULL);
 	}
 	ptGame->pLSpectator = 0;
 }
 
-void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
+void LRoster::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszystkich klientow do ServerHashMapgo gracza
 {
-	DEBUGMSG(__FUNCTION__)
-	if(!ptVictim || !ptKiller) return;
-	if(ptVictim->dwType) return;
-
-	EventPacket aPacket = {0};
-	aPacket.P_5A=0x5A;
-	aPacket.Color=4;
-	aPacket.MsgType=6;
-
-	if(ptKiller->dwType == UNIT_MONSTER)
-	{
-		UnitAny* ptParent = D2ASMFuncs::D2GAME_FindUnit(ptGame,ptKiller->pMonsterData->pAiGeneral->OwnerGUIDEq,ptKiller->pMonsterData->pAiGeneral->eOwnerTypeEq);
-		if(ptParent)
-			if(ptParent->dwType==UNIT_PLAYER)
-				ptKiller = ptParent;
-	}
-
-	if(ptKiller->dwType == UNIT_PLAYER) 
-		LRost::UpdateRoster(ptGame,ptKiller->pPlayerData->szName,1);
-	LRost::UpdateRoster(ptGame,ptVictim->pPlayerData->szName,2);
-
-	*(DWORD*)&aPacket.Param1=ptKiller->dwClassId;
-
-	strcpy_s(aPacket.Name1,16,ptVictim->pPlayerData->szName);
-	if (ptKiller->dwType == UNIT_PLAYER)
-		strcpy_s(aPacket.Name2,16,ptKiller->pPlayerData->szName);
-	else if(ptKiller->dwType == UNIT_MONSTER)
-	{
-		aPacket.Param2=1;
-		if(ptKiller->pMonsterData->fSuperUniq) *(WORD*)&aPacket.Name2=ptKiller->pMonsterData->wUniqueNo;
-	}
-
-	ptVictim->pPlayerData->tDeathTime = GetTickCount();
-	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, wcfgRespawnTimer);
-
-	//Invisible hit
-	if(ptKiller->dwType == UNIT_PLAYER) 
-	{
-		LSpectator *l = ptGame->pLSpectator;
-		while (l)
-		{
-			if (l->UnitUID == ptVictim->dwUnitId)
-			{
-				UnitAny* pWatcher = D2ASMFuncs::D2GAME_FindUnit(ptGame, l->WatcherUID, UNIT_PLAYER);
-				if (pWatcher)
-				{
-					DEBUGMSG("Cleaning the specer")
-					pWatcher->dwFlags |= UNITFLAG_SELECTABLE;
-					D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::invis, 0);
-					D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::uninterruptable, 0);
-					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
-					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
-					if (aCurrLevel != aLevel) D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, ptGame);
-
-					ExEventSpecatorEnd msg;
-					msg.P_A6 = 0xA6;
-					msg.MsgType = EXEVENT_SPECTATOR_END;
-					msg.PacketLen = sizeof(ExEventSpecatorEnd);
-					D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorEnd));
-					pWatcher->pPlayerData->isSpecing = 0;
-				}
-				LSpectator *d = l;
-				if (l->pPrev)
-				{
-					DEBUGMSG("Removing neighbour spec node...")
-					l->pPrev->pNext = l->pNext;
-					l = l->pNext;
-					delete d;
-					continue;
-				}
-				else
-				{
-					DEBUGMSG("Removing single spec node...")
-					ptGame->pLSpectator = l->pNext;
-					l = l->pNext;
-					if (l)
-						l->pPrev = 0;
-					delete d;
-					continue;
-				}
-			}
-			l = l->pNext;
-		}
-
-		int KillCount = 0;
-		bool check = false;
-		if(!ptKiller->pPlayerData->FirstKillTick) {	ptKiller->pPlayerData->FirstKillTick = GetTickCount();	}	
-		if(GetTickCount() - ptKiller->pPlayerData->FirstKillTick < 1500) {ptKiller->pPlayerData->KillCount++; KillCount = ptKiller->pPlayerData->KillCount;}
-		if(KillCount>1) {	ptKiller->pPlayerData->FirstKillTick = 0; ptKiller->pPlayerData->KillCount = 0; check = true;}
-
-		if(check) 
-		{
-			switch(KillCount)
-			{
-				case 2: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOUBLEKILL, 3, -1, 150, "PODWOJNE ZABÓJSTWO!", "DOUBLE KILL!"); 	BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
-				case 3: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_TRIPLEKILL, 3, -1, 150, "POTROJNE ZABÓJSTWO!", "TRIPPLE KILL!"); BroadcastExEvent(ptKiller->pGame,COL_GOLD,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
-				case 5:
-				case 4: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOMINATION, 3, -1, 150, "ZABOJCA DRU¯YNY!", "TEAM KILL!"); BroadcastExEvent(ptKiller->pGame,COL_RED,ptKiller->dwUnitId,1,"data\\D2Ex\\Blobs");} break;
-			}
-		}
-
-		int InRange = D2ASMFuncs::D2GAME_isUnitInRange(ptGame, ptVictim->dwUnitId, UNIT_PLAYER, ptKiller, 51);
-
-		if(InRange) {  
-			SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_IMPRESSIVE, 3, -1, 150, "SNAJPER!", "SNIPER!");
-			BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,4,"data\\D2Ex\\Blobs");
-			//BroadcastMsg(ptKiller->pGame,"%s zdobywa osiagniecie 'Snajper'",ptKiller->pPlayerData->pClientData->AccountName);
-		}
-	int SkillId = 0;
-	Skill* pSkill = D2Funcs.D2COMMON_GetCurrentSkill(ptKiller);
-	if(pSkill) SkillId = isMeleeSkill(pSkill->pTxt->wSkillId) ? pSkill->pTxt->wSkillId : 0;
-		if(SkillId)
-		{
-			if(SkillId == D2S_JAB || SkillId == D2S_STRAFE)
-			{
-				SendExEvent(ptKiller->pPlayerData->pClientData, COL_PURPLE, D2EX_HUMILATION, 3, -1, 150, "LOL!", "LOL!");
-				BroadcastExEvent(ptKiller->pGame,COL_WHITE,ptKiller->dwUnitId,3,"data\\D2Ex\\Blobs");
-			}
-		}
-	}
-
-		
-		if(ptKiller->dwType==UNIT_PLAYER)
-		{
-		if(ptGame->bFestivalMode == 1) {
-			ptVictim->pPlayerData->CanAttack = 0;
-			ptVictim->pPlayerData->SaidGO = 0;
-			
-			DoRoundEndStuff(ptGame, ptVictim);					
-			
-			ptVictim->pPlayerData->isPlaying = 0;
-			ptVictim->pGame->nPlaying--;
-			if(ptVictim->pGame->nPlaying<0) ptVictim->pGame->nPlaying = 0;
-		}
-
-		//int SkillId = 0;
-		//Skill* pSkill = D2Funcs.D2COMMON_GetCurrentSkill(ptKiller);
-		//if(pSkill) SkillId = isMeleeSkill(pSkill->pTxt->wSkillId) ? pSkill->pTxt->wSkillId : 0;
-
-		//if(!SkillId)
-	 //   { 
-		//SkillId = ptVictim->pPlayerData->LastHitSkillId;
-		//ptVictim->pPlayerData->LastHitSkillId = 0;
-		//}
-		//if(!SkillId)
-		//{
-		//Skill* pSkill = D2Funcs.D2COMMON_GetCurrentSkill(ptKiller);
-		//if(pSkill) SkillId =  pSkill->pTxt->wSkillId;
-		//}
-		//ostringstream MsgEng; MsgEng << ptVictim->pPlayerData->szName  << " was slain by " << ptKiller->pPlayerData->szName << " (" << ConvertSkill(SkillId).c_str() << ')';
-		//ostringstream MsgPol; MsgPol << ptVictim->pPlayerData->szName  << " - zabija cie " << ptKiller->pPlayerData->szName << " (" << ConvertSkill(SkillId).c_str() << ')';
-		//BroadcastEventMsgEx(ptGame,COL_DARK_GOLD,MsgEng.str(),MsgPol.str());
-
-		LRoster * VictimRoster = LRost::Find(ptGame,ptVictim->pPlayerData->szName);
-		LRoster * KillerRoster = LRost::Find(ptGame,ptKiller->pPlayerData->szName);
-		if(VictimRoster) LRost::SyncClient(ptGame,ptVictim->dwUnitId,VictimRoster);
-		if(KillerRoster) LRost::SyncClient(ptGame,ptKiller->dwUnitId,KillerRoster);
-		ptGame->LastKiller = ptKiller->pPlayerData->pClientData->ClientID;
-		ptGame->LastVictim = ptVictim->pPlayerData->pClientData->ClientID;
-		}
-		BroadcastPacket(ptGame,(BYTE*)&aPacket,40);
-}
-
-void LRost::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszystkich klientow do ServerHashMapgo gracza
-{
-	if(!ptGame || !ptClient) return;
-	if(ptClient->InitStatus != 4) return;
+	if(!ptGame || !ptClient)
+		return;
+	if(!(ptClient->InitStatus & 4))
+		return;
 
 	for(ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
 	{
 	if(pClientList->InitStatus) {
-		LRoster * pRoster = LRost::Find(ptGame,pClientList->CharName);
+		LRosterData * pRoster = LRoster::Find(ptGame,pClientList->CharName);
 		if(!pRoster) continue;
 
 		RosterPacket pVKInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)1,(BYTE)pRoster->Kills};
@@ -323,7 +159,7 @@ void LRost::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszy
 	}
 }
 
-void LRost::SyncClient(Game *ptGame, DWORD UnitId, LRoster* pRoster) // Wysyla roster ServerHashMapgo gracza do wszystkich klientow
+void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster) // Wysyla roster ServerHashMapgo gracza do wszystkich klientow
 {
 	if(!ptGame || !pRoster) return;
 		RosterPacket pVKInfo = {0x66,UnitId,(BYTE)1,(BYTE)pRoster->Kills};
@@ -342,44 +178,44 @@ void LRost::SyncClient(Game *ptGame, DWORD UnitId, LRoster* pRoster) // Wysyla r
 }
 
 
-LRoster * LRost::Find(Game * ptGame, char* szName)
+LRosterData * LRoster::Find(Game * ptGame, char* szName)
 {
-	for(LRoster * LR = ptGame->pLRoster; LR; LR = LR->ptNext)
+	for(LRosterData * LR = ptGame->pLRosterData; LR; LR = LR->ptNext)
 	{
 		if(_stricmp(LR->szName,szName)==0) return LR;
 	}
 	return 0;
 }
 
-void LRost::UpdateRoster(Game* ptGame, char * szName, BYTE Type)
+void LRoster::UpdateRoster(Game* ptGame, char * szName, BYTE Type)
 {
 	if(!ptGame) return;
 
-	LRoster *Player = LRost::Find(ptGame,szName);
-		if(!Player)
-		{
-		Player = new LRoster;
-		memset(Player,0,sizeof(LRoster));
-		Player->ptNext=ptGame->pLRoster;
-		ptGame->pLRoster=Player;
+	LRosterData *Player = LRoster::Find(ptGame,szName);
+	if(!Player)
+	{
+		Player = (LRosterData*) D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(LRosterData), __FILE__, __LINE__, NULL);
+		memset(Player,0,sizeof(LRosterData));
+		Player->ptNext = ptGame->pLRosterData;
+		ptGame->pLRosterData=Player;
 		strcpy_s(Player->szName,16,szName);
-		}
-		switch(Type)
-		{
-			case 3: {Player->Assists++; break;}
-			case 2: {Player->Deaths++; break;}
-			case 1:	{Player->Kills++;break;}
-		}
+	}
+	switch(Type)
+	{
+		case 3: {++Player->Assists; break;}
+		case 2: {++Player->Deaths; break;}
+		case 1:	{++Player->Kills;break;}
+	}
 }
 
-void LRost::Clear(Game * ptGame)
+void LRoster::Clear(Game * ptGame)
 {
-	LRoster * LR = ptGame->pLRoster; 
+	LRosterData * LR = ptGame->pLRosterData; 
 	while(LR)
 	{
-		LRoster * Next = LR ->ptNext;
-		delete LR;
+		LRosterData * Next = LR->ptNext;
+		D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, LR, __FILE__, __LINE__, NULL);
 		LR = Next;
 	}
-	ptGame->pLRoster = 0;
+	ptGame->pLRosterData = 0;
 }

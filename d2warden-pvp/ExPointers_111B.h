@@ -46,21 +46,21 @@ EXFUNCPTR(D2GAME, Send0X92Packet, void, __fastcall, (Game *pGame, UnitAny *pUnit
 EXFUNCPTR(D2GAME, KickCharFromGame, void, __stdcall, (DWORD ClientID), -10037)
 EXFUNCPTR(D2GAME, SpawnUniqMon, UnitAny*, __stdcall, (Game *ptGame, Room1 *ptRoom, int _1, int _2, signed int MonIdx), 0xECE80)
 EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (signed int MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int a7, int a8), 0xEF870)
-EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (srCreateMonster* pPreset), 0xEF150)
+EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (PresetMonster* pPreset), 0xEF150)
 EXFUNCPTR(D2GAME, GetUnitX, int, __fastcall, (UnitAny* ptUnit), 0x1370)
 EXFUNCPTR(D2GAME, GetUnitY, int, __fastcall, (UnitAny* ptUnit), 0x13A0)
 EXFUNCPTR(D2GAME, ExecuteEvent, int, __stdcall, (Game *pGame, int EventNo, UnitAny *pUnit, void *Data), 0xC3170)
 EXFUNCPTR(D2GAME, InitTimer, void, __fastcall, (Game *pGame, UnitAny *pUnit, signed int nTimerType, signed int nGameFrame, DWORD fTimerFunc, int a6, Timer *PrevTimer), 0x70F00)
 EXFUNCPTR(D2GAME, UpdatePlayerStats, int, __fastcall, (UnitAny *ptOwnerUnit, int dwStat, int dwValue, UnitAny *pDestUnit), 0x2D2E0)
 EXFUNCPTR(D2GAME, CreateCorpse, int, __stdcall, (Game *pGame, UnitAny *pUnit, int xPos, int yPos, Room1 *pRoom), 0x424C0)
-EXFUNCPTR(D2GAME, CreateItemEx, UnitAny*, __stdcall, (Game *pGame, CreateItem *srCreateItem, int a5), 0xD10C0)
+EXFUNCPTR(D2GAME, CreateItemEx, UnitAny*, __stdcall, (Game *pGame, PresetItem *srPresetItem, int a5), 0xD10C0)
 EXFUNCPTR(D2GAME, SetMonSkill, void, __fastcall, (UnitAny *pUnit, int HowSet, int SkillId, int SkillFlags), 0x11C20)
 EXFUNCPTR(D2GAME, AddItemToNPC, int, __fastcall, (char *szFile, int aLine, Game *pGame, UnitAny *pNPCUnit, int ItemId, WORD iX, WORD iY, int a6, int a7, int a8), 0x49B00)
 EXFUNCPTR(D2GAME, DeleteUnit, int, __fastcall, (Game *ptGame, UnitAny *ptUnit), 0xC13A0)
 EXFUNCPTR(D2GAME, Transmute, void, __stdcall, (Game *ptGame, UnitAny *ptUnit), 0x38370)
 EXFUNCPTR(D2GAME, CopyPortal, UnitAny*, __stdcall, (Game *pGame, UnitAny *pSourceUnit, int nLevel, POINT Coords), 0x109F0)
 EXFUNCPTR(D2GAME, CreateUnit, UnitAny*, __fastcall, (DWORD UnitType, DWORD ClassId, int xPos, int yPos, Game *pGame, Room1 *pRoom1, WORD wFlags, DWORD InitMode, int UnitId), 0xC09E0)
-EXFUNCPTR(D2GAME, SetUnitMode, int, __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x41990)
+EXFUNCPTR(D2GAME, SetUnitModeXY, int, __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x41990)
 EXFUNCPTR(D2GAME, RemoveFromPickedUp, void, __stdcall, (UnitAny *pPlayer), 0x44B50)
 EXFUNCPTR(D2GAME, KillPlayer, void, __fastcall, (Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller), 0x42F20)
 
@@ -101,7 +101,7 @@ EXFUNCPTR(D2COMMON, GetNextCLvl, int, __stdcall, (int ClassId, int Experience), 
 //ITEM RELATED
 EXFUNCPTR(D2COMMON, AllocInventory, Inventory*, __stdcall, (void *pMemPool, UnitAny *pOwner), -10976)
 EXFUNCPTR(D2COMMON, AllocTradeInventory, int, __stdcall, (void *pMemPool, UnitAny *pPlayer, UnitAny *pTrader, BOOL *bNoRoom), -10339)
-EXFUNCPTR(D2COMMON, CreateItemFromStream, int, __stdcall, (), -11024) // dodaj argumenty
+EXFUNCPTR(D2COMMON, PresetItemFromStream, int, __stdcall, (), -11024) // dodaj argumenty
 EXFUNCPTR(D2COMMON, GetItemIdx, ItemsTxt*, __stdcall, (DWORD ItemCode, int * Idx), -10322)
 EXFUNCPTR(D2COMMON, GetItemTxt, ItemsTxt*, __stdcall, (int ItemNo), -10262)
 EXFUNCPTR(D2COMMON, GetItemCode, DWORD, __stdcall, (UnitAny* ptItem), -10360)
@@ -139,7 +139,7 @@ EXFUNCPTR(D2COMMON, EvaluateSkill, int, __stdcall, (UnitAny* ptUnit, int Formula
 EXFUNCPTR(D2COMMON, AddSkillToUnit, int, __stdcall, (UnitAny *ptUnit, DWORD SkillNo, DWORD SkillLvl, BOOL a4, char *szFile, int aLine), -10255)
 EXFUNCPTR(D2COMMON, RefreshSkills, int, __stdcall, (UnitAny* ptUnit), -10421)
 EXFUNCPTR(D2COMMON, SetStartFlags, void, __stdcall, (UnitAny* ptUnit, BOOL a2), -10948)
-EXFUNCPTR(D2COMMON, ResetFlag, int, __stdcall, (UnitAny* ptUnit, Skill* pSkill), -10884)
+EXFUNCPTR(D2COMMON, SetCurrentSkill, int, __stdcall, (UnitAny* ptUnit, Skill* pSkill), -10884)
 
 EXFUNCPTR(D2COMMON, GetPlayerSkillCount, int, __stdcall, (int ClassId), -10631)
 EXFUNCPTR(D2COMMON, GetPlayerSkillIdFromList, int, __stdcall, (int ClassId, int SkillNo), -10229)
@@ -197,6 +197,7 @@ EXFUNCPTR(FOG, GetErrorData, void*, __cdecl, (), -10265)
 EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (void *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
 EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (void *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
 EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
+EXFUNCPTR(FOG, InitBitBuffer, void, __stdcall, (BitBuffer* ptBitBuffer, void * ptBuffer, int nSize), -10126)
 
 //D2NET 0xa30000+0xFA7C0 +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
 EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10018) // Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
@@ -288,7 +289,7 @@ EXASMPTR(D2GAME, Ressurect_P, 0x32048) //RessurectFix
 EXASMPTR(D2GAME, Chat_P, 0x2E670)
 EXASMPTR(D2GAME, OnDeath_P, 0x43067) //Death Msg Intercept
 EXASMPTR(D2GAME, Monster_I, 0x893A0) //Monster Old Call
-EXASMPTR(D2GAME, OnGameDestroy_P, 0xE7A1A) //Need to free LRoster memory
+EXASMPTR(D2GAME, OnGameDestroy_P, 0xE7A1A) //Need to free LRosterData memory
 EXASMPTR(D2GAME, OnGameEnter_J, 0xE76E9) // Need to alloc roster
 EXASMPTR(D2GAME, CreateAuraStatList_I, 0xF0C0)
 

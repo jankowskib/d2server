@@ -56,13 +56,13 @@ struct Timer;
 struct TimerList;
 struct TimerQuene;
 
-struct LRoster
+struct LRosterData
 {
 char szName[16];
 int Assists;
 int Kills;
 int Deaths;
-LRoster *ptNext;
+LRosterData *ptNext;
 };
 
 
@@ -712,7 +712,7 @@ struct Game
   BOOL bKilledDia;				//0x1DEC - killed uber diablo
   BOOL bKilledMeph;				//0x1DF0 - killed uber mephisto
   //Additions to original struct
-  LRoster *pLRoster;			//0x1DF4 added by me
+  LRosterData *pLRosterData;			//0x1DF4 added by me
   DWORD dwKillCount;			//0x1DF8 
   DWORD dwGameState;			//0x1DFC 
   UnitNode* pNewNodes[130];		//0x1E00
@@ -933,7 +933,7 @@ struct BitBuffer
 };
 
 
-struct CreateItem //size 0x84
+struct PresetItem //size 0x84
 {
 	UnitAny* pOwner;		//0x00
 	DWORD dwSeed;			//0x04

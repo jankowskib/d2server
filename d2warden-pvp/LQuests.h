@@ -28,4 +28,7 @@ void QUESTS_UpdateUnit(UnitAny* pUnit, WORD UpdateType, UnitAny*pUpdateUnit);
 BOOL __stdcall QUESTS_CowLevelOpenPortal(Game *pGame, UnitAny *pUnit);
 bool __stdcall QUESTS_OnUseItem(Game* pGame, UnitAny* pUnit, UnitAny* pItem, DWORD dwItemCode);
 
+
+void __stdcall QUEST_AllocQuestControl(Game *pGame);
+
 #endif

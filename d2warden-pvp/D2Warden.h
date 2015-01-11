@@ -62,9 +62,9 @@ struct WardenClient
 
 	unsigned char SessionKey[16];
 
-	string CharName;
-	string AccountName;
-	string MyIp;
+	std::string CharName;
+	std::string AccountName;
+	std::string MyIp;
 
 	DWORD ClientLogonTime;
 	DWORD NextCheckTime;
@@ -100,13 +100,17 @@ struct WardenClient
 	BYTE LPDetected;
 	BYTE WardenBlocked;
 	BYTE RedVexDetected;
+	BYTE DupeDetected;
+
+	BYTE VerCode;
+	bool bNeedUpdate;
 };
 
 
 struct Warden
 {
 	CRITICAL_SECTION WardenLock;
-	list<WardenClient> Clients;
+	std::list<WardenClient> Clients;
 };
 
 
@@ -136,7 +140,7 @@ void Warden_Config();
 
 // Warden struct functions
 
-typedef list<WardenClient>::iterator WardenClient_i;
+typedef std::list<WardenClient>::iterator WardenClient_i;
 
 void RemoveWardenPacket(WardenClient_i ptCurrentClient);
 bool isWardenQueueEmpty();

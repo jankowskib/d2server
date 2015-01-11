@@ -24,7 +24,7 @@
 #elif defined VER_113D
 #include "D2Patches_113D.h"
 #else
-#error("Unsupported version")
+#error "Unsupported version" 
 #endif
 
 #include "D2Handlers.h"
@@ -37,6 +37,7 @@
 #include "LItems.h"
 #include "NodesEx.h"
 #include "LParty.h"
+#include "LPackets.h"
 
 void PatchD2()
 {
@@ -46,6 +47,7 @@ void PatchD2()
 #define JUMP 0xE9
 #define CALL 0xE8
 #define NOP 0x90
+#define CUSTOM 0x0
 	/*
 	UNUSED (1.11b)
 	PatchGS(CALL,(DWORD)D2Ptrs::D2GAME_LifeLeech_P,(DWORD)D2Stubs::D2GAME_OnLifeLeech_STUB,6,"Life Leech");
@@ -65,11 +67,21 @@ void PatchD2()
 	//	PatchGS(0,GetDllOffset("D2Client.dll",0xBE919),0xEB,1,"AE Packet Fixture");
 	//#endif
 
+
+	PatchGS(NOP, GetDllOffset("D2Game.dll", D2GAME_DISABLE_ROOM_CACHE), 0x90, 6, "Disable Room Cache");
+	
+	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
+
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_I), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init I");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_II), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init II");
+
 #ifdef VER_113D
 	PatchGS(0, GetDllOffset("D2Game.dll", 0x3C707), 0xEB, 1, "Assassin's Cloak Crash Fix");
 	//PatchGS(CALL, GetDllOffset("D2Game.dll", 0x1602A), (DWORD)D2GAME_PortalCrashFix, 5, "TP Crash Fix");
 	PatchGS(NOP, GetDllOffset("D2Game.dll", 0xBC082), 0x90, 10, "pfnValidateSaveTime Fix");
 #endif
+
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_ISDEADOVERRIDE), (DWORD)D2Stubs::D2GAME_IsUnitDead_STUB, 5, "Is Unit Dead Override");
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_MONSTERSPAWN_I), (DWORD)OnMonsterSpawn, 5, "On Create Monster");
 
@@ -162,8 +174,27 @@ void PatchD2()
 	{
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_I), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_II), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
-		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ITEM_COST_STUB), (DWORD)GetItemCost, 5, "Item Cost Stub");
 	}
+#ifdef D2EX_MYSQL
+	PatchGS(JUMP, GetDllOffset("D2Common.dll", -10550), (DWORD)ITEMS_OnStatFetch, 6, "Gold value override");
+
+
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ITEM_COST_STUB), (DWORD)ITEMS_GetItemCost, 5, "Item Cost Stub");
+	PatchGS(JUMP, GetDllOffset("D2Common.dll", D2COMMON_GETBANKGOLDLIMIT_J), (DWORD)GetGoldBankLimit, 5, "Nullify stash gold");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ADDGOLD_I), (DWORD)D2Stubs::D2GAME_AddStat_STUB, 5, "Fetch forum gold value instead of gold stat I");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ADDGOLD_II), (DWORD)D2Stubs::D2GAME_AddStat_STUB, 5, "Fetch forum gold value instead of gold stat II");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_GOLDTRANS_I), (DWORD)D2Stubs::D2GAME_GoldTransaction_STUB, 5, "Fetch forum gold value instead of gold stat I");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_GOLDTRANS_II), (DWORD)D2Stubs::D2GAME_GoldTransaction_STUB, 5, "Fetch forum gold value instead of gold stat II");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_GOLDTRANS_III), (DWORD)D2Stubs::D2GAME_GoldTransaction_STUB, 5, "Fetch forum gold value instead of gold stat III");
+#endif
+
+	if (wcfgDisableRepairCost)
+	{
+		PatchGS(0, GetDllOffset("D2Common.dll", D2COMMON_REPAIR_I), 0xD231, 2, "Disable repair costs");
+		PatchGS(0x90, GetDllOffset("D2Game.dll", D2COMMON_REPAIR_II), 0x90909090, 8, "Disable repair costs II");
+	}
+
+
 
 	PatchGS(0x05, GetDllOffset("D2Client.dll", D2CLIENT_EXTEND_GAME_STRUCT), sizeof(Game), 5, "Extend Game Struct"); //6FAB2589  |.  05 F41D0000   ADD EAX,1DF4
 

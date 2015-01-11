@@ -29,9 +29,9 @@ DWORD __declspec(naked) GetEIP()
 	}
 }
 
-BYTE GetColorNameByAcc(string szAcc)
+BYTE GetColorNameByAcc(std::string szAcc)
 {
-	static string File;
+	static std::string File;
 	if(File.empty()) {
 	char filename[MAX_PATH] = {0};
 	GetCurrentDirectory(MAX_PATH,filename);
@@ -47,11 +47,11 @@ short CalculateDistance(short x1, short y1, short x2, short y2)
 }
 
 
-bool isAnAdmin(string szAcc)
+bool isAnAdmin(std::string szAcc)
 {
  boost::to_lower(szAcc);
 
- for(list<std::string>::iterator i = wcfgAdmins.begin(); i != wcfgAdmins.end(); ++i) if(szAcc == *i) return true;
+ for (std::list<std::string>::iterator i = wcfgAdmins.begin(); i != wcfgAdmins.end(); ++i) if (szAcc == *i) return true;
 
  return false;
 }
@@ -128,7 +128,7 @@ if(pClient->ClientID == ClientID) return pClient;
 return 0;
 }
 
-int TransQuality(string str)
+int TransQuality(std::string str)
 {
 	if(str == "whatever") return 0;
 	else if (str == "low") return 1;
@@ -188,6 +188,12 @@ void KickPlayer(DWORD ClientID)
 {
 	static BYTE Packet = 0xb0;
 	D2Funcs.D2NET_SendPacket(0, ClientID, &Packet, 1);
+}
+
+void BootPlayer(DWORD ClientID, int dwReason)
+{
+	BYTE Packet[5] = { 0xb4, dwReason };
+	D2Funcs.D2NET_SendPacket(0, ClientID, (BYTE*)&Packet, 5);
 }
 
 void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue)
@@ -262,7 +268,7 @@ void BroadcastPacket(Game* pGame, BYTE * aPacket, int aLen)
 	}
 }
 
-void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg)
+void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, short Y, std::string polMsg, std::string engMsg)
 {
 
 	ExEventTextMsg hEvent;
@@ -288,7 +294,7 @@ void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, shor
 	}
 }
 
-void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string szPath)
+void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, std::string szPath)
 {
 
 	ExEventOverhead hEvent;
@@ -312,7 +318,7 @@ void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, string sz
 }
 
 
-void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, short Y, string polMsg, string engMsg)
+void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, short Y, std::string polMsg, std::string engMsg)
 {
 	if(!pClient) return;
 	ExEventTextMsg hEvent;
@@ -381,7 +387,7 @@ void BroadcastEventMsg(Game* pGame, int Color, char *Msg...)
 }
 
 
-void BroadcastEventMsgEx(Game* pGame, int Color, string EngMsg, string PolMsg)
+void BroadcastEventMsgEx(Game* pGame, int Color, std::string EngMsg, std::string PolMsg)
 {
 	ClientData * pClientList = pGame->pClientList;
 	PolMsg.resize(255);
@@ -580,7 +586,7 @@ void WideToChar(CHAR* Dest, const WCHAR* Source)
 WideCharToMultiByte(CP_ACP, 0, Source, -1, Dest, 255, NULL, NULL);
 }
 
-string ConvertSkill(WORD SkillID)
+std::string ConvertSkill(WORD SkillID)
 {
 BYTE* Tbl = (* D2Vars.D2COMMON_sgptDataTables)->pSkillDescTxt;
 if(SkillID> (* D2Vars.D2COMMON_sgptDataTables)->dwSkillsRecs) return "?";
@@ -591,8 +597,8 @@ if(!nRow) return "?";
 Tbl+= (nRow*0x120);
 WORD LocId = *(WORD*)(Tbl+8);
 if(LocId == 0) return "? - tell lolet";
-wstring wText (D2Funcs.D2LANG_GetLocaleText(LocId));
-string szText;
+std::wstring wText(D2Funcs.D2LANG_GetLocaleText(LocId));
+std::string szText;
 szText.assign(wText.begin(),wText.end());
 return szText;
 }
@@ -827,7 +833,7 @@ void LogNoLock(char *format,...)
 	delete[] text;
 };
 
-void Debug(char *format,...)
+void Debug(const char * szFunction, char *format,...)
 {
 	va_list arguments;
 	va_start(arguments, format);
@@ -839,14 +845,57 @@ void Debug(char *format,...)
 	SYSTEMTIME t = { 0 };
 	GetLocalTime(&t);
 
-	char* out = new char[strlen(text) + 24];
-	sprintf_s(out, strlen(text) + 24, "[%04d-%02d-%02d %02d:%02d:%02d] %s\n", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, text);
+	char* out = new char[strlen(text) + 24 + strlen(szFunction) + 4];
+	sprintf_s(out, strlen(text) + 24 + strlen(szFunction) + 4, "[%04d-%02d-%02d %02d:%02d:%02d] %s: %s\n", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, szFunction, text);
 
 	OutputDebugString(out);
 
 	delete[] out;
 	delete[] text;
 };
+
+void DebugNoEnter(const char * szFunction, char *format, ...)
+{
+	va_list arguments;
+	va_start(arguments, format);
+	int len = _vscprintf(format, arguments) + 1;
+	char * text = new char[len];
+	vsprintf_s(text, len, format, arguments);
+	va_end(arguments);
+
+	SYSTEMTIME t = { 0 };
+	GetLocalTime(&t);
+
+	char* out = new char[strlen(text) + 24 + strlen(szFunction) + 4];
+	sprintf_s(out, strlen(text) + 24 + strlen(szFunction) + 4, "[%04d-%02d-%02d %02d:%02d:%02d] %s: %s", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, szFunction, text);
+
+	OutputDebugString(out);
+
+	delete[] out;
+	delete[] text;
+};
+
+void DebugFinishEnter(char *format, ...)
+{
+	va_list arguments;
+	va_start(arguments, format);
+	int len = _vscprintf(format, arguments) + 1;
+	char * text = new char[len];
+	vsprintf_s(text, len, format, arguments);
+	va_end(arguments);
+
+	SYSTEMTIME t = { 0 };
+	GetLocalTime(&t);
+
+	char* out = new char[strlen(text) + 2];
+	sprintf_s(out, strlen(text) + 2, "%s\n", text);
+
+	OutputDebugString(out);
+
+	delete[] out;
+	delete[] text;
+};
+
 
 
 

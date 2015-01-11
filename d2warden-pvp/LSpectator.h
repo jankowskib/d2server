@@ -20,10 +20,8 @@
 #ifndef SPECTATOR_H__
 #define SPECTATOR_H__
 
-DWORD OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit);
-
-DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
-DWORD __fastcall OnClickLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
-DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen);
+DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit);
+void SPECTATOR_RemoveFromQueue(Game* pGame, DWORD QuitterId);
+void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, int xPos, int yPos);
 
 #endif

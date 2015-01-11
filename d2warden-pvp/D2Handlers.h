@@ -21,10 +21,9 @@
 #define D2HANDS_H__
 
 
+BOOL __fastcall D2GAME_IsUnitDead(UnitAny* pUnit);
 void __fastcall DAMAGE_FireEnchanted(Game *pGame, UnitAny *pUnit, int a4, int a5);
 DWORD __fastcall OnD2ExPacket(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, DWORD PacketLen);
-int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Room1 *pRoom);
-int __stdcall GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage);
 BOOL __stdcall isPermStore(Game* ptGame,UnitAny* ptNPC, UnitAny* ptItem);
 int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer);
 Room1* __stdcall D2GAME_PortalCrashFix(Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitAlign);

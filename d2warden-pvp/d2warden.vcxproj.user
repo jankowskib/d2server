@@ -28,8 +28,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>c:\diablo2exp\D2GS.exe</LocalDebuggerCommand>
-    <LocalDebuggerWorkingDirectory>c:\diablo2exp\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand>D:\Inne\D2 Stuff\D2GS\D2GS.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>D:\Inne\D2 Stuff\D2GS\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>true</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

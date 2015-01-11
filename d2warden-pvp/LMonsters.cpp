@@ -21,7 +21,7 @@
 #include "LMonsters.h"
 
 
-UnitAny* __fastcall OnMonsterSpawn(srCreateMonster * pSetup)
+UnitAny* __fastcall OnMonsterSpawn(PresetMonster * pSetup)
 {
 	UnitAny* pMonster =  D2Funcs.D2GAME_SpawnPresetMonster(pSetup);
 	if (pMonster)
@@ -35,6 +35,56 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 {
 	int ClientID = pUnit->pPlayerData->pClientData->ClientID;
 
+	if (_stricmp(str, "#mspawnxy") == 0)
+	{
+		str = strtok_s(NULL, " ", &t);
+		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Type number 0-733"); UNLOCK return false; }
+		int No = atoi(str);
+		if (No>733)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Type number 0-733"); UNLOCK return false; }
+
+		str = strtok_s(NULL, " ", &t);
+		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#mspawnxy <id> <x> <y>"); return false; }
+		int nX = atoi(str);
+		str = strtok_s(NULL, " ", &t);
+		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#mspawnxy <id> <x> <y>"); return false; }
+		int nY = atoi(str);
+
+		POINT Pos = { nX, nY };
+		POINT Out = { 0, 0 };
+
+
+
+		ptMonster = 0;
+
+		for (int i = 0; i<10; i++)
+		{
+			Room1 * mRoom = 0;
+
+			for (Room1* dRoom = pUnit->pAct->pRoom1; dRoom; dRoom = dRoom->pRoomNext)
+			{
+				if (dRoom->dwXStart < Pos.x && (dRoom->dwXStart + dRoom->dwXSize) >= Pos.x &&
+					dRoom->dwYStart < Pos.y && (dRoom->dwYStart + dRoom->dwYSize) >= Pos.y)
+				{
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "Find suitable room!");
+					mRoom = dRoom;
+					break;
+				}
+			}
+
+			if (!mRoom) { SendMsgToClient(pUnit->pPlayerData->pClientData, "FindFreeCoords failed!"); break; }
+
+			ptMonster = D2Funcs.D2GAME_SpawnMonster(No, 5, pUnit->pGame, mRoom, Pos.x, Pos.y, -1, 0);
+			if (ptMonster) break;
+
+			if (i % 2) Pos.x = Pos.x + (rand() % 4); else  Pos.x = Pos.x - (rand() % 4);
+			if (i % 2) Pos.y = Pos.y + (rand() % 4); else  Pos.y = Pos.y - (rand() % 4);
+		}
+		if (!ptMonster) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Error limit exceeded!"); return false; }
+
+		SendMsgToClient(pUnit->pPlayerData->pClientData, "Monster spawned!");
+
+		return false;
+	}
 	if(_stricmp(str,"#mspawn")==0)
 		{
 		WardenClient_i ptCurrentClient = GetClientByID(ClientID);

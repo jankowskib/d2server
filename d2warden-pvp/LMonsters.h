@@ -20,7 +20,7 @@
 #ifndef D2LMOBS_H__
 #define D2LMOBS_H__
 
-UnitAny* __fastcall OnMonsterSpawn(srCreateMonster * pSetup);
+UnitAny* __fastcall OnMonsterSpawn(PresetMonster * pSetup);
 bool ParseMonCmds(UnitAny* pUnit, char* str, char *t);
 
 #endif

@@ -25,9 +25,38 @@
 #include "LRoster.h"
 #include "LEvents.h"
 #include "LPackets.h"
+#include "LItems.h"
 
 namespace D2Stubs
 {
+
+	/*
+	BOOL __usercall UNIT_IsDead_6FC8D410<eax>(UnitAny *pUnit<eax>)
+	*/
+	__declspec(naked) void __fastcall  D2GAME_IsUnitDead_STUB()
+	{
+		__asm
+		{
+
+			push ecx
+			push edx
+			push ebp
+			push esi
+			push edi
+
+			mov ecx, eax
+			call D2GAME_IsUnitDead
+
+			pop edi
+			pop esi
+			pop ebp
+			pop edx
+			pop ecx
+			ret
+		}
+		
+	}
+
 	/*
 	(BYTE *pPacket<ebx>, UnitAny *pUnit<esi>, Game *pGame, int nPacketLen)
 	*/
@@ -35,6 +64,9 @@ namespace D2Stubs
 	{
 		__asm
 		{
+			; xor eax, eax
+				; mov eax, [eax]
+
 			pop eax 
 
 			//push esp // PacketLen
@@ -651,13 +683,87 @@ namespace D2Stubs
 
 	}
 
+#ifdef D2EX_MYSQL
+	//void __userpurge STAT_AddStat_6FC21440(Staty nStat<ebx>, UnitAny *pUnit<esi>, int nValue)
+	void __declspec(naked) __fastcall D2GAME_AddStat_STUB(int nStat, UnitAny *pUnit, int nValue)
+	{
+		__asm
+		{
+			mov eax, [esp + 4] // yeah im lazy
+
+			push ecx
+			push edx
+			push ebx // better store these regs too
+			push esi
+
+			mov ecx, ebx
+			mov edx, esi
+			push eax
+
+			call ITEMS_RollbackStat
+
+			pop esi
+			pop ebx
+			pop edx
+			pop ecx
+
+			ret 4
+		}
+	}
+
+
+	//void __userpurge STAT_BuyItem_6FC90660<eax>(UnitAny *pPlayer<esi>, int nCost)
+	BOOL __declspec(naked) __fastcall D2GAME_GoldTransaction_STUB(UnitAny *pPlayer, int nCost)
+	{
+		__asm
+		{
+			mov eax, [esp + 4]
+
+			push esi
+			push ecx
+			push edx
+
+			mov ecx, esi
+			mov edx, eax
+
+			call ITEMS_BuyItem
+
+			pop edx
+			pop ecx
+			pop esi
+
+			ret 4
+		}
+
+	}
+#endif
 
 }
+
 
 //----ASM SUBS---
 
 namespace D2ASMFuncs
 {
+
+	// void __userpurge sub_6FD103B0(UnitAny *pPlayer<ebx>, Game *a2)
+
+	__declspec(naked) void __fastcall D2GAME_RemovePets(Game* pGame, UnitAny* pPlayer)
+	{
+		__asm
+		{
+			push ebx
+
+			mov ebx, edx
+			push ecx
+
+			call D2Ptrs.D2GAME_RemovePets_I
+
+			pop ebx
+
+			ret
+		}
+	}
 	// __userpurge BroadcastLeaving5A_6FD06CA0<eax>(ClientData *ptClient<esi>, Game *ptGame, BYTE MsgType)
 	__declspec(naked) void __stdcall D2GAME_BroadcastLeavingEvent(ClientData *pClient, Game *pGame, BYTE bMsgType)
 	{
@@ -677,29 +783,32 @@ namespace D2ASMFuncs
 		}
 	}
 
-	//(Game *pGame<eax>, UnitAny *pUnit<edi>, Skill *pSkill, int nMode, signed int UnitType, int UnitId, int bAllowReEnter)
-	__declspec(naked) void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter)
+	/*
+		(Game *pGame<eax>, UnitAny *pUnit<edi>, Skill *pSkill, int nMode, signed int UnitType, int UnitId, int bAllowReEnter)
+		Calls UnitID callback for mode
+	*/
+	__declspec(naked) void __fastcall D2GAME_SetPlayerUnitModeTarget(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter)
 	{
 		__asm
 		{
 			push eax
-				push edi
+			push edi
 
-				mov eax, ecx
-				mov edi, edx
+			mov eax, ecx
+			mov edi, edx
 
-				push[esp + 20 + 8]
-				push[esp + 20 + 8]
-				push[esp + 20 + 8]
-				push[esp + 20 + 8]
-				push[esp + 20 + 8]
+			push[esp + 20 + 8]
+			push[esp + 20 + 8]
+			push[esp + 20 + 8]
+			push[esp + 20 + 8]
+			push[esp + 20 + 8]
 
-				call D2Ptrs.D2GAME_SetPlayerUnitMode_I
+			call D2Ptrs.D2GAME_SetPlayerUnitMode_I
 
-				pop edi
-				pop eax
+			pop edi
+			pop eax
 
-				ret 20
+			ret 20
 		}
 	}
 
@@ -1319,7 +1428,7 @@ namespace D2ASMFuncs
 	{
 		__asm
 		{
-			mov eax, ecx
+				mov eax, ecx
 				mov ecx, [esp + 4]
 
 				pushad
@@ -1397,11 +1506,11 @@ namespace D2ASMFuncs
 			//{
 			// DEBUGMSG("WARNING: dwUnitId = %d", dwUnitId);
 			//}
-			if (dwUnitType > 5)
-			{
-				DEBUGMSG("WARNING: dwType = %d", dwUnitType);
-				return 0;
-			}
+			//if (dwUnitType > 5)
+			//{
+			//DEBUGMSG("WARNING: dwType = %d", dwUnitType);
+			//return 0;
+			//}
 
 		switch (dwUnitType)
 		{
@@ -1449,7 +1558,7 @@ namespace D2ASMFuncs
 	{
 		__asm
 		{
-			mov eax, [esp + 4]
+				mov eax, [esp + 4]
 				push eax
 				push edx
 				mov eax, ecx

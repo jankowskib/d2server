@@ -36,6 +36,7 @@
 
 #include "Build.h"
 
+using namespace std;
 //#pragma comment(lib, "urlmon.lib")
 
 static boost::mt19937 rng;
@@ -97,6 +98,7 @@ void Warden_Config()
 	for (rt = strtok_s(temp, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
 		if (atoi(rt) < 7) TeleChars[atoi(rt)] = TRUE;
 
+	wcfgD2EXVersion = GetPrivateProfileInt("Warden", "D2ExVersion", 16, wcfgConfigFile.c_str());
 	wcfgSpectator = GetPrivateProfileInt("Warden", "EnableSpectator", 1, wcfgConfigFile.c_str());
 	wcfgAddKillerClass = GetPrivateProfileInt("Warden", "AddKillerClass", 0, wcfgConfigFile.c_str());
 	wcfgAutoIdentify = GetPrivateProfileInt("Warden", "AutoIdentify", 0, wcfgConfigFile.c_str());
@@ -119,6 +121,7 @@ void Warden_Config()
 	wcfgAllowD2Ex = GetPrivateProfileInt("Warden", "AllowD2Ex", 1, wcfgConfigFile.c_str());
 	wcfgDetectTrick = GetPrivateProfileInt("Warden", "DetectTrick", 1, wcfgConfigFile.c_str());
 	wcfgExpRange = GetPrivateProfileInt("Warden", "ExpRange", 6400, wcfgConfigFile.c_str());
+	wcfgDisableRepairCost = GetPrivateProfileInt("Warden", "DisableRepairCosts", 1, wcfgConfigFile.c_str());
 	//DmgRekord = GetPrivateProfileInt("Warden","DmgRekord",1,wcfgConfigFile.c_str());
 	GetPrivateProfileString("Warden", "ClanDataURL", "http://www.lolet.yoyo.pl/Clans.ini", URL, 255, wcfgConfigFile.c_str());
 	wcfgClansURL = URL;
@@ -135,6 +138,13 @@ void Warden_Config()
 		boost::to_lower(rt);
 		if (rt[0]) wcfgAdmins.push_back(rt);
 	}
+
+	GetPrivateProfileString("Warden", "FGDatabaseName", "projectdvb", URL, 255, wcfgConfigFile.c_str());
+	wcfgDatabase = URL;
+	GetPrivateProfileString("Warden", "FGDatabaseUser", "root", URL, 255, wcfgConfigFile.c_str());
+	wcfgDBUser = URL;
+	GetPrivateProfileString("Warden", "FGDatabasePass", "", URL, 255, wcfgConfigFile.c_str());
+	wcfgDBPass = URL;
 
 	//World Event Stuff
 	wcfgEnableWE = GetPrivateProfileInt("World Event", "Enabled", 0, wcfgConfigFile.c_str());
@@ -368,6 +378,7 @@ void Warden_Init()
 	{
 //		if(DumpHandle) CloseHandle(DumpHandle); // To trzeba jeszcze dorobic
 	}
+	DEBUGMSG("Warden init finished!")
 	return;
 }
 
@@ -434,7 +445,7 @@ DWORD WardenLoop()
 						RemoveWardenPacket(pWardenClient);
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("WARDENLOOP: Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+						DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
 						SetEvent(hWardenCheckEvent);
 						break;
 					}
@@ -443,7 +454,7 @@ DWORD WardenLoop()
 						RemoveWardenPacket(pWardenClient);
 						pWardenClient->WardenStatus = WARDEN_DOWNLOAD_MOD;
 						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD in CHECK_CLIENT ");
+						DEBUGMSG("Triggering check event becasue of WARDEN_DOWNLOAD_MOD in CHECK_CLIENT ");
 						SetEvent(hWardenCheckEvent);
 						break;
 					}
@@ -460,7 +471,7 @@ DWORD WardenLoop()
 						RemoveWardenPacket(pWardenClient);
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("WARDENLOOP: Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+						DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
 						SetEvent(hWardenCheckEvent);
 						break;
 					}
@@ -470,10 +481,10 @@ DWORD WardenLoop()
 					if ((GetTickCount() - pWardenClient->ClientLogonTime) > 20000)
 					{
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE; //Daje ci 20 sekund (Na cbn jest 45) 
-						DEBUGMSG("WARDENLOOP: Triggering check event becasue of GetTickCount() - pWardenClient->ClientLogonTime) > 20000 in CHECK_CLIENT");
+						DEBUGMSG("Triggering check event becasue of GetTickCount() - pWardenClient->ClientLogonTime) > 20000 in CHECK_CLIENT");
 						SetEvent(hWardenCheckEvent);
 					}
-					DEBUGMSG("WARDENLOOP: Still not received hello packet answer for %s (*%s), sleeping 200", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
+					DEBUGMSG("Still not received hello packet answer for %s (*%s), sleeping 200", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
 					pWardenClient->NextCheckTime = CurrentTick + 200;
 				}
 			}
@@ -484,7 +495,7 @@ DWORD WardenLoop()
 				{
 						pWardenClient->WardenStatus = WARDEN_WAITING_DOWNLOAD_END;
 						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_WAITING_DOWNLOAD_END for  %s (*%s) DL status : [%d/%d]", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), pWardenClient->MOD_Position, MOD_Length);
+						DEBUGMSG("Triggering check event becasue of WARDEN_WAITING_DOWNLOAD_END for  %s (*%s) DL status : [%d/%d]", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), pWardenClient->MOD_Position, MOD_Length);
 						SetEvent(hWardenCheckEvent);
 				}
 				else
@@ -579,8 +590,10 @@ DWORD WardenLoop()
 								pWardenClient->MouseXPosition=*(WORD*)&(pWardenClient->pWardenPacket.ThePacket[12]);
 								pWardenClient->MouseYPosition=*(WORD*)&(pWardenClient->pWardenPacket.ThePacket[8]);
 								memcpy(pWardenClient->UIModes,pWardenClient->pWardenPacket.ThePacket+17,4*16);
+#if 0
 								if(pWardenClient->MouseXPosition>800 || pWardenClient->MouseYPosition>600)
 									Log("Hack: %s (*%s) has mouse in abnormal position (X='%d', Y='%d')!",pWardenClient->CharName.c_str(),pWardenClient->AccountName.c_str(),pWardenClient->MouseXPosition,pWardenClient->MouseYPosition);
+#endif
 								pWardenClient->UIModesTime=GetTickCount();
 							}  
 							break; 			

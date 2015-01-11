@@ -239,27 +239,104 @@ struct D2InventoryTxt
    WORD unk0xEE;                  //0xEE
 };
 
+struct StatesTxt
+{
+	WORD wState;                  //0x00
+	WORD wOverlay[4];               //0x02
+	WORD wCastOverlay;               //0x0A
+	WORD wRemoveOverlay;            //0x0C
+	WORD wPrgOverlay;               //0x0E
+	struct {
+		BYTE	bNosend : 1;	//1
+		BYTE	bAura : 1;	//2
+		BYTE	bHide : 1;	//3
+		BYTE	bTransform : 1;	//4
+		BYTE	bPgsv : 1;	//5
+		BYTE	bActive : 1;	//6
+		BYTE	bRemhit : 1;	//7
+		BYTE	bDamblue : 1;	//8
+		BYTE	bDamred : 1;	//9
+		BYTE	bAttblue : 1;	//10
+		BYTE	bAttred : 1;	//11
+		BYTE	bCurse : 1;	//12
+		BYTE	bCurable : 1;	//13
+		BYTE	bPlrstaydeath : 1;	//14
+		BYTE	bMonstaydeath : 1;	//15
+		BYTE	bBossstaydeath : 1;	//16
+		BYTE	bDisguise : 1;	//17
+		BYTE	bRestrict : 1;	//18
+		BYTE	bBlue : 1;	//19
+		BYTE	bArmblue : 1;	//20
+		BYTE	bRfblue : 1;	//21
+		BYTE	bRcblue : 1;	//22
+		BYTE	bRlblue : 1;	//23
+		BYTE	bRpblue : 1;	//24
+		BYTE	bStambarblue : 1;	//25
+		BYTE	bArmred : 1;	//26
+		BYTE	bRfred : 1;	//27
+		BYTE	bRcred : 1;	//28
+		BYTE	bRlred : 1;	//29
+		BYTE	bRpred : 1;	//30
+		BYTE	bExp : 1;	//31
+		BYTE	bShatter : 1;	//32
+	} bStateFlags; //0x10
+	struct {
+		BYTE	bLife : 1;	//1
+		BYTE	bUdead : 1;	//2
+		BYTE	bGreen : 1;	//3
+		BYTE	bNooverlays : 1;	//4
+		BYTE	bNoclear : 1;	//5
+		BYTE	bBossinv : 1;	//6
+		BYTE	bMeleeonly : 1;	//7
+		BYTE	bNotondead : 1;	//8
+	} bStateFlagsEx; //0x14
+	BYTE _1[3];	//0x15
+	WORD wStat;                     //0x18
+	WORD wSetFunc;                  //0x1A
+	WORD wRemFunc;                  //0x1C
+	WORD wGroup;                  //0x1E
+	BYTE nColorPri;                  //0x20
+	BYTE nColorShift;               //0x21
+	BYTE nLightRGB[4];               //0x22
+	WORD wOnSound;                  //0x26
+	WORD wOffSound;                  //0x28
+	WORD wItemType;                  //0x2A
+	BYTE nItemTrans;               //0x2C
+	BYTE nGfxType;                  //0x2D
+	WORD wGfxClass;                  //0x2E
+	WORD wCltEvent;                  //0x30
+	WORD wCltEventFunc;               //0x32
+	WORD wCltActiveFunc;            //0x34
+	WORD wSrvActiveFunc;            //0x36
+	WORD wSkill;                  //0x38
+	WORD wMissile;                  //0x3A
+};
+
+
+struct bItemStatFlags {
+	BYTE	bSendOther : 1;			//1  0x1
+	BYTE	bSigned : 1;			//2  0x2
+	BYTE	bDamageRelated : 1;		//3  0x4
+	BYTE	bItemSpecific : 1;		//4  0x8
+	BYTE	bDirect : 1;			//5  0x10
+	BYTE	_1 : 1;					//6  0x20
+	BYTE    _2 : 1;					//7  0x40
+	BYTE    _3 : 1;					//8  0x80
+	BYTE    _4 : 1;					//9	 0x100
+	BYTE	bUpdateanimrate : 1;	//10 0x200
+	BYTE	bFmin : 1;				//11 0x400
+	BYTE	bFcallback : 1;			//12 0x800
+	BYTE	bSaved : 1;				//13 0x1000
+	BYTE	bCsvsigned : 1;			//14 0x2000
+	BYTE	_5 : 1;					//15 0x4000
+	BYTE	_6 : 1;					//16 0x8000
+}; 		
 
 struct ItemStatCostTxt  //size 0x144
 {
 	WORD	wStat;				//0x00
 	WORD 	_1;					//0x02
-	struct {
-	BYTE	bSendother:1;		//0
-	BYTE	bSigned:1;			//1
-	BYTE	bDamagerelated:1;	//2
-	BYTE	bItemspecific:1;	//3
-	BYTE	bDirect:1;			//5
-	BYTE    _1:1;				//6	
-	BYTE    _2:1;				//7
-	BYTE    _3:1;				//8	
-	BYTE    _4:1;				//9	
-	BYTE	bUpdateanimrate:1;	//10
-	BYTE	bFmin:1;			//11
-	BYTE	bFcallback:1;		//12
-	BYTE	bSaved:1;			//13
-	BYTE	bCsvsigned:1;		//14
-		} bItemStatFlags; 		 //0x04
+	bItemStatFlags wFlags;		 //0x04
 	WORD 	_2;			  		 //0x06
 	BYTE	bSendBits;			//0x08
 	BYTE	bSendParamBits;		//0x09
@@ -306,7 +383,7 @@ struct ItemStatCostTxt  //size 0x144
 	BYTE 	_Stuff[230];		//0x5E
 };
 
-struct D2MissilesTxt
+struct MissilesTxt
 {
    DWORD dwId;                     //0x00
    DWORD dwMissileFlags;            //0x04
@@ -1373,7 +1450,7 @@ struct sgptDataTable {
 	BYTE*	pRunes;					//0xB0
 	BYTE*	pHireDescs;				//0xB4
 	DWORD	dwHireDescsRecs;		//0xB8
-	BYTE*	pStates;				//0xBC
+	StatesTxt*	pStates;			//0xBC
 	DWORD	dwStatesRecs;			//0xC0
 	DWORD	dwStates;				//0xC4
 	BYTE*	pStateMaskFirst;		//0xC8
@@ -1422,7 +1499,7 @@ struct sgptDataTable {
 	BYTE*	pSuperUniques;			//0xAD8
 	DWORD	dwSuperUniquesRecs;		//0xADC
 	WORD	SuperUniqeIdxList[66];	//0xAE0
-	BYTE*	pMissilesTxt;			//0xB64
+	MissilesTxt*	pMissilesTxt;	//0xB64
 	BYTE*	pMissiles;				//0xB68
 	DWORD	dwMissilesRecs;			//0xB6C
 	BYTE*	pMonLvl;				//0xB70
@@ -1448,9 +1525,9 @@ struct sgptDataTable {
 	DWORD	dwOverlayRecs;			//0xBC0
 	CharStatsTxt*	pCharStatsTxt;	//0xBC4
 	DWORD	dwCharsStatsRecs;		//0xBC8
-	ItemStatCostTxt*pItemStatCostTxt;//0xBCC
+	ItemStatCostTxt* pItemStatCostTxt;//0xBCC
 	BYTE*	pItemStatCost;			//0xBD0
-	DWORD	dwItemStatCostRecs;		//0xBD4
+	int		dwItemStatCostRecs;		//0xBD4
 	BYTE*	pOpStatNesting;			//0xBD8
 	DWORD	dwOpStatNestingRecs;	//0xBDC
 	BYTE*	pMonEquip;				//0xBE0

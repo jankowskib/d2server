@@ -17,19 +17,19 @@
  * limitations under the License.
  * ========================================================== */
 
-#ifndef LROSTER_H__
-#define LROSTER_H__
+#ifndef LRosterData_H__
+#define LRosterData_H__
 
 void __stdcall OnCreateDamage(UnitAny* pDefender, Damage* pDamage, UnitAny* pMissile);
-void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame);
 void __fastcall OnGameDestroy(Game* ptGame);
 void __fastcall PLAYERMODES_0_Death(Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller);
+void COMBAT_Free(Game* pGame, UnitAny* pUnit);
 
-namespace LRost
+namespace LRoster
 {
 	void SyncClient(Game *ptGame, ClientData* ptClient);
-	void SyncClient(Game *ptGame, DWORD UnitId, LRoster* pRoster);
-	LRoster* Find(Game * ptGame, char* szName);
+	void SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster);
+	LRosterData* Find(Game * ptGame, char* szName);
 	void UpdateRoster(Game * ptGame,char * szName, BYTE Type);
 	void Clear(Game * ptGame);
 }

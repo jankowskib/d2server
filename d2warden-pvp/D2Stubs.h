@@ -22,6 +22,7 @@
 
 namespace D2Stubs 
 {
+	void __fastcall D2GAME_IsUnitDead_STUB();
 	void __stdcall D2GAME_OnPacketReceive_STUB();
 	void __fastcall D2GAME_OnCreateDamage_STUB();
 	void __fastcall D2GAME_LastHitIntercept_STUB();
@@ -54,13 +55,16 @@ namespace D2Stubs
 	void __fastcall D2GAME_OnLifeLeech_STUB();
 	void __fastcall D2GAME_OnPlayerModeChange_I();
 	UnitAny* __fastcall D2GAME_FindUnit_STUB();
+	void __fastcall D2GAME_AddStat_STUB(int nStat, UnitAny *pUnit, int nValue);
+	BOOL __fastcall D2GAME_GoldTransaction_STUB(UnitAny *pPlayer, int nCost);
 }
 
 // -- ASM SUBS -- 
 namespace D2ASMFuncs 
 {
+void __fastcall D2GAME_RemovePets(Game* pGame, UnitAny* pPlayer);
 void __stdcall D2GAME_BroadcastLeavingEvent(ClientData *ptClient, Game *ptGame, BYTE MsgType);
-void __fastcall D2GAME_SetPlayerUnitMode(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter);
+void __fastcall D2GAME_SetPlayerUnitModeTarget(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter);
 void __fastcall D2GAME_UpdateClientInventory(ClientData* pClient, UnitAny* pPlayer);
 void __fastcall D2GAME_DeleteTimer(Game* pGame, Timer* pTimer);
 void __fastcall D2GAME_DeleteTimers(Game* pGame, UnitAny* pUnit);

@@ -20,14 +20,22 @@
 #ifndef D2LITEMS_H__
 #define D2LITEMS_H__
 
+BOOL __fastcall ITEMS_BuyItem(UnitAny *pPlayer, int nCost);
+void __fastcall ITEMS_RollbackStat(int nStat, UnitAny *pUnit, int nValue);
+int __stdcall GetGoldBankLimit(UnitAny *pUnit);
+signed int GetStatSigned(UnitAny *pUnit, int nStat, int nLayer);
+int __stdcall ITEMS_OnStatFetch(UnitAny *pUnit, int nStat, WORD nLayer);
+int __stdcall ITEMS_GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage);
+
+//-------- don't break it accidently
 UnitAny*
 #ifdef VER_111B
 __stdcall
 #else
 __fastcall
 #endif
-ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5);
-
+ITEMS_AddKillerId(Game *pGame, PresetItem  *srCreateItem, int a5);
+//-----------
 void CreateFFAItems(UnitAny* pUnit);
 bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t);
 

@@ -18,7 +18,400 @@
  * ========================================================== */
 
 #include "stdafx.h"
+#include <iostream>
 #include "LItems.h"
+
+#ifdef D2EX_MYSQL
+
+#include "mysql_driver.h"
+#include "mysql_connection.h"
+
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/prepared_statement.h>
+
+using namespace std;
+using namespace sql;
+
+int FG_GetGoldByAccount(string szAccount)
+{
+	int result = 0;
+
+	try
+	{
+		
+		Driver* driver = get_driver_instance();
+		auto_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
+		con->setSchema(wcfgDatabase.c_str());
+		auto_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+
+		stmt->setString(1, szAccount);
+		if (stmt->execute())
+		{
+			unique_ptr<ResultSet> res(stmt->getResultSet());
+			if (res)
+			{
+				if(res->next())
+				return res->getInt(1);
+			}
+		}
+	}
+	catch (SQLException& e)
+	{
+		DEBUGMSG("MySQL error!: %s", e.what());
+		Log("MySQL error!: %s", e.what());
+	}
+
+	return result;
+}
+
+bool FG_BuyItem(string szAccount, int nValue)
+{
+
+	try
+	{
+		Driver* driver = mysql::get_driver_instance();
+		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
+		con->setSchema(wcfgDatabase.c_str());
+		unique_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		stmt->setString(1, szAccount);
+		int nSafeGold = 0;
+		if (stmt->execute())
+		{
+			unique_ptr<ResultSet> res(stmt->getResultSet());
+			if (res)
+			{
+				if (res->next())
+					nSafeGold = res->getInt(1);
+			}
+
+		if (nValue > nSafeGold)
+			return false;
+		unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold - ? WHERE f.Field5=?"));
+		stmt2->setInt(1, nValue);
+		stmt2->setString(2, szAccount);
+
+		return stmt2->executeUpdate() > 0;
+		}
+		return false;
+	}
+	catch (SQLException& e)
+	{
+		DEBUGMSG("MySQL connection failed!: %s", e.what());
+		Log("MySQL connection failed!: %s", e.what());
+	}
+
+	return false;
+}
+
+bool FG_RollbackCost(string szAccount, int nCost)
+{
+	try
+	{
+		Driver* driver = mysql::get_driver_instance();
+		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
+		con->setSchema(wcfgDatabase.c_str());
+
+		unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold + ? WHERE f.Field5=?"));
+		stmt2->setInt(1, nCost);
+		stmt2->setString(2, szAccount);
+
+		return stmt2->executeUpdate() > 0;
+	}
+	catch (SQLException& e)
+	{
+		DEBUGMSG("MySQL connection failed!: %s", e.what());
+		Log("MySQL connection failed!: %s", e.what());
+	}
+
+	return false;
+}
+
+
+bool FG_SetValue(string szAccount, int nValue)
+{
+	try
+	{
+		Driver* driver = mysql::get_driver_instance();
+		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
+		con->setSchema(wcfgDatabase.c_str());
+		unique_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		stmt->setString(1, szAccount);
+		int nSafeGold = 0;
+
+		if (stmt->execute())
+		{
+			unique_ptr<ResultSet> res(stmt->getResultSet());
+			if (res)
+			{
+				if (res->next())
+					nSafeGold = res->getInt(1);
+			}
+			if (nValue > nSafeGold)
+				return false;
+			unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = ? WHERE f.Field5=?"));
+			stmt2->setInt(1, nValue);
+			stmt2->setString(2, szAccount);
+
+			return stmt2->executeUpdate() > 0;
+		}
+		return false;
+	}
+	catch (SQLException& e)
+	{
+		DEBUGMSG("MySQL connection failed!: %s", e.what());
+		Log("MySQL connection failed!: %s", e.what());
+	}
+
+	return false;
+}
+
+
+
+// Needs tb fixed
+signed int GetStatCount(StatEx* pStatEx, int nMaskedStat)
+{
+	Stat *pStat = pStatEx->pStat;
+	int nCount = pStatEx->wStatCount;
+	int n = 0, result;
+	while (n < nCount)
+	{
+		result = n + (nCount - n) / 2;
+		int nIdx = *&pStat[result].wSubIndex;
+		if (nMaskedStat <= nIdx)
+		{
+			if (nMaskedStat >= nIdx)
+				return result;
+			nCount = n + (nCount - n) / 2;
+		}
+		else
+		{
+			n = result + 1;
+		}
+	}
+	return -1;
+}
+
+signed int __declspec(naked) __fastcall GetStatCount_ASM(StatEx* pStatEx, int nMaskedStat)
+{
+	__asm
+	{
+		; int __usercall sub_6FDA7C20<eax>(StatEx *pStatEx<eax>, int nStatMask<edi>
+		push	edi
+		mov		eax, ecx
+		mov		edi, edx
+		push    ebx
+		mov     ebx, [eax]
+		push    esi
+		movsx   esi, word ptr[eax + 4]
+		xor     ecx, ecx
+		test    esi, esi
+		jle     short loc_6FDA7C4F
+		mov     edi, edi
+
+		loc_6FDA7C30 : ; CODE XREF : sub_6FDA7C20 + 2Dj
+		mov     eax, esi
+		sub     eax, ecx
+		cdq
+		sub     eax, edx
+		sar     eax, 1
+		add     eax, ecx
+		mov     edx, [ebx + eax * 8]
+		cmp     edi, edx
+		jle     short loc_6FDA7C47
+		lea     ecx, [eax + 1]
+		jmp     short loc_6FDA7C4B
+		; -------------------------------------------------------------------------- -
+
+		loc_6FDA7C47:; CODE XREF : sub_6FDA7C20 + 20j
+		jge     short loc_6FDA7C52
+		mov     esi, eax
+
+		loc_6FDA7C4B : ; CODE XREF : sub_6FDA7C20 + 25j
+		cmp     ecx, esi
+		jl      short loc_6FDA7C30
+
+		loc_6FDA7C4F : ; CODE XREF : sub_6FDA7C20 + Cj
+		or      eax, 0FFFFFFFFh
+
+		loc_6FDA7C52:; CODE XREF : sub_6FDA7C20 : loc_6FDA7C47j
+		pop     esi
+		pop     ebx
+		pop		edi
+		retn
+	}
+}
+
+int __stdcall ITEMS_OnStatFetch(UnitAny *pUnit, int nStat, WORD nLayer)
+{
+	if (nStat == STAT_GOLD && pUnit->dwType == UNIT_PLAYER)
+	{
+		//	DEBUGMSG("Fetching gold...")
+		if (GetTickCount() - pUnit->pPlayerData->dwLastGoldTick > 5000)
+		{
+			pUnit->pPlayerData->dwLastForumGold = FG_GetGoldByAccount(pUnit->pPlayerData->pClientData->AccountName);
+			pUnit->pPlayerData->dwLastGoldTick = GetTickCount();
+			DEBUGMSG("Refreshing gold value for %s", pUnit->pPlayerData->pClientData->AccountName)
+		}
+
+		return pUnit->pPlayerData->dwLastForumGold;
+	}
+	else if (nStat == STAT_GOLDBANK && pUnit->dwType == UNIT_PLAYER)
+	{
+		return 0;
+	}
+	else
+		return GetStatSigned(pUnit, nStat, nLayer);
+}
+
+
+signed int GetStatSigned(UnitAny *pUnit, int nStat, int nLayer)
+{
+	if (!pUnit || !pUnit->pStatsEx)
+		return 0;
+	int nRecords = (*D2Vars.D2COMMON_sgptDataTables)->dwItemStatCostRecs;
+	if (nStat >= nRecords || nStat < 0)
+		return 0;
+	ItemStatCostTxt* pTxt = &(*D2Vars.D2COMMON_sgptDataTables)->pItemStatCostTxt[nStat];
+	if (!pTxt)
+	{
+		DEBUGMSG("Failed to fetch record #%d :|", nStat);
+		return 0;
+	}
+	int nMaskedStat = nLayer + (nStat << 16);
+	StatListEx* pStatList = pUnit->pStatsEx;
+	StatEx* pStatEx = &pStatList->BaseStats;
+	if (pStatList->dwListFlags & 0x80000000)
+		pStatEx = &pStatList->FullStats;
+
+	int result = GetStatCount_ASM(pStatEx, nMaskedStat);
+	if (result < 0)
+		return 0;
+
+	Stat* pStat = &pStatEx->pStat[result];
+	if (!pStat)
+		return 0;
+	int nValue = pStat->dwStatValue;
+	if (pTxt->wFlags.bFmin && pStatList->dwListFlags & 0x80000000 && pStatList->pOwner)
+	{
+		UnitAny* pOwner = pStatList->pOwner;
+		if (pOwner->dwType == UNIT_PLAYER || pOwner->dwType == UNIT_MONSTER)
+		{
+			if (nValue < (int)pTxt->dwMinAccr)
+				nValue = pTxt->dwMinAccr << pTxt->bValShift;
+		}
+	}
+	return nValue;
+}
+
+
+/*
+	Replacement for
+	void __userpurge STAT_AddStat_6FC21440(Staty nStat<ebx>, UnitAny *pUnit<esi>, int nValue)
+*/
+void __fastcall ITEMS_RollbackStat(int nStat, UnitAny *pUnit, int nValue)
+{
+	if (pUnit)
+	{
+		signed int newValue = nValue + D2Funcs.D2COMMON_GetStatSigned(pUnit, nStat, 0);
+		if (newValue < 0)
+		{
+			if (nStat == STAT_GOLD && pUnit->dwType == UNIT_PLAYER)
+			{
+				FG_SetValue(pUnit->pPlayerData->pClientData->AccountName, 0);
+				pUnit->pPlayerData->dwLastForumGold = 0;
+				return;
+			}
+			else
+			{
+				D2Funcs.D2COMMON_SetStat(pUnit, nStat, 0, 0);
+				return;
+			}
+		}
+		if (pUnit->dwType == UNIT_PLAYER)
+		{
+			if (nStat == STAT_GOLD)
+			{
+				if (newValue > 0xFFFFFF)
+				{
+					Log("WARNING: Strange high gold value on (*%s). He has %d gold !", pUnit->pPlayerData->pClientData->AccountName, newValue);
+					FG_SetValue(pUnit->pPlayerData->pClientData->AccountName, 0);
+					pUnit->pPlayerData->dwLastForumGold = 0;
+					return;
+				}
+				else
+				{
+					DEBUGMSG("Trade failed rollbacking %d gold", nValue)
+					FG_RollbackCost(pUnit->pPlayerData->pClientData->AccountName, nValue);
+					pUnit->pPlayerData->dwLastForumGold+=nValue;
+				}
+			}
+			else
+			{
+				if (nStat == STAT_GOLDBANK && newValue > D2Funcs.D2COMMON_GetBankGoldLimit(pUnit))
+				{
+					D2Funcs.D2COMMON_SetStat(pUnit, STAT_GOLDBANK, 0, 0);
+					return;
+				}
+			}
+		}
+		D2Funcs.D2COMMON_AddStat(pUnit, nStat, nValue, 0);
+	}
+}
+/* 
+	Replacement for
+	BOOL __userpurge STAT_BuyItem_6FC90660<eax>(UnitAny *pPlayer<esi>, int nCost)
+*/
+BOOL __fastcall ITEMS_BuyItem(UnitAny *pPlayer, int nCost)
+{
+	if (nCost == 0)
+		return 1;
+
+	int nGold = D2Funcs.D2COMMON_GetStatSigned(pPlayer, STAT_GOLD, 0);
+	if (nGold < nCost)
+		return FALSE;
+
+	if (nCost <= nGold)
+	{
+		if (pPlayer)
+		{
+			DEBUGMSG("Bought from special NPC for %d", nCost)
+			bool succed = FG_BuyItem(pPlayer->pPlayerData->pClientData->AccountName, nCost);
+			pPlayer->pPlayerData->dwLastForumGold -= nCost;
+			return succed;
+		}
+	}
+
+	if (!pPlayer)
+		return 1;
+
+	return 0;
+}
+
+#endif
+
+int __stdcall GetGoldBankLimit(UnitAny *pUnit)
+{
+	return 0;
+}
+
+/*
+InvPage 0 Trade, 2 Gamble
+*/
+int __stdcall ITEMS_GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage)
+{
+	//if(pPlayer->pGame, pPlayer->pGame->dwGameState!=1)
+	//int ret =  D2Funcs.D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
+	ItemsTxt* pTxt = D2Funcs.D2COMMON_GetItemTxt(ptItem->dwClassId);
+	ASSERT(pTxt)
+	int ret = pTxt->dwcost;
+
+	if (ret == 1)
+		return 0;
+	return ret;
+}
+
+
 
 UnitAny*
 #ifdef VER_111B
@@ -26,7 +419,7 @@ __stdcall
 #else
 __fastcall
 #endif
-ITEMS_AddKillerId(Game *pGame, CreateItem *srCreateItem, int a5)
+ITEMS_AddKillerId(Game *pGame, PresetItem *srCreateItem, int a5)
 {
 	if (wcfgAutoIdentify)
 	{
@@ -81,7 +474,7 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 		if (str) iCount = atoi(str);
 		//UnitAny* ptItem = D2ASMFuncs::D2GAME_CreateItem(99, 1, 1, pUnit, Idx, pUnit->pGame, 3, iQual, 1, 0, 0);
 
-		CreateItem sets;
+		PresetItem  sets;
 		memset(&sets, 0, sizeof(sets));
 
 		sets.pOwner = pUnit;
@@ -352,7 +745,7 @@ void CreateFFAItems(UnitAny *pUnit)
 		if (!pNPC->pInventory)
 			D2Funcs.D2COMMON_AllocInventory(pNPC->pMemPool, pNPC);
 
-		CreateItem sets;
+		PresetItem  sets;
 		memset(&sets, 0, sizeof(sets));
 		sets.pOwner = pUnit;
 		sets.wItemFormat = pUnit->pGame->ItemFormat;

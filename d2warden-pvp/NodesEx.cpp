@@ -30,7 +30,7 @@ int NEU_NODE = wcfgMaxPlayers + 3;
   if (ptUnit->dwType) return;
   if (ptUnit->dwNodeIdx != NEU_NODE ) return;
 
-         UnitNode** pNodes = ptGame->pNewNodes;
+		 UnitNode** pNodes = ptGame->pNewNodes;
 		  
 		  int z = 0;
 		  for(;z<wcfgMaxPlayers;z++)			// Zmiana 24.02.2012 z 16
@@ -38,23 +38,23 @@ int NEU_NODE = wcfgMaxPlayers + 3;
 			if(!pNodes[z]) break;
 		  }
 
-        if (ptGame->nClients <= wcfgMaxPlayers && z < wcfgMaxPlayers)
-        {
-          UnitNode* ptUNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
-          if ( ptUNode )
-          {
-            ptUNode->ptUnit = 0;
-            ptUNode->pNode = 0;
-            ptUNode->pChildNode = 0;
-            ptUNode->pParentNode = 0;
-            ptUNode->ptUnit = ptUnit;
-            ptUNode->pNode = pChild;
-            pNodes[z] = ptUNode;
-            ptUnit->dwNodeIdx = z;
-          }
-  			  else
-  			   	Log("No memory to allocate an node");
-        }
+		if (ptGame->nClients <= wcfgMaxPlayers && z < wcfgMaxPlayers)
+		{
+		  UnitNode* ptUNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
+		  if ( ptUNode )
+		  {
+			ptUNode->ptUnit = 0;
+			ptUNode->pNode = 0;
+			ptUNode->pChildNode = 0;
+			ptUNode->pParentNode = 0;
+			ptUNode->ptUnit = ptUnit;
+			ptUNode->pNode = pChild;
+			pNodes[z] = ptUNode;
+			ptUnit->dwNodeIdx = z;
+		  }
+			  else
+				Log("No memory to allocate an node");
+		}
 		  else
 		  {
 			  Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d",ptGame->nClients,wcfgMaxPlayers,z,wcfgMaxPlayers);
@@ -73,56 +73,56 @@ int NEU_NODE = wcfgMaxPlayers + 3;
 
   int aNodeIdx = ptUnit->dwNodeIdx;
   if ( aNodeIdx == NEU_NODE ) return;
-     
-         UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
-          if (!pNode) return;
+	 
+		 UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
+		  if (!pNode) return;
 
-            if (aNodeIdx >= wcfgMaxPlayers )
-            {
-              while ( pNode->ptUnit != ptUnit )
-              {
-                pNode = pNode->pChildNode;
-                if ( !pNode )
-                {
-                  ptUnit->dwNodeIdx = NEU_NODE;
-                  return;
-                }
+			if (aNodeIdx >= wcfgMaxPlayers )
+			{
+			  while ( pNode->ptUnit != ptUnit )
+			  {
+				pNode = pNode->pChildNode;
+				if ( !pNode )
+				{
+				  ptUnit->dwNodeIdx = NEU_NODE;
+				  return;
+				}
 			  }
 
-              if ( pNode == ptGame->pNewNodes[aNodeIdx] )
-              {
-                ptGame->pNewNodes[aNodeIdx] = pNode->pChildNode;
-                UnitNode* pChild = pNode->pChildNode;
-                if (pChild) pChild->pParentNode = 0;
-                D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
+			  if ( pNode == ptGame->pNewNodes[aNodeIdx] )
+			  {
+				ptGame->pNewNodes[aNodeIdx] = pNode->pChildNode;
+				UnitNode* pChild = pNode->pChildNode;
+				if (pChild) pChild->pParentNode = 0;
+				D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
 				ptUnit->dwNodeIdx = NEU_NODE;
-                return;
-              }
-            }
-            else
-            {
-              pNode = pNode->pChildNode;
-              if ( !pNode )
-              {
+				return;
+			  }
+			}
+			else
+			{
+			  pNode = pNode->pChildNode;
+			  if ( !pNode )
+			  {
 				ptUnit->dwNodeIdx = NEU_NODE;
-                return;
-              }
-              while ( pNode->ptUnit != ptUnit )
-              {
-                pNode = pNode->pChildNode;
-                if ( !pNode )
-                {
-                  ptUnit->dwNodeIdx = NEU_NODE;
-                  return;
-                }
-              }
-            }
+				return;
+			  }
+			  while ( pNode->ptUnit != ptUnit )
+			  {
+				pNode = pNode->pChildNode;
+				if ( !pNode )
+				{
+				  ptUnit->dwNodeIdx = NEU_NODE;
+				  return;
+				}
+			  }
+			}
 
-            pNode->pParentNode->pChildNode = pNode->pChildNode;
-            UnitNode* pChild = pNode->pChildNode;
-            if (pChild) pChild->pParentNode = pNode->pParentNode;
-            D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
-            ptUnit->dwNodeIdx = NEU_NODE;
+			pNode->pParentNode->pChildNode = pNode->pChildNode;
+			UnitNode* pChild = pNode->pChildNode;
+			if (pChild) pChild->pParentNode = pNode->pParentNode;
+			D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
+			ptUnit->dwNodeIdx = NEU_NODE;
 }
 
 
@@ -135,17 +135,17 @@ int NEU_NODE = wcfgMaxPlayers + 3;
 
   int aNodeIdx = ptUnit->dwNodeIdx;
 
-        if ( aNodeIdx == NEU_NODE ) return;
+		if ( aNodeIdx == NEU_NODE ) return;
 
-         UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
-          if (pNode)
-          {
+		 UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
+		  if (pNode)
+		  {
 
 			for(UnitNode* pChildNode = pNode->pChildNode; pChildNode; pNode = pChildNode)
-            {
-              if (pNode->ptUnit)  pNode->ptUnit->dwNodeIdx = NEU_NODE;
+			{
+			  if (pNode->ptUnit)  pNode->ptUnit->dwNodeIdx = NEU_NODE;
 			  D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, pNode, __FILE__, __LINE__, 0);
-            }
+			}
 		  }
 		  ptGame->pNewNodes[aNodeIdx] = 0;
 }
@@ -176,24 +176,24 @@ int NEU_NODE = wcfgMaxPlayers + 3;
   if (NodeIdx!=(NEU_NODE-3) || NodeIdx!=(NEU_NODE-2)) return;
   if (ptUnit->dwType>1) return;
 
-              pCurrentNode = ptGame->pNewNodes[NodeIdx];
+			  pCurrentNode = ptGame->pNewNodes[NodeIdx];
 
-              pParentNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__ , __LINE__ , 0);
-              if ( pParentNode )
-              {
-                pParentNode->ptUnit = 0;
-                pParentNode->pNode = 0;
-                pParentNode->pChildNode = 0;
-                pParentNode->pParentNode = 0;
-                pParentNode->ptUnit = ptUnit;
-                pParentNode->pNode = ptNode;
-                ptGame->pNewNodes[NodeIdx] = pParentNode;
-                if ( pCurrentNode )
-                {
-                  pParentNode->pChildNode = pCurrentNode;
-                  pCurrentNode->pParentNode = pParentNode;
-                }
-                ptUnit->dwNodeIdx = NodeIdx;
+			  pParentNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__ , __LINE__ , 0);
+			  if ( pParentNode )
+			  {
+				pParentNode->ptUnit = 0;
+				pParentNode->pNode = 0;
+				pParentNode->pChildNode = 0;
+				pParentNode->pParentNode = 0;
+				pParentNode->ptUnit = ptUnit;
+				pParentNode->pNode = ptNode;
+				ptGame->pNewNodes[NodeIdx] = pParentNode;
+				if ( pCurrentNode )
+				{
+				  pParentNode->pChildNode = pCurrentNode;
+				  pCurrentNode->pParentNode = pParentNode;
+				}
+				ptUnit->dwNodeIdx = NodeIdx;
 			  }
 			  else
 			  {
@@ -209,27 +209,27 @@ int NEU_NODE = wcfgMaxPlayers + 3;
   if (NodeIdx>=wcfgMaxPlayers) return;
   if (ptUnit->dwType>1) return;
 
-           UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
-          if ( pCurrentNode )
-            {
-              if ( pCurrentNode->ptUnit )
-              {
-                UnitNode * pParentNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
-                if ( pParentNode )
-                {
-                  pParentNode->ptUnit = 0;
-                  pParentNode->pNode = 0;
-                  pParentNode->pChildNode = 0;
-                  pParentNode->pParentNode = 0;
-                  pParentNode->ptUnit = ptUnit;
-                  pParentNode->pNode = ptNode;
-                  pParentNode->pChildNode = pCurrentNode->pChildNode;
-                  pParentNode->pParentNode = pCurrentNode;
-                  UnitNode * pChildNode = pCurrentNode->pChildNode;
-                  if ( pChildNode )
-                    pChildNode->pParentNode = pParentNode;
-                  pCurrentNode->pChildNode = pParentNode;
-                  ptUnit->dwNodeIdx = NodeIdx;
+		   UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
+		  if ( pCurrentNode )
+			{
+			  if ( pCurrentNode->ptUnit )
+			  {
+				UnitNode * pParentNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
+				if ( pParentNode )
+				{
+				  pParentNode->ptUnit = 0;
+				  pParentNode->pNode = 0;
+				  pParentNode->pChildNode = 0;
+				  pParentNode->pParentNode = 0;
+				  pParentNode->ptUnit = ptUnit;
+				  pParentNode->pNode = ptNode;
+				  pParentNode->pChildNode = pCurrentNode->pChildNode;
+				  pParentNode->pParentNode = pCurrentNode;
+				  UnitNode * pChildNode = pCurrentNode->pChildNode;
+				  if ( pChildNode )
+					pChildNode->pParentNode = pParentNode;
+				  pCurrentNode->pChildNode = pParentNode;
+				  ptUnit->dwNodeIdx = NodeIdx;
 				}
 			  }
 		}

@@ -28,6 +28,7 @@ struct ItemData;
 struct MonsterData;
 struct ObjectData;
 struct Act;
+struct ActMisc;
 struct Path;
 struct StaticPath;
 struct StatList;
@@ -57,6 +58,7 @@ struct Timer;
 struct TimerList;
 struct TimerQuene;
 struct ObjectRegion;
+struct BitBuffer;
 
 struct pSpellTbl
 {
@@ -99,47 +101,6 @@ struct PlayerTrade		//size 0x18 -> resized to 0x20 // Need to check
 	int ARGold;							//0x18
 	std::string GoldPass;					//0x1C
 };
-
-#pragma pack(push, 1)
-
-struct bItemFlags //Taken from Necrolis post & Hero Editor  (1.13d)
-{
-	BYTE bNewItem : 1;		//1
-	BYTE bTarget : 1;			//2
-	BYTE bTargeting : 1;		//3
-	BYTE bDeleted : 1;		//4
-	BYTE bIdentified : 1;		//5
-	BYTE bQuantity : 1;		//6
-	BYTE bWeaponSetIn : 1;	//7
-	BYTE bWeaponSetOut : 1;	//8
-	BYTE bBroken : 1;			//9
-	BYTE bRepaired : 1;		//10
-	BYTE Flag11 : 1;			//11
-	BYTE bSocketed : 1;		//12
-	BYTE bNonSellable : 1;	//13
-	BYTE bInStore : 1;		//14 Also Has Been Picked Up
-	BYTE bNoEquip : 1;		//15
-	BYTE bNamed : 1;			//16
-	BYTE bOrgan : 1;			//17 Also bEar
-	BYTE bStarter : 1;		//18 Also bSellCheap
-	BYTE Flag19 : 1;			//19
-	BYTE bInit : 1;			//20
-	BYTE Flag21 : 1;			//21
-	BYTE bCompactSave : 1;	//22 Also bSimple
-	BYTE bEthereal : 1;		//23
-	BYTE bJustSaved : 1;		//24
-	BYTE bPersonalized : 1;	//25
-	BYTE bLowQuality : 1;		//26
-	BYTE bRuneword : 1;		//27
-	BYTE bItem : 1;			//28
-	BYTE _Unused1 : 1;		//29
-	BYTE _Unused2 : 1;		//30
-	BYTE _Unused3 : 1;		//31
-	BYTE _Unused4 : 1;		//32
-};
-
-#pragma pack(pop)
-
 
 
 struct PacketData //size 0x208 (1.13d)
@@ -199,6 +160,53 @@ struct CollMap  // (1.13d)
 };
 
 
+
+struct DrlgPreset // sizeof(0x08), type 2
+{
+	DWORD * _1;						//0x00
+	DWORD dwPresetId;				//0x04 ds1 id used to generate level
+};
+
+struct DrlgWildreness // sizeof(0x268), type 3
+{
+
+};
+
+struct Level //sizeof(0x230)
+{
+	DWORD dwDrlgType;		//0x00 eDrlgType
+	DWORD dwLevelFlags;		//0x04
+	DWORD _1[2];			//0x08
+	Room2* pRoom2First;		//0x10
+	DWORD *pDrlgUNK;		//0x14 union depends on DrlgType: 1: pLvlWarpTxt, 2: DrlgPreset, 3: DrlgWildreness
+	DWORD _2;				//0x18
+	DWORD dwPosX;			//0x1C
+	DWORD dwPosY;			//0x20
+	DWORD dwSizeX;			//0x24
+	DWORD dwSizeY;			//0x28
+	DWORD _3[96];			//0x2C
+	Level* pNextLevel;		//0x1AC
+	DWORD _4;				//0x1B0
+	ActMisc* pMisc;			//0x1B4
+	DWORD _5[2];			//0x1B8
+	DWORD dwLevelType;		//0x1C0 The type of the Level (Id from lvltypes.txt)
+	D2Seed hSeed;			//0x1C4
+	DWORD _5b;				//x01CC
+	DWORD dwLevelNo;		//0x1D0
+	DWORD _6[3];			//0x1D4
+	union {
+		DWORD RoomCenterX[9];
+		DWORD WarpX[9];
+	};						//0x1E0
+	union {
+		DWORD RoomCenterY[9];
+		DWORD WarpY[9];
+	};						//0x204
+	DWORD dwRoomEntries;	//0x228
+	DWORD _7;				//0x22C pointer to mem 4 * _1[0]
+};
+
+
 struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 {
 	Room1** pRoomsNear; 	//0x00
@@ -206,14 +214,16 @@ struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 	void* _1s;				//0x08
 	DWORD _1b;				//0x0C
 	Room2* pRoom2;			//0x10
-	DWORD _2[3];			//0x14
+	DWORD _2[2];			//0x14
+	UnitAny* pUnitChanged;	//0x1C
 	CollMap* Coll;			//0x20
 	DWORD dwRoomsNear;		//0x24 9 rooms
-	DWORD _3;				//0x28
+	DWORD nPlayerUnits;		//0x28
 	Act* pAct;				//0x2C
 	DWORD _4;				//0x30
 	DWORD nUnknown;			//0x34
-	DWORD _5[5];			//0x38
+	DWORD _5[4];			//0x38
+	ClientData** pClients;	//0x48
 	DWORD dwXStart;			//0x4C
 	DWORD dwYStart;			//0x50
 	DWORD dwXSize;			//0x54
@@ -221,73 +231,132 @@ struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 	DWORD _6[4];			//0x5C
 	DWORD dwSeed[2];		//0x6C
 	UnitAny* pUnitFirst;	//0x74
-	DWORD nPlayers;			//0x78
+	DWORD nNumClients;		//0x78
 	Room1* pRoomNext;		//0x7C
 };
 
-
-struct ActMisc // CHECKED
+struct Room2 //sizeof(0xEC)
 {
-	DWORD _1[19];			//0x00
+	DWORD _1[2];			//0x00
+	Room2** pRoom2Near;		//0x08
+	DWORD _2[5];			//0x0C
+	struct {
+		DWORD dwRoomNumber; //0x00
+		DWORD _1;			//0x04
+		DWORD* pdwSubNumber;//0x08
+		//... dwPresetType == 1, sizeof(0x70), 2, sizeof(0xF8)
+	} *pType2Info;			//0x20
+	Room2* pRoom2Next;		//0x24
+	DWORD dwRoomFlags;		//0x28 if Vis[1-8] : 0x10, 0x20, 0x40, 0x80, 0x100, 0x200, 0x400, 0x800
+	DWORD dwRoomsNear;		//0x2C
+	Room1* pRoom1;			//0x30
+	DWORD dwPosX;			//0x34
+	DWORD dwPosY;			//0x38
+	DWORD dwSizeX;			//0x3C
+	DWORD dwSizeY;			//0x40
+	DWORD _3;				//0x44
+	DWORD dwPresetType;		//0x48
+	void* pRoomTiles;		//0x4C
+	DWORD _4[2];			//0x50
+	Level* pLevel;			//0x58
+	void* pPreset;			//0x5C
+	DWORD _5;				//0x60
+	DWORD _6;				//0x64
+	DWORD _7;				//0x68
+	DWORD _8;				//0x6C
+	DWORD _9;				//0x70
+	DWORD _10;				//0x74
+	DWORD _11;				//0x78
+	DWORD _12;				//0x7C
+	DWORD _13;				//0x80
+	DWORD _14;				//0x84
+	DWORD _15;				//0x88
+	DWORD _16;				//0x8C
+	DWORD _17;				//0x90
+	DWORD _18;				//0x94
+	DWORD _19;				//0x98
+	DWORD _20;				//0x9C
+	DWORD _21;				//0xA0
+	DWORD _22;				//0xA4
+	DWORD _23;				//0xA8
+	DWORD _24;				//0xAC
+	DWORD _25;				//0xB0
+	DWORD _26;				//0xB4
+	DWORD _27;				//0xB8
+	DWORD _28;				//0xBC
+	DWORD _29;				//0xC0
+	DWORD _30;				//0xC4
+	DWORD _31;				//0xC8
+	DWORD _32;				//0xCC
+	DWORD _33;				//0xD0
+	DWORD _34;				//0xD4
+	DWORD _35;				//0xD8
+	DWORD _36;				//0xDC
+	DWORD _37;				//0xE0
+	DWORD _38;				//0xE4
+	DWORD _39;				//0xE8
+};
+
+struct ActMisc // sizeof(0x48C) aka Drlg
+{
+	D2Seed hSeed;			//0x00
+	DWORD _1;				//0x08
+	DWORD* pTile;			//0x0C
+	DWORD _1g[15];			//0x10
 	DWORD pfnCallBack;		//0x4c
 	DWORD _1a[17];			//0x50
 	DWORD dwStaffTombLevel; //0x94
-	DWORD _2[245];			//0x98
+	DWORD _2a;				//0x98
+	Game* pGame;			//0x9C
+	DWORD _2[236];			//0xA0
+	DWORD nDiffLvl;			//0x450
+	DWORD* fnCallback;		//0x454
+	DWORD InitSeed;			//0x458
+	DWORD _2d[4];			//0x45C
 	Act* pAct;				//0x46C
-	DWORD _3[3];			//0x470
+	DWORD _3[2];			//0x470
+	void *pMemPool;			//0x478
 	Level* pLevelFirst;		//0x47C
+	DWORD nAct;				//0x480
+	DWORD _5;				//0x484 Tomb Levels Related 66 + rand(7)
+	DWORD* fnCallback2;		//0x488
 };
 
-struct Act // need to find: pEnviroment, pMemPool, pfnCallBack
+struct ActEnvironment // sizeof(0x38)
 {
-	DWORD _1[2];					//0x00
+	DWORD _1;						//0x00  2
+	DWORD _2;						//0x04  0
+	DWORD _3;						//0x08  0 * 128
+	DWORD _4;						//0x0C  32
+	DWORD dwCreatedTick;			//0x10
+	DWORD _6;						//0x14
+	DWORD _7;						//0x18  Some angle (sin( (_3 / _11)  * (1/180) * PI)
+	DWORD _8;						//0x1C  Some angle (-cos( (_3 / _11) * (1/180) * PI)
+	DWORD _9;						//0x20
+	DWORD _10;						//0x24
+	DWORD _11;						//0x28  128
+	DWORD _12;						//0x2C
+	DWORD _13;						//0x30
+	DWORD _14;						//0x34
+};
+
+struct Act // sizeof(0x60)
+{
+	DWORD _1a;						//0x00
+	ActEnvironment* pEnviroment;	//0x04
 	DWORD dwTownLvl;				//0x08
 	DWORD dwMapSeed;				//0x0C
 	Room1* pRoom1;					//0x10
 	DWORD dwAct;					//0x14
-	DWORD _3[12];					//0x18
+	DWORD hTile[12];				//0x18 not sure, some inline struct of 0x30 size seems fit
 	ActMisc* pMisc;					//0x48
-	DWORD _2[2];					//0x4C
+	DWORD _4;						//0x4C
+	DWORD _5;						//0x50
+	DWORD _6;						//0x54
+	DWORD _7;						//0x58
+	void* pMemPool;					//0x5C
 };
 
-
-
-struct Path  // same as 1.11b (1.13d)
-{
-	WORD xOffset;					//0x00
-	WORD xPos;						//0x02
-	WORD yOffset;					//0x04
-	WORD yPos;						//0x06
-	DWORD _1[2];					//0x08
-	WORD xTarget;					//0x10
-	WORD yTarget;					//0x12
-	DWORD _2[2];					//0x14
-	Room1 *pRoom1;					//0x1C
-	Room1 *pRoomUnk;				//0x20
-	DWORD _3[3];					//0x24
-	UnitAny *pUnit;					//0x30
-	DWORD dwFlags;					//0x34
-	DWORD _4;						//0x38
-	DWORD dwPathType;				//0x3C
-	DWORD dwPrevPathType;			//0x40
-	DWORD dwUnitSize;				//0x44
-	DWORD _5[4];					//0x48
-	UnitAny *pTargetUnit;			//0x58
-	DWORD dwTargetType;				//0x5C
-	DWORD dwTargetId;				//0x60
-	BYTE bDirection;				//0x64
-};
-
-struct StaticPath //size 0x20 same as 1.11b (1.13d)
-{ 
-	Room1* pRoom1;					//0x00
-	DWORD	xOffset;				//0x04
-	DWORD	yOffset;				//0x08
-	DWORD	xPos;					//0x0C
-	DWORD	yPos;					//0x10
-	DWORD	_1[2];					//0x14
-	DWORD	dwFlags;				//0x1C
-};
 
 struct Attack
 {
@@ -335,6 +404,19 @@ struct NPCAi
 	AiUnk1* pAiUnk1;			//0x00
 };
 
+struct AiParams // sizeof = 0x24
+{
+	DWORD _1;				//0x00
+	DWORD _2;				//0x04
+	DWORD _3;				//0x08
+	DWORD _4;				//0x0C
+	DWORD _5;				//0x10
+	DWORD _6;				//0x14
+	DWORD _7;				//0x18
+	DWORD _8;				//0x1C
+	DWORD _9;				//0x20
+};
+
 struct ItemData { //size = 0x74
 	DWORD QualityNo;		//0x00
 	DWORD LowSeed;			//0x04
@@ -370,7 +452,7 @@ struct ItemData { //size = 0x74
 
 
 struct MonsterData { //size = 0x60
-	DWORD* pMonStatsTxt;					//0x00
+	MonStatsTxt* pMonStatsTxt;				//0x00
 	BYTE Components[16];					//0x04 Order: HD, TR, LG, RA, LA, RH, LH, SH, S1, S2, S3, S4, S5, S6, S7, S8
 	WORD NameSeed;							//0x14
 	struct
@@ -390,7 +472,7 @@ struct MonsterData { //size = 0x60
 	BYTE _1;						//0x25
 	WORD wUniqueNo;					//0x26
 	AiGeneral* pAiGeneral;			//0x28
-	DWORD* pAiParams;				//0x2C
+	AiParams* pAiParams;			//0x2C
 	NPCAi* pNPCAi;					//0x30
 	DWORD _2[3];					//0x34
 	DWORD dwNecroPet;				//0x40
@@ -584,9 +666,18 @@ struct QParam // 0x18 D2QuestArgStrc
 	DWORD _1;				    //0x18 - some vary data
 };
 
-struct Quest	//size 0xF4 - thx to SVR - D2QuestDataStrc 
+#pragma pack(push, 1)
+struct QuestGUID
 {
-	DWORD QuestID;          //0x00
+	DWORD dwPlayerGUID[32];
+	WORD nGUIDCount;
+};
+#pragma pack(pop)
+
+
+struct Quest	//size 0xF8  (Warning 1.11b was 0xF4!)- thx to SVR - D2QuestDataStrc 
+{
+	DWORD	QuestID;        //0x00
 	Game   *pGame;			//0x04
 	BYTE    bAct;           //0x08 - act the quest is for
 	BYTE    bNotIntro;      //0x09 - checked in Callback 0 (+A0)
@@ -597,29 +688,31 @@ struct Quest	//size 0xF4 - thx to SVR - D2QuestDataStrc
 	WORD    _1;		        //0x0E -
 	DWORD   nSeqId;         //0x10 - used in pSequence, calls Quest[nId]->pSequence
 	DWORD   dwFlags;        //0x14
-	void* pQuestEx;		    //0x18 - quest specific data
-	DWORD nPlayerGUID[32];  //0x1C - playerID's - either players active in quest or completed ? (probably the later)
-	WORD nPlayerCount;      //0x9C - playerID count
+	void*	pQuestEx;		//0x18 - quest specific data
+	QuestGUID hGUIDs;		//0x1C
 	WORD _2;				//0x9E
 	DWORD(__fastcall *pCallback[15])(Quest *pQuest, QParam *pqParam);      //0xA0 - CallBack functions
 	NPCMsgs* pNPCMsgs;      //0xDC - ptr to NPC Messages
-	DWORD eFilter;          //0xE0 - index used in bit calls (#11107 etc)
-	void* pStatusFilter;     //0xE4 - function ptr
-	void* pActiveFilter;     //0xE8 - function ptr - return 1 to activate (!) bubble
-	void* pSequence;         //0xEC - function ptr
-	Quest* pPrev;	         //0xF0
+	DWORD nQuest;           //0xE0 - index used in bit calls (#11107 etc)
+	DWORD _3;				//0xE4	
+	void* pStatusFilter;     //0xE8 - function ptr
+	void* pActiveFilter;     //0xEC - function ptr - return 1 to activate (!) bubble
+	void* pSequence;         //0xF0 - function ptr
+	Quest* pPrev;	         //0xF4
 
 };
 
 
 struct QuestArray	//size 0x18
 {
-	DWORD(__fastcall *pQuestInit)(Quest *pQuest);		//0x00
-	DWORD ActNo;										//0x04
-	DWORD _2;											//0x08  val 100 or 0  (mby version?)
-	DWORD _3;											//0x0C
-	DWORD QuestID;										//0x10
-	DWORD _5;											//0x14
+	DWORD (__fastcall *pQuestInit)(Quest *pQuest);		//0x00
+	BYTE nAct;											//0x04
+	BYTE _1[3];											//0x05
+	DWORD nVersion;										//0x08
+	BYTE bNoSetState;									//0x0C - used by the sequences for quest init flags
+	BYTE _2[3];											//0x0D
+	DWORD nChainNo;										//0x10
+	DWORD nQuestNo;										//0x14
 };
 
 
@@ -628,7 +721,7 @@ struct QuestControl //size 0x24
 	Quest *pQuest;			//0x00
 	BOOL bExectuing;		//0x04
 	BOOL bPickedSet;		//0x08
-	QuestFlags *pQuestFlags; //0x0C  ->size 0x60 (BitBuffer)
+	BitBuffer *pQuestFlags; //0x0C  ->size 0x60 (BitBuffer)
 	DWORD *pQuestTimer;		//0x10
 	DWORD dwTick;			//0x14
 	DWORD LowSeed;			//0x18
@@ -698,7 +791,7 @@ struct ClientData //size 0x518
 	DWORD ClientID;                 //0x00 
 	DWORD InitStatus;			   //0x04 Flag 0x4 - player is in game
 	WORD ClassId;                   //0x08 Something with Arena, also could be equivalent of ClassId
-	WORD PlayerStatus;			   //0x0A
+	WORD PlayerStatus;			   //0x0A 0x4 connected, 0x8 death
 	BYTE ClassId2;				   //0x0C
 	char CharName[16];			   //0x0D 
 	char AccountName[16];		   //0x1D 
@@ -844,36 +937,5 @@ struct BitBuffer
 	unsigned int unk;				//0x10 could be a bit bucket
 };
 
-
-struct CreateItem //size 0x84
-{
-	UnitAny* pOwner;		//0x00
-	DWORD dwSeed;			//0x04
-	Game* pGame;			//0x08
-	DWORD iLvl;				//0x0C
-	DWORD _2;				//0x10
-	DWORD iIdx;				//0x14
-	DWORD iMode;			//0x18
-	DWORD xPos;				//0x1C
-	DWORD yPos;				//0x20
-	Room1* pRoom;			//0x24
-	WORD wCreateFlags;		//0x28 dont mess with ItemFlags 1 - pickable, 4 - sox
-	WORD wItemFormat;		//0x2A
-	DWORD bPersonalize;		//0x2C also allowing socketing bForce -> uses flag thx to Necrolis
-	DWORD iQuality;			//0x30
-	DWORD dwValue;			//0x34 GOLD // Quantity
-	DWORD dwDurability;		//0x38
-	DWORD dwMaxDurability;	//0x3C max 255
-	DWORD dwFileIdx;		//0x40
-	bItemFlags dwItemFlags;	//0x44
-	DWORD dwInitSeed;		//0x48 a10 
-	DWORD dwInitSeed2;		//0x4C a11
-	DWORD OwnerLvl;			//0x50 ear lvl
-	DWORD dwValueMax;		//0x54 Quantity
-	char  szName[16];		//0x58
-	DWORD nPrefix[3];		//0x68
-	DWORD nSuffix[3];		//0x74
-	DWORD _26;				//0x80 Some flags can be 2 | 8, a2 | a3 Flag 1 -> More magic items - thx Nefarius
-};
 
 #endif

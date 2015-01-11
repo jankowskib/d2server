@@ -20,6 +20,8 @@
 #include "stdafx.h"
 #include "ExMemory.h"
 
+using namespace std;
+
 struct MemInfo
 {
 	DWORD MemAddr;

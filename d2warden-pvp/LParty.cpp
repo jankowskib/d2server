@@ -59,7 +59,7 @@ DWORD __fastcall OnPartyRelationChange(Game* pGame, UnitAny* pPlayer, BYTE *pPac
 	}
 	else if (p->nButton == PB_SPECATE)
 	{
-		return OnClickSpecate(pGame, pPlayer, pDestUnit);
+		return SPECTATOR_OnClickSpecate(pGame, pPlayer, pDestUnit);
 	}
 	return 0;
 }

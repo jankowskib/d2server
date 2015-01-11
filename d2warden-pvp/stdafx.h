@@ -19,14 +19,14 @@
 #define _ENGLISH_LOGS
 #define D2EX_COLOR_STAT		189					// ItemStatCost.Txt record which stores item color value
 #define D2EX_LOOTED_STAT	190					// ItemStatCost.Txt record which stores monster id which gave the item 
+#define D2EX_SPECTATOR_STATE 245				// States.Txt record set on spectators
+//#define D2EX_MYSQL							// Replace gold with mysql database currency
 
 #define WIN32_LEAN_AND_MEAN
 //******** SET HERE WORKING VERSION *********
 #define VER_113D
 //*******************************************
 #include <Windows.h>
-
-using namespace std;
 
 #include <string>
 #include <vector>
@@ -55,6 +55,9 @@ using namespace std;
 #include "ExPointers_111B.h"
 #endif
 
+#ifdef D2EX_MYSQL
+#pragma comment(lib, "mysqlcppconn.lib")
+#endif
 
 #include "D2Stubs.h"
 #include "Vars.h"
@@ -70,7 +73,11 @@ using namespace std;
 #define UNLOCK {/*DEBUGMSG("<-- CS : %d : %s",__LINE__,__FUNCTION__);*/ LeaveCriticalSection(&hWarden.WardenLock);}
 
 #ifdef _DEBUG
-#define DEBUGMSG(s,...) Debug(s, ##__VA_ARGS__);
+#define DEBUGMSG(s,...) Debug(__FUNCTION__, s, ##__VA_ARGS__);
+#define BEGINDEBUGMSG(s,...)  DebugNoEnter(__FUNCTION__, s, ##__VA_ARGS__);
+#define FINISHDEBUGMSG(s,...)  DebugFinishEnter(s, ##__VA_ARGS__);
 #else
 #define DEBUGMSG(s,...) {}
+#define BEGINDEBUGMSG(s,...) {}
+#define FINISHDEBUGMSG(s,...) {}
 #endif

@@ -32,7 +32,43 @@
 
 #include "Build.h"
 
-map<string, int> ServerHashMap;
+using namespace std;
+
+struct ServerJoinData
+{
+	DWORD SessionKey;
+	BYTE VerCode;
+	bool bNeedUpdate;
+};
+
+map<string, ServerJoinData> ServerHashMap;
+
+
+BOOL __fastcall D2GAME_IsUnitDead(UnitAny* pUnit)
+{
+	if (!pUnit)
+		return 0;
+
+	if (pUnit->dwFlags & UNITFLAG_DEAD)
+		return 1;
+
+	if (pUnit->dwType == UNIT_MONSTER)
+	{
+		if (pUnit->dwMode == NPC_MODE_DEATH || pUnit->dwMode == NPC_MODE_DEAD)
+			return 1;
+	}
+	else if (pUnit->dwType == UNIT_PLAYER)
+	{
+		if (pUnit->dwMode == PLAYER_MODE_DEATH || pUnit->dwMode == PLAYER_MODE_DEAD)
+			return 1;
+
+		if (D2Funcs.D2COMMON_GetUnitState(pUnit, D2EX_SPECTATOR_STATE))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 
 Room1* __stdcall D2GAME_PortalCrashFix(Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitAlign)
 {
@@ -74,9 +110,9 @@ void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDama
 			if ((GetTickCount() - ptVictim->pPlayerData->LastDamageTick < 5000) && ptVictim->pPlayerData->LastDamageId != 0 && ptVictim->pPlayerData->LastDamageId != ptKiller->dwUnitId) {
 				UnitAny* pAssister = D2ASMFuncs::D2GAME_FindUnit(ptKiller->pGame, ptVictim->pPlayerData->LastDamageId, UNIT_PLAYER);
 				if (pAssister) {
-					LRost::UpdateRoster(ptKiller->pGame, pAssister->pPlayerData->szName, 3);
-					LRoster * AssRoster = LRost::Find(ptKiller->pGame, pAssister->pPlayerData->szName);
-					if (AssRoster) LRost::SyncClient(ptKiller->pGame, ptVictim->pPlayerData->LastDamageId, AssRoster);
+					LRoster::UpdateRoster(ptKiller->pGame, pAssister->pPlayerData->szName, 3);
+					LRosterData * AssRoster = LRoster::Find(ptKiller->pGame, pAssister->pPlayerData->szName);
+					if (AssRoster) LRoster::SyncClient(ptKiller->pGame, ptVictim->pPlayerData->LastDamageId, AssRoster);
 					BroadcastExEvent(ptKiller->pGame, COL_WHITE, ptVictim->pPlayerData->LastDamageId, 5, "data\\D2Ex\\Blobs");
 				}
 			}
@@ -99,25 +135,6 @@ void __fastcall DAMAGE_FireEnchanted(Game *pGame, UnitAny *pUnit, int a4, int a5
 	//Log("a4 =%d, a5 =%d",a4,a5);
 }
 
-int __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Room1 *pRoom)
-{
-	int aX, aY, aLevel;
-	Room1* aRoom;
-
-	aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
-	aRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pRoom->pAct, aLevel, 0, &aX, &aY, 2);
-	return D2Funcs.D2GAME_CreateCorpse(pGame, pUnit, aX, aY, aRoom);
-
-}
-
-
-int __stdcall GetItemCost(UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage)
-{
-	//if(pPlayer->pGame, pPlayer->pGame->dwGameState!=1)
-	//return D2Funcs.D2COMMON_GetItemCost(pPlayer, ptItem, DiffLvl, pQuestFlags, NpcClassId, InvPage);
-	//else
-	return 1;
-}
 
 BOOL __stdcall isPermStore(Game* ptGame, UnitAny* ptNPC, UnitAny* ptItem)
 {
@@ -161,17 +178,27 @@ BOOL __stdcall isPermStore(Game* ptGame, UnitAny* ptNPC, UnitAny* ptItem)
 
 void __fastcall OnMonsterDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 {
-	DEBUGMSG(__FUNCTION__)
-		if (!ptVictim || !ptKiller) return;
-	if (ptKiller->dwType) return;
+	if (!ptVictim || !ptKiller) return;
+	if (ptKiller->dwType == UNIT_MONSTER) return;
 
+	switch (ptVictim->dwType)
+	{
+	case UNIT_MONSTER:
+		int nStr = ptVictim->pMonsterData->pMonStatsTxt->wNameStr;
+		wchar_t* wStr = D2Funcs.D2LANG_GetLocaleText(nStr);
+		char* szMonster = new char[wcslen(wStr) + 1];
+		WideToChar(szMonster, wStr);
+		DEBUGMSG("Killed a '%s'", szMonster);
+		delete[] szMonster;
+	break;
+	}
 
 	////TO MOze crashoac
 	//if(ptKiller->dwType==0) 
-	//LRost::UpdateRoster(ptGame,ptKiller->pPlayerData->szName,0);
-	//LRost::UpdateRoster(ptGame,ptVictim->pPlayerData->szName,1);
+	//LRoster::UpdateRoster(ptGame,ptKiller->pPlayerData->szName,0);
+	//LRoster::UpdateRoster(ptGame,ptVictim->pPlayerData->szName,1);
 
-	//LRost::SendKills(ptGame);
+	//LRoster::SendKills(ptGame);
 
 }
 
@@ -368,8 +395,8 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	//if(pClient->InitStatus!=4)
 	//Log("NowyKlient: -> %s, InitStatus == %d",pClient->CharName,pClient->InitStatus);
 
-	//LRost::SendKills(Data->ptGame);
-	//LRost::SendDeaths(Data->ptGame);
+	//LRoster::SendKills(Data->ptGame);
+	//LRoster::SendDeaths(Data->ptGame);
 
 	ExEventDownload pEvent;
 	::memset(&pEvent, 0, sizeof(ExEventDownload));
@@ -381,6 +408,7 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	else
 		pEvent.PacketLen = 15;
 	D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
+
 
 	if (strlen(ptGame->GameDesc) > 0)
 	{
@@ -404,8 +432,11 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 		WardenClient NewClientData = { 0 };
 
 		NewClientData.ClientID = pClient->ClientID;
-		memcpy(NewClientData.SessionKey, &ServerHashMap[pClient->CharName], 4);
-		*(DWORD*)&NewClientData.SessionKey = ServerHashMap[pClient->CharName];
+		memcpy(NewClientData.SessionKey, &ServerHashMap[pClient->CharName].SessionKey, 4);
+		*(DWORD*)&NewClientData.SessionKey = ServerHashMap[pClient->CharName].SessionKey;
+		NewClientData.VerCode = ServerHashMap[pClient->CharName].VerCode;
+		NewClientData.bNeedUpdate = ServerHashMap[pClient->CharName].bNeedUpdate;
+
 		ServerHashMap.erase(pClient->CharName);
 		NewClientData.ClientLogonTime = GetTickCount();
 		NewClientData.NextCheckTime = NewClientData.ClientLogonTime + 500;
@@ -435,6 +466,24 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 #endif
 			}
 		DEBUGMSG("Player %s has been added to WardenQueue!", pClient->CharName);
+
+		if (NewClientData.bNeedUpdate)
+		{
+			if (wcfgUpdateURL.empty()) return false;
+			SendMsgToClient(pClient, "Trying to download patch....");
+			ExEventDownload pEvent;
+			::memset(&pEvent, 0, sizeof(ExEventDownload));
+			pEvent.P_A6 = 0xA6;
+			pEvent.MsgType = EXEVENT_DOWNLOAD;
+			pEvent.bExec = 1;
+			strcpy_s(pEvent.szURL, 255, wcfgUpdateURL.c_str());
+			if (pEvent.szURL[0])
+				pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
+			else
+				pEvent.PacketLen = 15;
+
+			D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
+		}
 	}
 	else
 	{
@@ -574,25 +623,26 @@ int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Doda
 
 
 	int D2Version = pJoinPacket->VerByte;
+	ServerHashMap[pJoinPacket->szCharName].VerCode = pJoinPacket->VerByte;
+	ServerHashMap[pJoinPacket->szCharName].bNeedUpdate = false;
 
-	if (D2Version < 16 && !wcfgAllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
+	if (D2Version < wcfgD2EXVersion && !wcfgAllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
 	{
-		if (D2Version == 13)
-#ifdef _ENGLISH_LOGS
-			Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.",pJoinPacket->szCharName);
-#else
-			Log("NowyKlient: Zrywam polaczenie z graczem '%s', powod : Brak D2Ex.", pJoinPacket->szCharName);
-#endif
+		if (D2Version >= 16)
+		{
+			ServerHashMap[pJoinPacket->szCharName].bNeedUpdate = true;
+		}
 		else
-#ifdef _ENGLISH_LOGS
-			Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).",pJoinPacket->szCharName,D2Version);
-#else
-			Log("NowyKlient: Zrywam polaczenie z graczem '%s', powod : Nieoblsugiwana wersja patcha (1.%d).", pJoinPacket->szCharName, D2Version);
-#endif
-		KickPlayer(pPacket->ClientID);
-		return 3;
+		{
+			if (D2Version == 13)
+				Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.", pJoinPacket->szCharName);
+			else
+				Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).", pJoinPacket->szCharName, D2Version);
+			BootPlayer(pPacket->ClientID, 16);
+			return MSG_ERROR;
+		}
 	}
-	ServerHashMap[pJoinPacket->szCharName] = pJoinPacket->ServerHash;
+	ServerHashMap[pJoinPacket->szCharName].SessionKey = pJoinPacket->ServerHash;
 
 	return 0;
 }
@@ -653,6 +703,12 @@ int __fastcall ReparseChat(Game* pGame, UnitAny *pUnit, BYTE *ThePacket, int Pac
 }
 
 
+void __fastcall TestEvent(Game *pGame, UnitAny *pUnit, int nTimerType, void* pArg, void* pArgEx)
+{
+	SendMsgToClient(pUnit->pPlayerData->pClientData, "It worked!");
+	DEBUGMSG(":~)")
+}
+
 BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 {
 	int ClientID = pUnit->pPlayerData->pClientData->ClientID;
@@ -679,51 +735,22 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			//PNo=NewPl;
 			//return false;
 			//}
-			if (_stricmp(str, "#spec") == 0)
+			if (_stricmp(str, "#testevent") == 0)
 			{
-				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
-
-				str = strtok_s(NULL, " ", &t);
-				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#spec <*account> or #spec [charname]!"); return false; }
-				WardenClient_i psUnit = hWarden.Clients.end();
-				if (str[0] == '*')
-				{
-					str++;
-					if (!_stricmp(pUnit->pPlayerData->pClientData->AccountName, str)) { SendMsgToClient(pUnit->pPlayerData->pClientData, "You cannot spectator yourself!"); return false; }
-					psUnit = GetClientByAcc(str);
-					if (psUnit != hWarden.Clients.end())
-						if (!_stricmp(pUnit->pPlayerData->pClientData->CharName, str))
-						{
-							SendMsgToClient(pUnit->pPlayerData->pClientData, "You cannot spectator yourself!");
-							UNLOCK
-								return false;
-						}
-				}
-				else
-				{
-					if (!_stricmp(pUnit->pPlayerData->pClientData->CharName, str)) { SendMsgToClient(pUnit->pPlayerData->pClientData, "You cannot spectator yourself!"); return false; }
-					psUnit = GetClientByName(str);
-				}
-
-				if (psUnit == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname or player is not in the game!"); return false; }
-				if (pUnit->pGame != psUnit->ptGame) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player is not in the same game!"); UNLOCK return false; }
-				//BroadcastMsg(pUnit->pPlayerData->pClientData->pGame,"'%s' has been kicked by *%s",psUnit->CharName.c_str(),pUnit->pPlayerData->pClientData->AccountName);
-				SendMsgToClient(psUnit->ptClientData, "%s started watching you!", pUnit->pPlayerData->pClientData->AccountName);
-			/*	Spec * Data = new Spec;
-				Data->ptGame = pUnit->pGame;
-				Data->RequesterID = pUnit->dwUnitId;
-				Data->SpecID = psUnit->ptPlayer->dwUnitId;
-
-				if (!psUnit->ptPlayer->pPlayerData->isSpecing && !pUnit->pPlayerData->isSpecing)
-				{
-					_beginthreadex(0, 0, &SpecThread, &Data, 0, 0);
-				}
-				else
-				{
-					SendMsgToClient(pUnit->pPlayerData->pClientData, "You're already watching someone!");
-				}*/
-				UNLOCK
-					return false;
+				D2Funcs.D2GAME_SetTimer(pUnit->pGame, pUnit, UNITEVENT_CUSTOM, pUnit->pGame->GameFrame + (5 * 25), (DWORD)&TestEvent, NULL, NULL);
+				DEBUGMSG("Created an event...")
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Ok!");
+				return false;
+			}
+			if (_stricmp(str, "#test2") == 0)
+			{
+				char* szlvl = strtok_s(NULL, " ", &t);
+				if (!szlvl) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#test2 <lvl no>");  return false; }
+				int nLvl = atoi(szlvl);
+				MonsterRegion * pRegion = pUnit->pGame->pMonsterRegion[nLvl];
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Data for: %d", nLvl);
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "nQuest: %d, nMonstersASSUME: %d, nActiveRooms: %d, nOtherMonsterCounter: %d, nSpawned: %d", pRegion->nQuest, pRegion->nMonstersASSUME, pRegion->nActiveRooms, pRegion->nOtherMonsterCounter, pRegion->nSpawned);
+				return false;
 			}
 			if (_stricmp(str, "#cheer") == 0)
 			{
@@ -767,7 +794,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#roster") == 0)
 			{
-				LRoster * LR = LRost::Find(pUnit->pGame, pUnit->pPlayerData->szName);
+				LRosterData * LR = LRoster::Find(pUnit->pGame, pUnit->pPlayerData->szName);
 				if (LR)	SendMsgToClient(pUnit->pPlayerData->pClientData, "Kills : %d | Deaths : %d", LR->Kills, LR->Deaths);
 				else SendMsgToClient(pUnit->pPlayerData->pClientData, "Kills : 0 | Deaths : 0");
 				return false;
@@ -862,7 +889,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int nPlayers = 0;
 				bool InParty = false;
 
-				ostringstream pakiet;
+				std::ostringstream pakiet;
 
 				if (!pUnit->pGame->pPartyControl->ptLastParty)
 				{
@@ -887,7 +914,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					}
 
 
-				if (pUnit->pPlayerData->SaidGO) {
+				if (pUnit->pPlayerData->SaidGO) 
+				{
 					SendMsgToClient(pUnit->pPlayerData->pClientData, pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Powiedzia³eœ ju¿ to!" : "You've already said that", PartyCount);
 					return false;
 				}
@@ -940,12 +968,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#gu") == 0)
 			{
-				if (wcfgAllowGU)
+				if (wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
 				{
 					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
 					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 					if (aCurrLevel != aLevel)
+					{
 						D2ASMFuncs::D2GAME_MoveUnitToLevelId(pUnit, aLevel, pUnit->pGame);
+						SPECTATOR_RemoveFromQueue(pUnit->pGame, pUnit->dwUnitId);
+					}
 				}
 				if (pUnit->pGame->bFestivalMode == 1)
 					if (pUnit->pPlayerData->isPlaying) {
@@ -1098,6 +1129,73 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit, LvlId, aUnit->pGame);
 				return false;
 			}
+			if (_stricmp(str, "#movexy") == 0)
+			{
+				UnitAny* aUnit = pUnit;
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#movexy <x> <y>"); return false; }
+				int nX = atoi(str);
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#movexy <x> <y>"); return false; }
+				int nY = atoi(str);
+
+				POINT Pos = { nX, nY };
+				POINT Out = { 0, 0 };
+
+				Room1 * mRoom = 0;
+					
+				for (Room1* dRoom = pUnit->pAct->pRoom1; dRoom; dRoom = dRoom->pRoomNext)
+					{
+						if (dRoom->dwXStart < nX && (dRoom->dwXStart + dRoom->dwXSize) >= nX &&
+							dRoom->dwYStart < nY && (dRoom->dwYStart + dRoom->dwYSize) >= nY)
+						{
+							SendMsgToClient(pUnit->pPlayerData->pClientData, "Find suitable room!");
+							mRoom = dRoom;
+							break;
+						}
+					}
+				
+				SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to <%d,%d>...", aUnit->pPlayerData->szName, nX, nY);
+				mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 1);
+				
+				D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
+
+				return false;
+			}
+			if (_stricmp(str, "#removepets") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Removing your pets...");
+				D2ASMFuncs::D2GAME_RemovePets(pUnit->pGame, pUnit);
+				return false;
+			}
+			if (_stricmp(str, "#setstate") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Usage: #setstate <stateid> <1,0>"); return false; }
+				int nState = atoi(str);
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Usage: #setstate <stateid> <1,0>"); return false; }
+				int nHowSet = atoi(str);
+
+				if (nState == 0 || nState > (*D2Vars.D2COMMON_sgptDataTables)->dwStatesRecs)
+				{
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "State '%d' is out of range (%d)...", nState, (*D2Vars.D2COMMON_sgptDataTables)->dwStatesRecs);
+					return false;
+				}
+				if (nHowSet > 1)
+				{
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "Unknown state's state (%d). Only 1 or 0 are allowed!", nHowSet);
+					return false;
+				}
+				D2Funcs.D2COMMON_SetGfxState(pUnit, nState, nHowSet);
+
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "State %d has been set!", nState);
+				return false;
+			}
 			if (_stricmp(str, "#move2obj") == 0)
 			{
 				UnitAny* aUnit = pUnit;
@@ -1120,6 +1218,39 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					SendMsgToClient(aUnit->pPlayerData->pClientData, "Object '%d' is out of range (%d)...", ObjId, *D2Vars.D2COMMON_ObjectTxtRecs);
 					return false;
 				}
+			/*	Level* pLevel = D2Funcs.D2COMMON_GetLevel(pUnit->pGame->pDrlgAct[0]->pMisc, 39);
+				if (pLevel)
+				{
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "Allocated level...");
+					D2Funcs.D2COMMON_10736(pLevel);
+				}
+				*/
+
+				for (InactiveRoom * pRoom = pUnit->pGame->pDrlgRoomList[0]; pRoom; pRoom = pRoom->pNextRoom)
+					for (InactiveObject * pObj = pRoom->pObject; pObj; pObj = pObj->pNext)
+					{
+
+						if (pObj->dwClassId == ObjId)
+						{
+							POINT Pos = { pObj->xPos, pObj->yPos };
+							POINT Out = { 0, 0 };
+
+							Room1 * mRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pUnit->pAct, 39, 0, (int*)&Out.x, (int*)&Out.y, 2);
+
+							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
+							if (!mRoom)
+							{
+								SendMsgToClient(pUnit->pPlayerData->pClientData, "I method: Room not found!"); 
+							}
+							SendMsgToClient(aUnit->pPlayerData->pClientData, "I method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
+							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
+							return false;
+						}
+
+
+					}
+			
+
 				for (int i = 0; i < 128; ++i)
 					for (UnitAny * obj = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; obj; obj = obj->pListNext)
 				{
@@ -1134,13 +1265,33 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 							POINT Out = { 0, 0 };
 
 							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
-							SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
+							SendMsgToClient(aUnit->pPlayerData->pClientData, "II method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
 							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
 							return false;
 						}
 
 				}
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "Object not found!"); return false;
+
+				for (Room1* pRoom = pUnit->pGame->pDrlgAct[0]->pRoom1; pRoom; pRoom = pRoom->pRoomNext)
+					for (UnitAny* obj = pRoom->pUnitFirst; obj; obj = obj->pListNext)
+					{
+						if (obj->dwClassId == ObjId)
+						{
+							Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(obj);
+							if (!mRoom)
+							{
+								SendMsgToClient(pUnit->pPlayerData->pClientData, "III method: Room not found!"); return false;
+							}
+							POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
+							POINT Out = { 0, 0 };
+
+							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
+							SendMsgToClient(aUnit->pPlayerData->pClientData, "III method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
+							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
+							return false;
+						}
+					}
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Object not found!"); 
 				return false;
 			}
 

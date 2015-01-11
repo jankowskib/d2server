@@ -86,7 +86,7 @@ void WE_GenerateNextDC()
 
 	int NxtDC = NextDC + random();
 
-	ostringstream str;
+	std::ostringstream str;
 	str << NxtDC;
 	NextDC = NxtDC;
 	WritePrivateProfileString("World Event","NextDC",str.str().c_str(),wcfgConfigFile.c_str());
@@ -94,7 +94,7 @@ void WE_GenerateNextDC()
 
 void WE_CreateDCKey(UnitAny* pUnit)
 {
-		CreateItem sets;
+		PresetItem sets;
 		memset(&sets,0,sizeof(sets));
 		int Idx;
 		D2Funcs.D2COMMON_GetItemIdx(' kew',&Idx);
@@ -161,7 +161,7 @@ int __fastcall WE_Spawn(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *
 
 void WE_UpdateCounter(int Value)
 {
-	ostringstream str;
+	std::ostringstream str;
 	str << Value;
 	LOCK
 	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(),wcfgConfigFile.c_str());

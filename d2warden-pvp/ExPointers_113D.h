@@ -43,21 +43,23 @@ _d2f D2Funcs = { 0 }; void SetupD2Funcs() {
 #endif
 EXFUNCPTR(D2GAME, GetGameByNetSocket, Game*, __stdcall, (DWORD NetSocket), 0xBC700) //1.13d -- Uwaga ! Kazde uzycie zostawia watek w sekcji krytycznej!!!
 EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (signed int MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int a7, int a8), 0xC8D70) // 1.13d
-EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (srCreateMonster* pPreset), 0xCA320)
+EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (PresetMonster* pPreset), 0xCA320)
 EXFUNCPTR(D2GAME, GetUnitX, int, __fastcall, (UnitAny* ptUnit), 0x10F0) // 1.13d
 EXFUNCPTR(D2GAME, GetUnitY, int, __fastcall, (UnitAny* ptUnit), 0x1120) // 1.13d
 EXFUNCPTR(D2GAME, ExecuteEvent, int, __stdcall, (Game *pGame, int EventNo, UnitAny *pUnit, void *Data), 0x9C780) // 1.13d
 EXFUNCPTR(D2GAME, UpdatePlayerStats, int, __fastcall, (UnitAny *ptOwnerUnit, int dwStat, int dwValue, UnitAny *pDestUnit), 0x68260) // 1.13d
 EXFUNCPTR(D2GAME, CreateCorpse, int, __stdcall, (Game *pGame, UnitAny *pUnit, int xPos, int yPos, Room1 *pRoom), 0x93640) // 1.13d
-EXFUNCPTR(D2GAME, CreateItemEx, UnitAny*, __fastcall, (Game *pGame, CreateItem *srCreateItem, int a5), 0xE3110) //1.13d <-- its __fastcall on 1.13d
+EXFUNCPTR(D2GAME, CreateItemEx, UnitAny*, __fastcall, (Game *pGame, PresetItem *srPresetItem, int a5), 0xE3110) //1.13d <-- its __fastcall on 1.13d
 EXFUNCPTR(D2GAME, SetMonSkill, void, __fastcall, (UnitAny *pUnit, int HowSet, int SkillId, int SkillFlags), 0x19FA0) // 1.13d
 EXFUNCPTR(D2GAME, AddItemToNPC, int, __fastcall, (char *szFile, int aLine, Game *pGame, UnitAny *pNPCUnit, int ItemId, WORD iX, WORD iY, int a6, int a7, int a8), 0xB7640) // 1.13d
 EXFUNCPTR(D2GAME, DeleteUnit, int, __fastcall, (Game *ptGame, UnitAny *ptUnit), 0x6FC70) // 1.13d
 EXFUNCPTR(D2GAME, CopyPortal, UnitAny*, __stdcall, (Game *pGame, UnitAny *pSourceUnit, int nLevel, POINT Coords), 0x15F40) // 1.13d
 EXFUNCPTR(D2GAME, CreateUnit, UnitAny*, __fastcall, (DWORD UnitType, DWORD ClassId, int xPos, int yPos, Game *pGame, Room1 *pRoom1, WORD wFlags, DWORD InitMode, int UnitId), 0x6FE10) //1.13d
-EXFUNCPTR(D2GAME, SetUnitMode, int, __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x922E0) // 1.13d
+EXFUNCPTR(D2GAME, SetUnitModeXY, int, __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x922E0) // 1.13d
 EXFUNCPTR(D2GAME, RemoveFromPickedUp, void, __stdcall, (UnitAny *pPlayer), 0xB41D0) // 1.13d
 EXFUNCPTR(D2GAME, KillPlayer, void, __fastcall, (Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller), 0x93C80) // 1.13d
+EXFUNCPTR(D2GAME, SetTimer, void, __fastcall, (Game *pGame, UnitAny *pUnit, int nTimerType, DWORD nGameFrame, DWORD fTimerFunc, void* dwArg, void *dwArgEx), 0xC07A0) // 1.11b: 0x70F00
+
 
 //D2COMMON
 EXFUNCPTR(D2COMMON, AddStatToStatList, int, __stdcall, (StatList* ptStatList, int nStat, int nValue, int nValue2), -10818) // 1.13d
@@ -83,6 +85,9 @@ EXFUNCPTR(D2COMMON, GetExpToAchiveLvl, int, __stdcall, (int ClassId, int ExpLvl)
 EXFUNCPTR(D2COMMON, GetMaxCLvl, int, __stdcall, (int ClassId), -10835) // 1.13d
 EXFUNCPTR(D2COMMON, GetNextCLvl, int, __stdcall, (int ClassId, int Experience), -11171) // 1.13d
 
+EXFUNCPTR(D2COMMON, GetGoldLimit, int, __stdcall, (UnitAny* ptUnit), -11159)
+EXFUNCPTR(D2COMMON, GetBankGoldLimit, int, __stdcall, (UnitAny* ptUnit), -11025)
+
 //ITEM RELATED
 EXFUNCPTR(D2COMMON, AllocInventory, Inventory*, __stdcall, (void *pMemPool, UnitAny *pOwner), -11011) // 1.13d
 EXFUNCPTR(D2COMMON, GetItemIdx, ItemsTxt*, __stdcall, (DWORD ItemCode, int * Idx), -10000) // 1.13d
@@ -103,6 +108,7 @@ EXFUNCPTR(D2COMMON, UnitIsItem, UnitAny*, __stdcall, (UnitAny* ptItem), -10897) 
 EXFUNCPTR(D2COMMON, FlushItem, UnitAny*, __stdcall, (Inventory* ptInventory, UnitAny* ptItem), -10490) // 1.13d
 
 EXFUNCPTR(D2COMMON, GetItemColor, BYTE*, __stdcall, (UnitAny *ptPlayer, UnitAny* ptItem, BYTE* out, BOOL a4), -11062) // 1.13d
+EXFUNCPTR(D2COMMON, GetItemCost, int, __stdcall, (UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage), -10186)
 
 //Skills
 EXFUNCPTR(D2COMMON, GetSkillById, Skill*, __fastcall, (UnitAny *ptUnit, int SkillId, int SkillFlags), -10984) //k
@@ -116,7 +122,7 @@ EXFUNCPTR(D2COMMON, EvaluateSkill, int, __stdcall, (UnitAny* ptUnit, int Formula
 EXFUNCPTR(D2COMMON, AddSkillToUnit, int, __stdcall, (UnitAny *ptUnit, DWORD SkillNo, DWORD SkillLvl, BOOL a4, char *szFile, int aLine), -10335) // 1.13d
 EXFUNCPTR(D2COMMON, RefreshSkills, int, __stdcall, (UnitAny* ptUnit), -10090) // 1.13d
 EXFUNCPTR(D2COMMON, SetStartFlags, void, __stdcall, (UnitAny* ptUnit, BOOL a2), -10163) // 1.13d
-EXFUNCPTR(D2COMMON, ResetFlag, int, __stdcall, (UnitAny* ptUnit, Skill* pSkill), -10816) // 1.13d
+EXFUNCPTR(D2COMMON, SetCurrentSkill, int, __stdcall, (UnitAny* ptUnit, Skill* pSkill), -10816) // 1.13d
 
 EXFUNCPTR(D2COMMON, GetPlayerSkillCount, int, __stdcall, (int ClassId), -10407) // 1.13d
 EXFUNCPTR(D2COMMON, GetPlayerSkillIdFromList, int, __stdcall, (int ClassId, int SkillNo), -10340) // 1.13d
@@ -147,7 +153,9 @@ EXFUNCPTR(D2COMMON, isUnitInMeleeRange, int, __stdcall, (UnitAny* pUnit1, UnitAn
 EXFUNCPTR(D2COMMON, GetPortalFlags, int, __stdcall, (UnitAny* pUnit), -10040) // 1.13d
 EXFUNCPTR(D2COMMON, SetPortalFlags, void, __stdcall, (UnitAny* pUnit, int Flags), -10033) // 1.13d
 EXFUNCPTR(D2COMMON, UpdateRoomWithPortal, void, __stdcall, (Room1* pRoom, int bUnk), -10907) // 1.13d
-
+EXFUNCPTR(D2COMMON, 10555, int, __stdcall, (Act* ptPath, int nLevel), -10555)
+EXFUNCPTR(D2COMMON, 10736, void, __stdcall, (Level * pLevel), -10736)
+EXFUNCPTR(D2COMMON, GetLevel, Level*, __fastcall, (ActMisc* pMisc, int dwLevelNo), -10283) //k
 //QUESTS
 
 //D2LANG
@@ -163,6 +171,7 @@ EXFUNCPTR(FOG, GetErrorData, void*, __cdecl, (), -10265)
 EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (void *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
 EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (void *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
 EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
+EXFUNCPTR(FOG, InitBitBuffer, void, __stdcall, (BitBuffer* ptBitBuffer, void * ptBuffer, int nSize), -10126)
 
 //D2NET 0xa30000+ 0x??? +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
 EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10012) // 1.13d Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
@@ -260,6 +269,7 @@ EXASMPTR(D2GAME, RemoveBuffs_I, 0x92480) // 1.13d
 EXASMPTR(D2GAME, ResetTimers_I, 0x6D150) // 1.13d
 EXASMPTR(D2GAME, RemoveInteraction_I, 0x9A950) // 1.13d
 EXASMPTR(D2GAME, SetPlayerUnitMode_I, 0x921C0) // 1.13d
+EXASMPTR(D2GAME, RemovePets_I, 0xF03B0)
 
 #ifndef __DEFINE_EXPTRS
 };
@@ -279,6 +289,8 @@ void SetupD2Vars() {
 	EXVARPTR(D2GAME, PartyButtonCallbacks, int, 0xFA294)
 	EXVARPTR(D2COMMON, ObjectTxt, ObjectTxt*, 0xA5830)
 	EXVARPTR(D2COMMON, ObjectTxtRecs, DWORD, 0xA5830 + 4)
+	EXVARPTR(D2GAME, QuestInits, QuestArray, 0xFFF20)
+	EXVARPTR(D2GAME, QuestIntros, QuestIntroArray, 0x10029C)
 #ifndef __DEFINE_EXPTRS
 };
 extern _d2v D2Vars;
