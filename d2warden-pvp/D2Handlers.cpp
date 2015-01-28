@@ -1170,6 +1170,13 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				D2ASMFuncs::D2GAME_RemovePets(pUnit->pGame, pUnit);
 				return false;
 			}
+			if (_stricmp(str, "#interinfo") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "I? %d, Id: %d, Type %d", pUnit->bInteracting, pUnit->dwInteractId, pUnit->dwInteractType);
+				return false;
+			}
+
 			if (_stricmp(str, "#setstate") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
