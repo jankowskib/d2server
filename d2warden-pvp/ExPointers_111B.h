@@ -105,6 +105,7 @@ EXFUNCPTR(D2COMMON, PresetItemFromStream, int, __stdcall, (), -11024) // dodaj a
 EXFUNCPTR(D2COMMON, GetItemIdx, ItemsTxt*, __stdcall, (DWORD ItemCode, int * Idx), -10322)
 EXFUNCPTR(D2COMMON, GetItemTxt, ItemsTxt*, __stdcall, (int ItemNo), -10262)
 EXFUNCPTR(D2COMMON, GetItemCode, DWORD, __stdcall, (UnitAny* ptItem), -10360)
+EXFUNCPTR(D2COMMON, GetItemType, DWORD, __stdcall, (UnitAny* ptItem), -10808) 
 EXFUNCPTR(D2COMMON, SetItemQuality, void, __stdcall, (UnitAny* ptItem, int iQual), -10297)
 EXFUNCPTR(D2COMMON, SetBeginFlag, void, __stdcall, (UnitAny* ptPlayer, int HowSet), -10948)
 EXFUNCPTR(D2COMMON, SetItemFlag, void, __stdcall, (UnitAny *ptItem, DWORD dwFlag, int HowSet), -10970)

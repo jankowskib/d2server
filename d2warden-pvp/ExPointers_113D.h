@@ -93,6 +93,7 @@ EXFUNCPTR(D2COMMON, AllocInventory, Inventory*, __stdcall, (void *pMemPool, Unit
 EXFUNCPTR(D2COMMON, GetItemIdx, ItemsTxt*, __stdcall, (DWORD ItemCode, int * Idx), -10000) // 1.13d
 EXFUNCPTR(D2COMMON, GetItemTxt, ItemsTxt*, __stdcall, (int RecordNo), -10994) //k
 EXFUNCPTR(D2COMMON, GetItemCode, DWORD, __stdcall, (UnitAny* ptItem), -10604) // 1.13d
+EXFUNCPTR(D2COMMON, GetItemType, DWORD, __stdcall, (UnitAny* ptItem), -10121) // 1.13d
 EXFUNCPTR(D2COMMON, SetItemQuality, void, __stdcall, (UnitAny* ptItem, int iQual), -11122) // 1.13d
 EXFUNCPTR(D2COMMON, SetBeginFlag, void, __stdcall, (UnitAny* ptPlayer, int HowSet), -10163) // 1.13d
 EXFUNCPTR(D2COMMON, SetItemFlag, void, __stdcall, (UnitAny *ptItem, DWORD dwFlag, int HowSet), -10876) // 1.13d

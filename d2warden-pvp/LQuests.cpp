@@ -202,6 +202,20 @@ int __fastcall DYES_Colorize(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, Unit
 {
 
 	DWORD iCode = D2Funcs.D2COMMON_GetItemCode(pScroll);
+	DWORD iType = D2Funcs.D2COMMON_GetItemType(ptItem);
+	
+	if (iType < (signed int)(*D2Vars.D2COMMON_sgptDataTables)->dwItemsTypeRecs)
+	{
+		D2ItemTypesTxt* pTxt = &(*D2Vars.D2COMMON_sgptDataTables)->pItemsTypeTxt[iType];
+		if (!pTxt || !pTxt->nBody)
+		{
+			DEBUGMSG("Woot! Tryed to dye not body item")
+			QUESTS_UpdateUnit(pUnit, 19, pUnit);
+			return 0;
+		}
+	}
+	
+
 	StatList* ptList = ptItem->pStatsEx->pMyLastList;
 	if (ptList->dwOwnerId != ptItem->dwUnitId)
 	{

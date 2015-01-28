@@ -12,6 +12,46 @@ struct ArenaTxt
 
 #pragma pack(push,1)
 
+
+struct D2ItemTypesTxt
+{
+	char szCode[4];                  //0x00
+	WORD wEquiv1;                  //0x04
+	WORD wEquiv2;                  //0x06
+	BYTE nRepair;                  //0x08
+	BYTE nBody;                     //0x09
+	BYTE nBodyLoc1;                  //0x0A
+	BYTE nBodyLoc2;                  //0x0B
+	WORD wShoots;                  //0x0C
+	WORD wQuiver;                  //0x0E
+	BYTE nThrowable;               //0x10
+	BYTE nReload;                  //0x11
+	BYTE nReEquip;                  //0x12
+	BYTE nAutoStack;               //0x13
+	BYTE nMagic;                  //0x14
+	BYTE nRare;                     //0x15
+	BYTE nNormal;                  //0x16
+	BYTE nCharm;                  //0x17
+	BYTE nGem;                     //0x18
+	BYTE nBeltable;                  //0x19
+	BYTE nMaxSock1;                  //0x1A
+	BYTE nMaxSock25;               //0x1B
+	BYTE nMaxSock40;               //0x1C
+	BYTE nTreasureClass;            //0x1D
+	BYTE nRarity;                  //0x1E
+	BYTE nStaffMods;               //0x1F
+	BYTE nCostFormula;               //0x20
+	BYTE nClass;                  //0x21
+	BYTE nStorePage;               //0x22
+	BYTE nVarInvGfx;               //0x23
+	char szInvGfx1[32];               //0x24
+	char szInvGfx2[32];               //0x44
+	char szInvGfx3[32];               //0x64
+	char szInvGfx4[32];               //0x84
+	char szInvGfx5[32];               //0xA4
+	char szInvGfx6[32];               //0xC4
+};
+
 struct D2AutomapTxt
 {
    char szLevelName[16];            //0x00
@@ -1536,7 +1576,7 @@ struct sgptDataTable {
 	BYTE*	pPetTypes;				//0xBEC
 	DWORD	dwPetTypesRecs;			//0xBF0
 	BYTE*	pItemsType;				//0xBF4
-	BYTE*	pItemsTypeTxt;			//0xBF8
+	D2ItemTypesTxt*	pItemsTypeTxt;  //0xBF8
 	DWORD	dwItemsTypeRecs;		//0xBFC
 	DWORD	dwItemsTypeNesting;		//0xC00
 	BYTE*	pItemsTypeNesting;		//0xC04
