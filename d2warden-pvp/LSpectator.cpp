@@ -150,7 +150,7 @@ DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit)
 
 	if (pUnit->pPlayerData->isSpecing)
 	{
-		SendMsgToClient(pUnit->pPlayerData->pClientData, "You cannot watch a spectator!");
+		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You cannot watch a spectator!");
 		return 0;
 	}
 
