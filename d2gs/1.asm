@@ -881,26 +881,26 @@ no_DisableBugMF:
 
 ;openPandPortal=68021BD0
 ;D2Game.dll	0XFA7B8	2049C56F	D01B0268 1 #6FD1A7B8(11BA7B8)
-	mov ecx,esi
-	add ecx, 0FA2C4h; 1.13d 0FA7B8h
-	mov eax,offset openPandPortal
-	mov [ecx],eax
+;	mov ecx,esi
+;	add ecx, 0FA2C4h; 1.13d 0FA7B8h
+;	mov eax,offset openPandPortal
+;	mov [ecx],eax
 
 ;openPandFinalPortal=68021C78
 ;D2Game.dll	0XFA7BC	1049C56F	781C0268 1 #6FD1A7BC(11BA7BC)
-	mov ecx,esi
-	add ecx, 0FA2C8h; 1.13d 0FA7BCh
-	mov eax,offset openPandFinalPortal
-	mov [ecx],eax
+;	mov ecx,esi
+;	add ecx, 0FA2C8h; 1.13d 0FA7BCh
+;	mov eax,offset openPandFinalPortal
+;	mov [ecx],eax
 
 ;SpawnUberBossOff=68021CF0 ; Hook
 ;D2Game.dll	0XE6B52 6ACAF3FF	F01C0268 20  #6FD06B52(11A6B52) = Patch Call Offset
-	mov ecx,esi
-	add ecx, 0BE9ABh ;  1.13d 0E6B52h
-	mov eax,offset SpawnUberBoss
-	sub eax,ecx
-	sub eax,4
-	mov [ecx],eax
+;	mov ecx,esi
+;	add ecx, 0BE9ABh ;  1.13d 0E6B52h
+;	mov eax,offset SpawnUberBoss
+;	sub eax,ecx
+;	sub eax,4
+;	mov [ecx],eax
 
 ;#####################################################################################################
 ;#Marsgod's AI table !! Use Ball\Mephisto\Diablo AI
