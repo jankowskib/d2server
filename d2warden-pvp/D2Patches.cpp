@@ -68,9 +68,9 @@ void PatchD2()
 	//#endif
 
 
-	PatchGS(NOP, GetDllOffset("D2Game.dll", D2GAME_DISABLE_ROOM_CACHE), 0x90, 6, "Disable Room Cache");
+//	PatchGS(NOP, GetDllOffset("D2Game.dll", D2GAME_DISABLE_ROOM_CACHE), 0x90, 6, "Disable Room Cache");
 	
-	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
+//	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_I), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init I");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_II), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init II");
