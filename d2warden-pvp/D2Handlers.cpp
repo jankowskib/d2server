@@ -331,6 +331,24 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 
 	switch (ThePacket[0])
 	{
+
+	case 0xFF: //CRASH FIX
+	{
+		if (ThePacket[1] == 1) {
+		DWORD Socket = D2Funcs.D2NET_GetClient(ClientID);
+		if (!Socket) break;
+		Game* pGame = D2Funcs.D2GAME_GetGameByNetSocket(Socket);
+		if (!pGame) break;
+		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
+		if (!ptClientData) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
+		
+			Log("HACK: %s (*%s) tried to crash GS!", ptClientData->CharName, ptClientData->AccountName);
+			*(DWORD*)&ThePacket[1] = 0;
+			BootPlayer(pClient->ClientID, 0x16);
+			D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame);
+		}
+	}
+	break;
 	case 0x1A: //EQUIP CHECK
 	case 0x1D:
 	case 0x16:
