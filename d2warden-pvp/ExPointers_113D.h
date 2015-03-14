@@ -175,10 +175,11 @@ EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
 EXFUNCPTR(FOG, InitBitBuffer, void, __stdcall, (BitBuffer* ptBitBuffer, void * ptBuffer, int nSize), -10126)
 
 //D2NET 0xa30000+ 0x??? +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
-EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10012) // 1.13d Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
+EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD nSocket, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10012) // 1.13d Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)
 EXFUNCPTR(D2NET, ReceivePacket, bool, __stdcall, (int PacketLen, int _1, BYTE *aPacket), -10015) //k
 EXFUNCPTR(D2NET, GetClient, DWORD, __stdcall, (DWORD ClientID), -10019) // 1.13d Get NetSocket
 EXFUNCPTR(D2NET, isCorrectClientPacket, BOOL, __fastcall, (BYTE *aPacket, DWORD aLen, DWORD *result), -10004) // 1.13d
+EXFUNCPTR(D2NET, GetIpAddress, void, __stdcall, (DWORD ClientID, char *szBuffer, int nLen), -10014)
 
 #ifndef __DEFINE_EXPTRS
 };
@@ -281,6 +282,7 @@ struct _d2v {
 _d2v D2Vars = { 0 };
 void SetupD2Vars() {
 #endif
+	EXVARPTR(D2GAME, gpfnEventCallbacks, EventCallbackTable*, 0x111C28)
 	EXVARPTR(D2GAME, pSpell, pSpellTbl, 0x108690) // 1.13d
 	EXVARPTR(D2GAME, ClientDataLock, CRITICAL_SECTION*, 0x1109E0) // 1.13d only for now, use when wanna search client by pure id
 	EXVARPTR(D2GAME, ClientDataById, ClientData*, 0x1105E0) // 1.13d only for now testing ^^

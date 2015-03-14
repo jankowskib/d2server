@@ -331,6 +331,7 @@ void SetupD2Vars() {
 #endif
 
 //EXVARPTR(D2GAME, pUnitListOffset, DWORD*, 0xFB2B4)
+EXVARPTR(D2GAME, gpfnEventCallbacks, EventCallbackTable*, 0x111BF8)
 EXVARPTR(D2GAME, ClientPacketTable, PacketTbl, 0xFA7C0)
 EXVARPTR(D2GAME, pSpell, pSpellTbl, 0x105098)
 

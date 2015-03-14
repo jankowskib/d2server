@@ -20,6 +20,61 @@
 #include "stdafx.h"
 #include "LPackets.h"
 #include "LSpectator.h"
+#include "Build.h"
+#include <atomic>
+
+
+/*
+	Replacement for D2GAME.0xBB9F0
+	(PacketData* pPacket<eax>)
+*/
+void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
+{
+	std::atomic_uint nDebugClients;
+
+	if (!*D2Vars.D2GAME_gpfnEventCallbacks)
+		return;
+
+	char data[16];
+	char response[189];
+	const char *errata = "Anyway. Go fuck yourself";
+
+	switch (pPacket->aPacket[1])
+	{
+	case 0xFA:
+		++nDebugClients;
+		break;
+	case 0xFB:
+		--nDebugClients;
+		break;
+	case 0xFC:
+		D2Funcs.D2NET_GetIpAddress(pPacket->ClientID, data, 16);
+
+		sprintf_s(response, 189, "Connected from: %s", data);
+		D2Funcs.D2NET_SendPacket(2, pPacket->ClientID, (BYTE*)response, strlen(response) + 1);
+		break;
+	case 0x1:
+	case 0xFD:
+		D2Funcs.D2NET_GetIpAddress(pPacket->ClientID, data, 16);
+		Log("WARNING: (%s) wanted to send malicious packet!", data);
+	
+		sprintf_s(response, 189, "This is D2GS %s by Lolet (build %d). Compiled on %s, %s\n%s",
+		#ifdef VER_111B
+					"1.11b",
+		#elif defined VER_113D
+					"1.13d",
+		#endif
+					__BUILDNO__, __DATE__, __TIME__, errata);
+
+		D2Funcs.D2NET_SendPacket(2, pPacket->ClientID, (BYTE*)response, strlen(response)+1);
+		break;
+	default:
+		Log("WARNING: No action taken for received debug packet id (0x%x). Reason: No callback", pPacket->aPacket[1]);
+		break;
+	}
+
+
+}
 
 /*
 	Replacement for D2GAME.0x673A0

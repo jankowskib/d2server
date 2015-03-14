@@ -31,6 +31,20 @@ namespace D2Stubs
 {
 
 	/*
+	void __usercall ParseDebugPackets_6FCDB9F0(PacketData *hPacket<eax>)
+	*/
+	__declspec(naked) void __fastcall OnDebugPacketReceive_STUB()
+	{
+		__asm
+		{
+			pop ecx
+			push eax
+			push ecx
+			jmp OnDebugPacketReceive
+		}
+	}
+
+	/*
 	BOOL __usercall UNIT_IsDead_6FC8D410<eax>(UnitAny *pUnit<eax>)
 	*/
 	__declspec(naked) void __fastcall  D2GAME_IsUnitDead_STUB()

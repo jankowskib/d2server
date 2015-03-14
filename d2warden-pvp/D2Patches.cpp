@@ -72,6 +72,8 @@ void PatchD2()
 	
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ON_DEBUG_PACKET), (DWORD)D2Stubs::OnDebugPacketReceive_STUB, 5, "Fix Debug Packet Parser");
+
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_I), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init I");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_QUESTINIT_II), (DWORD)QUEST_AllocQuestControl, 5, "Quest Init II");
 

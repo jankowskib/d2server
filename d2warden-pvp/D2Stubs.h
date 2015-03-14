@@ -22,6 +22,7 @@
 
 namespace D2Stubs 
 {
+	void __fastcall OnDebugPacketReceive_STUB();
 	void __fastcall D2GAME_IsUnitDead_STUB();
 	void __stdcall D2GAME_OnPacketReceive_STUB();
 	void __fastcall D2GAME_OnCreateDamage_STUB();

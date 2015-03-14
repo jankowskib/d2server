@@ -51,6 +51,34 @@ struct Party;
 struct UnitAny;
 struct Quest;
 
+
+struct EventCallbackTable
+{
+	void* fpCloseGame;									//0x00
+	void* fpLeaveGame;									//0x04
+	void* fpGetDatabaseCharacter;						//0x08
+	void* fpSaveDatabaseCharacter;						//0x0C
+	void* fpServerLogMessage;							//0x10
+	void* fpEnterGame;									//0x14
+	void* fpFindPlayerToken;							//0x18
+	void* fpSaveDatabaseGuild;							//0x1C
+	void* fpUnlockDatabaseCharacter;					//0x20
+	void* _2;											//0x24
+	void* fpUpdateCharacterLadder;						//0x28
+	void* fpUpdateGameInformation;						//0x2C
+	void* _3;											//0x30
+	void* fpSetGameData;								//0x34
+	void* fpRelockDatabaseCharacter;					//0x38
+	void* fpLoadComplete;								//0x3C
+	void* _4;											//0x40
+	void* _5;											//0x44
+	void* _6;											//0x48
+	void* _7;											//0x4C
+	void* _8;											//0x50
+	void(__fastcall *fpValidateFileTime)(FILETIME **ft);//0x54 1.13d only
+};
+
+
 #pragma pack(push, 1)
 
 struct bItemFlags //Taken from Necrolis post & Hero Editor  (1.13d)

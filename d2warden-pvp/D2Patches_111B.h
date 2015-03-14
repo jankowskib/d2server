@@ -22,6 +22,9 @@
 
 // -- Warden checks end
 
+
+#define D2GAME_ON_DEBUG_PACKET 0xE836C
+
 #define D2GAME_CLIENT_PACKET_WRAPPER_NEW 0x703B5
 
 #define D2GAME_MONSTERSPAWN_I 0x6F551 // mby crash
