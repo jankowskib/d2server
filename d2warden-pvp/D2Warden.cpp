@@ -445,7 +445,7 @@ DWORD WardenLoop()
 						RemoveWardenPacket(pWardenClient);
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+						DEBUGMSG("Triggering check event because of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
 						SetEvent(hWardenCheckEvent);
 						break;
 					}
@@ -573,7 +573,7 @@ DWORD WardenLoop()
 				case 13: SendPtrRequest(pWardenClient, "D2Client.dll", D2CLIENT_GAMELOOP, 7); break; //GameLoop
 			}
 			pWardenClient->WardenStatus = WARDEN_RECEIVE_CHECK;
-			pWardenClient->NextCheckTime = CurrentTick + 10000; // Give 10 seconds for answer
+			pWardenClient->NextCheckTime = CurrentTick + 5000; // Give 5 seconds for answer
 			pWardenClient->pWardenPacket.SendTime = CurrentTick;
 			}
 			break;
@@ -763,18 +763,22 @@ DWORD WardenLoop()
 				}
 				else
 				{
-					if(CurrentTick - pWardenClient->pWardenPacket.SendTime < 4000)
+					if(CurrentTick - pWardenClient->pWardenPacket.SendTime < 5000)
 						pWardenClient->NextCheckTime = GetTickCount() + 10;
 					else
 					{
+						pWardenClient->ErrorCount++;
+
 						if(!pWardenClient->WardenBlocked && pWardenClient->ErrorCount > 5)
 						{
 							Log("Hack: %s (*%s) is blocking warden request!",pWardenClient->CharName.c_str(),pWardenClient->AccountName.c_str());
 							pWardenClient->WardenBlocked = true;
 						}
-						pWardenClient->ErrorCount++;
-						if(pWardenClient->ErrorCount > 10) pWardenClient->WardenStatus=WARDEN_ERROR_RESPONSE; 
-							else pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
+
+						if(pWardenClient->ErrorCount > 5)
+							pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE; 
+						else
+							pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
 						pWardenClient->NextCheckTime = GetTickCount() + random();
 					}
 				}					
@@ -794,7 +798,7 @@ DWORD WardenLoop()
 				RemoveWardenPacket(pWardenClient);
 				DWORD id = pWardenClient->ClientID;
 				pWardenClient = hWarden.Clients.erase(pWardenClient);
-				KickPlayer(id);
+				BootPlayer(id, 16);
 				continue;
 			}
 			break;

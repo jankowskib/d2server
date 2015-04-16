@@ -344,7 +344,7 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 		
 			Log("HACK: %s (*%s) tried to crash GS!", ptClientData->CharName, ptClientData->AccountName);
 			*(DWORD*)&ThePacket[1] = 0;
-			BootPlayer(pClient->ClientID, 0x16);
+			BootPlayer(pClient->ClientID, 16);
 			D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame);
 		}
 	}
