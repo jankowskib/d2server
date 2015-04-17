@@ -1468,8 +1468,8 @@ namespace D2ASMFuncs
 				mov edx, DWORD PTR SS : [esp + 4] // pRoom1
 				push 0
 				push 0
-				push DWORD PTR SS : [esp + 20]
-				push DWORD PTR SS : [esp + 20]
+				push DWORD PTR SS : [esp + 20] // pUnit
+				push DWORD PTR SS : [esp + 20] // pGame
 				call D2Ptrs.D2GAME_MoveUnitToXY_I
 				retn 12
 		}

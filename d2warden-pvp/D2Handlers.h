@@ -34,7 +34,7 @@ int __fastcall ReparseChat(Game* pGame, UnitAny *pUnit, BYTE *ThePacket, int Pac
 BOOL __fastcall OnChat(UnitAny* pUnit,BYTE *ThePacket);
 DWORD __fastcall SetDRCap(Attack *pAttack);
 void  __stdcall OnLastHit(UnitAny* ptKiller, UnitAny * ptVictim, Damage * ptDamage);
-Act* __stdcall OnActLoad (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, DWORD* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2);
+Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, D2PoolManager* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2);
 void __fastcall OnManaLeech(UnitAny* pAttacker, UnitAny *pDefender,DWORD ManaToLeech);
 void __fastcall OnLifeLeech(UnitAny* pAttacker, UnitAny *pDefender,DWORD LifeToLeech);
 BOOL __fastcall OnReceivePacket (BYTE * ThePacket, PacketData * pClient);

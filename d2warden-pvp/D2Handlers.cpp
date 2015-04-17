@@ -293,7 +293,7 @@ DWORD __fastcall SetDRCap(Attack *pAttack) //Unused atm but will be
 	return DR;
 }
 
-Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, DWORD* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2)
+Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, D2PoolManager* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2)
 {
 	int MySeed = 0;
 	BYTE MyDiff = (BYTE)DiffLvl;

@@ -176,7 +176,7 @@ struct Corpse	//size 0x10
 struct Inventory //size 0x40
 {
 	DWORD dwSignature;				//0x00
-	void* pMemPool;					//0x04
+	D2PoolManager* pMemPool;					//0x04
 	UnitAny* pOwner;				//0x08
 	UnitAny* pFirstItem;			//0x0C
 	UnitAny* pLastItem;				//0x10
@@ -255,7 +255,7 @@ struct Act
 	DWORD dwAct;					//0x14
 	DWORD pfnCallBack;				//0x18
 	DWORD _3[13];					//0x1C
-	void * pMemPool;				//0x50
+	D2PoolManager * pMemPool;				//0x50
 };
 
 
@@ -437,7 +437,7 @@ struct StatEx	//size 0x8
 
 struct StatListEx  //size 0x64
 {
-	DWORD pMemPool;					//0x00
+	D2PoolManager* pMemPool;		//0x00
 	DWORD _1;						//0x04
 	DWORD dwOwnerType;				//0x08
 	DWORD dwOwnerId;				//0x0C
@@ -459,7 +459,7 @@ struct StatListEx  //size 0x64
 };
 
 struct StatList { //size 0x3C
-	void* pMemPool;					//0x00
+	D2PoolManager* pMemPool;		//0x00
 	UnitAny* pUnit;					//0x04
 	DWORD dwOwnerType;				//0x08
 	DWORD dwOwnerId;				//0x0C
@@ -662,7 +662,7 @@ struct Game
   Game * pNext;				//0x10
   DWORD _1a;				//0x14
   CRITICAL_SECTION* ptLock; //0x18 (see MSDN please)
-  void * pMemPool;			//0x1C - not used, always NULL
+  D2PoolManager * pMemPool;	//0x1C - not used, always NULL
   void * GameData;			//0x20
   DWORD _2;					//0x24
   WORD  nServerToken;		//0x28 called 'Server Ticket' aswell
@@ -914,7 +914,7 @@ struct Skill		//size 0x40
 
 struct SkillData	//size 0x18
 {
-	DWORD* pMemPool;			//0x00
+	D2PoolManager* pMemPool;	//0x00
 	Skill* pFirstSkill;			//0x04
 	Skill* pLeftSkill;			//0x08
 	Skill* pRightSkill;			//0x0C

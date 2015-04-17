@@ -128,7 +128,7 @@ struct Corpse	//size 0x10 (1.13d)
 struct Inventory //size 0x40 (1.13d)
 {
 	DWORD dwSignature;				//0x00
-	void* pMemPool;					//0x04
+	D2PoolManager* pMemPool;					//0x04
 	UnitAny* pOwner;				//0x08
 	UnitAny* pFirstItem;			//0x0C
 	UnitAny* pLastItem;				//0x10
@@ -315,7 +315,7 @@ struct ActMisc // sizeof(0x48C) aka Drlg
 	DWORD _2d[4];			//0x45C
 	Act* pAct;				//0x46C
 	DWORD _3[2];			//0x470
-	void *pMemPool;			//0x478
+	D2PoolManager *pMemPool;			//0x478
 	Level* pLevelFirst;		//0x47C
 	DWORD nAct;				//0x480
 	DWORD _5;				//0x484 Tomb Levels Related 66 + rand(7)
@@ -354,7 +354,7 @@ struct Act // sizeof(0x60)
 	DWORD _5;						//0x50
 	DWORD _6;						//0x54
 	DWORD _7;						//0x58
-	void* pMemPool;					//0x5C
+	D2PoolManager* pMemPool;		//0x5C
 };
 
 
@@ -500,7 +500,7 @@ struct StatEx	//size 0x8
 
 struct StatListEx  //size 0x64
 {
-	DWORD pMemPool;					//0x00
+	D2PoolManager* pMemPool;		//0x00
 	DWORD _1;						//0x04
 	DWORD dwOwnerType;				//0x08
 	DWORD dwOwnerId;				//0x0C
@@ -522,7 +522,7 @@ struct StatListEx  //size 0x64
 };
 
 struct StatList { //size 0x3C
-	void* pMemPool;					//0x00
+	D2PoolManager* pMemPool;		//0x00
 	UnitAny* pUnit;					//0x04
 	DWORD dwOwnerType;				//0x08
 	DWORD dwOwnerId;				//0x0C
@@ -919,7 +919,7 @@ struct Skill		//size 0x40
 
 struct SkillData	//size 0x18
 {
-	DWORD* pMemPool;			//0x00
+	D2PoolManager* pMemPool;	//0x00
 	Skill* pFirstSkill;			//0x04
 	Skill* pLeftSkill;			//0x08
 	Skill* pRightSkill;			//0x0C

@@ -50,7 +50,7 @@ struct Arena;
 struct Party;
 struct UnitAny;
 struct Quest;
-
+struct D2PoolMemory;
 
 struct EventCallbackTable
 {
@@ -75,11 +75,63 @@ struct EventCallbackTable
 	void* _6;											//0x48
 	void* _7;											//0x4C
 	void* _8;											//0x50
+#ifdef VER_113D
 	void(__fastcall *fpValidateFileTime)(FILETIME **ft);//0x54 1.13d only
+#endif
 };
 
 
 #pragma pack(push, 1)
+
+// sizeof 16
+struct Waypoint
+{
+	WORD wBank[8];							//0x00 --> contains flags for 8 Waypoint banks, each bank has 16 slots, so yoy
+											// can have 128 wps, but using of 1st bank will crash game so really its 112 waypoints.
+};
+
+struct D2PoolBlock
+{
+	D2PoolBlock* pNextChunk;
+	//...+ raw data chunk
+};
+
+
+// sizeof 0x30
+struct D2Pool {
+	CRITICAL_SECTION poolLock;	//0x00
+	DWORD _1;					//0x18 => 16 for nPools #0, 32 for #1 and so
+	DWORD nMemBlocksPerPool;	//0x1C => 4096
+	DWORD nBlockSize;			//0x20 => 65536 ( _1 * nMemBlocksPerPool)
+	DWORD nTableCounter;		//0x24 <- number of D2PoolMemory elements (increases each act visited)
+	D2PoolMemory* pFirst;		//0x28 <- first element of memory
+	D2PoolMemory* pLast;		//0x2C <- last element of pMemoryTbl (aka pTail)
+};
+
+//sizeof 0x18?
+struct D2PoolMemory
+{
+	void* pMemory;				//0x00
+	DWORD _2;					//0x04
+	DWORD _3;					//0x08
+	D2PoolMemory* pPrev;		//0x0C
+	D2PoolMemory* pNext;		//0x10
+	D2Pool* pPool;				//0x14
+};
+
+//sizeof = 6092
+struct D2PoolManager
+{
+	D2PoolManager* pNext;			 //0x00
+	CRITICAL_SECTION managerLock;	 //0x04
+	DWORD nPools;					 //0x1C
+	D2Pool pPool[40];		  		 //0x20
+	DWORD nUsedBlocks;				 //0x7A0
+	DWORD nMaxBlocks;				 //0x7A4
+	D2PoolBlock* pChainBlocks[1024]; //0x7A8
+	DWORD _7;						 //0x17A8 not pointer for sure
+	char szGameName[32];			 //0x17AC
+};
 
 struct bItemFlags //Taken from Necrolis post & Hero Editor  (1.13d)
 {
@@ -551,10 +603,10 @@ struct PartyRelation //size 0x14
 struct PlayerData { //size 0x16C same as 1.11b (1.13d) -- probably --
 	char szName[16];				//0x00
 	QuestFlags *QuestsFlags[3];		//0x10
-	Waypoint *pNormalWaypoint[3];	//0x1C
+	Waypoint *pWaypoints[3];		//0x1C aka pHistory
 	DWORD _1;						//0x28
 	DWORD _2[2];					//0x2C
-	WORD* KillCounter;				//0x34 Monster
+	WORD* KillCounter;				//0x34 Monster -> ptArena struct
 	PartyRelation* pPartyRelation;	//0x38
 	DWORD _3[4];					//0x3C 3[2] is merc related
 	DWORD dwBusyTick;				//0x4C Packet 0x48 nullifies
@@ -622,7 +674,7 @@ struct UnitAny
 {
 	DWORD dwType;					//0x00
 	DWORD dwClassId;				//0x04
-	void* pMemPool;					//0x08
+	D2PoolManager* pMemPool;		//0x08
 	DWORD dwUnitId;					//0x0C
 	DWORD dwMode;					//0x10
 	union
@@ -705,7 +757,7 @@ struct Game
 	Game * pNext;						//0x10
 	DWORD _1a;							//0x14
 	CRITICAL_SECTION* ptLock;			//0x18
-	void * pMemPool;					//0x1C - not used, always NULL
+	D2PoolManager * pMemPool;			//0x1C - not used, always NULL
 	void * GameData;					//0x20
 	DWORD _2;							//0x24
 	WORD  nServerToken;					//0x28 called 'Server Ticket' aswell
