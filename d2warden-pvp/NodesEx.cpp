@@ -53,7 +53,7 @@ int NEU_NODE = wcfgMaxPlayers + 3;
 			ptUnit->dwNodeIdx = z;
 		  }
 			  else
-				Log("No memory to allocate an node");
+				Log("No memory to allocate a node");
 		}
 		  else
 		  {
@@ -170,11 +170,11 @@ void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNod
 int NEU_NODE = wcfgMaxPlayers + 3;
   UnitNode *pParentNode; 
   UnitNode *pCurrentNode;
-  if (!ptGame) return;
-  if (!ptUnit) return;
-  if (ptUnit->dwNodeIdx != NEU_NODE ) return;
-  if (NodeIdx!=(NEU_NODE-3) || NodeIdx!=(NEU_NODE-2)) return;
-  if (ptUnit->dwType>1) return;
+  if (!ptGame || !ptUnit || ptUnit->dwNodeIdx != NEU_NODE || ptUnit->dwType > UNIT_MONSTER) 
+	  return;
+
+  if (NodeIdx != (NEU_NODE-3) && NodeIdx!=(NEU_NODE-2))
+	  return;
 
 			  pCurrentNode = ptGame->pNewNodes[NodeIdx];
 
@@ -197,7 +197,7 @@ int NEU_NODE = wcfgMaxPlayers + 3;
 			  }
 			  else
 			  {
-					Log("NodesEx: No memory to allocate an node");
+					Log("NodesEx: No memory to allocate a node");
 			  }
 }
 
@@ -206,8 +206,8 @@ void __fastcall NODES_AddAsParentNode(Game *ptGame, UnitAny *ptUnit, UnitNode *p
 int NEU_NODE = wcfgMaxPlayers + 3;
   if (!ptGame || !ptUnit) return;
   if (ptUnit->dwNodeIdx !=NEU_NODE) return; 
-  if (NodeIdx>=wcfgMaxPlayers) return;
-  if (ptUnit->dwType>1) return;
+  if (NodeIdx >= wcfgMaxPlayers) return;
+  if (ptUnit->dwType > UNIT_MONSTER) return;
 
 		   UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
 		  if ( pCurrentNode )
