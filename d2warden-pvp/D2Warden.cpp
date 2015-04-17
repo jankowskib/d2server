@@ -247,8 +247,15 @@ void Warden_Init()
 #endif
 
 	Warden_Config();
-
-	//Zmieniam dozwolona liczbê graczy
+#ifdef D2EX_MYSQL
+	Log("Connecting to MYSQL server...");
+	if (!FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase))
+	{
+		Log("Failed to connect to database!");
+		Warden_Enable = false;
+		return;
+	}
+#endif
 #ifdef _ENGLISH_LOGS
 	Log("Setting allowed player limit on %d", wcfgMaxPlayers);
 #else

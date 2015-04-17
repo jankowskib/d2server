@@ -20,6 +20,9 @@
 #ifndef D2LITEMS_H__
 #define D2LITEMS_H__
 
+
+BOOL FG_ConnectToSQL(std::string szServer, std::string szUser, std::string szPass, std::string szDatabase);
+
 BOOL __fastcall ITEMS_BuyItem(UnitAny *pPlayer, int nCost);
 void __fastcall ITEMS_RollbackStat(int nStat, UnitAny *pUnit, int nValue);
 int __stdcall GetGoldBankLimit(UnitAny *pUnit);

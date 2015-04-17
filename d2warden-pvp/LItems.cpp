@@ -23,6 +23,8 @@
 
 #ifdef D2EX_MYSQL
 
+
+
 #include "mysql_driver.h"
 #include "mysql_connection.h"
 
@@ -33,17 +35,43 @@
 using namespace std;
 using namespace sql;
 
+
+static unique_ptr<Connection> gCon;
+
+/*
+	Make global connection to a MySQL server
+	Default: "tcp://127.0.0.1:3306"
+*/
+BOOL FG_ConnectToSQL(string szServer, string szUser, string szPass, string szDatabase)
+{
+	BOOL result = false;
+	try
+	{
+		Driver* driver = get_driver_instance();
+		gCon = unique_ptr<Connection>(driver->connect(szServer.c_str(), szUser.c_str(), szPass.c_str()));
+		bool bReconnect = true;
+		int nTimeout = 3;
+		gCon->setClientOption("MYSQL_OPT_RECONNECT", &bReconnect);
+		gCon->setClientOption("MYSQL_OPT_CONNECT_TIMEOUT", &nTimeout);
+		gCon->setSchema(szDatabase.c_str());
+		result = true;
+	}
+	catch (SQLException& e)
+	{
+		DEBUGMSG("MySQL error!: %s", e.what());
+		Log("MySQL error!: %s", e.what());
+	}
+	return result;
+}
+
+
 int FG_GetGoldByAccount(string szAccount)
 {
 	int result = 0;
 
 	try
 	{
-		
-		Driver* driver = get_driver_instance();
-		auto_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
-		con->setSchema(wcfgDatabase.c_str());
-		auto_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		auto_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
 
 		stmt->setString(1, szAccount);
 		if (stmt->execute())
@@ -70,10 +98,7 @@ bool FG_BuyItem(string szAccount, int nValue)
 
 	try
 	{
-		Driver* driver = mysql::get_driver_instance();
-		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
-		con->setSchema(wcfgDatabase.c_str());
-		unique_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		unique_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
 		stmt->setString(1, szAccount);
 		int nSafeGold = 0;
 		if (stmt->execute())
@@ -87,7 +112,7 @@ bool FG_BuyItem(string szAccount, int nValue)
 
 		if (nValue > nSafeGold)
 			return false;
-		unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold - ? WHERE f.Field5=?"));
+		unique_ptr<PreparedStatement> stmt2(gCon->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold - ? WHERE f.Field5=?"));
 		stmt2->setInt(1, nValue);
 		stmt2->setString(2, szAccount);
 
@@ -108,11 +133,7 @@ bool FG_RollbackCost(string szAccount, int nCost)
 {
 	try
 	{
-		Driver* driver = mysql::get_driver_instance();
-		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
-		con->setSchema(wcfgDatabase.c_str());
-
-		unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold + ? WHERE f.Field5=?"));
+		unique_ptr<PreparedStatement> stmt2(gCon->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold + ? WHERE f.Field5=?"));
 		stmt2->setInt(1, nCost);
 		stmt2->setString(2, szAccount);
 
@@ -132,10 +153,7 @@ bool FG_SetValue(string szAccount, int nValue)
 {
 	try
 	{
-		Driver* driver = mysql::get_driver_instance();
-		unique_ptr<Connection>  con(driver->connect("tcp://127.0.0.1:3306", wcfgDBUser.c_str(), wcfgDBPass.c_str()));
-		con->setSchema(wcfgDatabase.c_str());
-		unique_ptr<PreparedStatement>  stmt(con->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		unique_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
 		stmt->setString(1, szAccount);
 		int nSafeGold = 0;
 
@@ -149,7 +167,7 @@ bool FG_SetValue(string szAccount, int nValue)
 			}
 			if (nValue > nSafeGold)
 				return false;
-			unique_ptr<PreparedStatement> stmt2(con->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = ? WHERE f.Field5=?"));
+			unique_ptr<PreparedStatement> stmt2(gCon->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = ? WHERE f.Field5=?"));
 			stmt2->setInt(1, nValue);
 			stmt2->setString(2, szAccount);
 
