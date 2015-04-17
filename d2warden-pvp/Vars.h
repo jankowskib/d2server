@@ -56,6 +56,8 @@ extern BYTE wcfgAllowD2Ex;
 extern BYTE wcfgDetectTrick;
 extern BYTE wcfgDisableRepairCost;
 
+extern std::list<std::string> wcfgAdmins;
+
 extern std::string wcfgDatabase;
 extern std::string wcfgDBUser;
 extern std::string wcfgDBPass;
@@ -64,10 +66,6 @@ extern std::string wcfgClansURL;
 extern std::string wcfgConfigFile;
 extern std::string wcfgUpdateURL;
 extern std::string wcfgGSName;
-extern std::list<std::string> wcfgAdmins;
-extern std::map<std::string, BYTE> ColorSet;
-extern std::vector<DWORD> Pointers;
-extern std::map<DWORD, DWORD> Specers;
 extern bool Warden_Enable;
 extern Vote * sVote;
 extern DWORD MOD_Length;

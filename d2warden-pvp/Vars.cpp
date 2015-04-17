@@ -61,10 +61,7 @@ std::string wcfgConfigFile;
 std::string wcfgUpdateURL;
 std::string DmgOwner;
 std::string wcfgGSName;
-std::map<std::string, BYTE> ColorSet;
-std::map<DWORD, DWORD> Specers;
 std::list<std::string> wcfgAdmins;
-std::vector<DWORD> Pointers;
 
 bool Warden_Enable;
 Vote * sVote = 0;
