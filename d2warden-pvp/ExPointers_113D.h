@@ -89,7 +89,7 @@ EXFUNCPTR(D2COMMON, GetGoldLimit, int, __stdcall, (UnitAny* ptUnit), -11159)
 EXFUNCPTR(D2COMMON, GetBankGoldLimit, int, __stdcall, (UnitAny* ptUnit), -11025)
 
 //ITEM RELATED
-EXFUNCPTR(D2COMMON, AllocInventory, Inventory*, __stdcall, (void *pMemPool, UnitAny *pOwner), -11011) // 1.13d
+EXFUNCPTR(D2COMMON, AllocInventory, Inventory*, __stdcall, (D2PoolManager *pMemPool, UnitAny *pOwner), -11011) // 1.13d
 EXFUNCPTR(D2COMMON, GetItemIdx, ItemsTxt*, __stdcall, (DWORD ItemCode, int * Idx), -10000) // 1.13d
 EXFUNCPTR(D2COMMON, GetItemTxt, ItemsTxt*, __stdcall, (int RecordNo), -10994) //k
 EXFUNCPTR(D2COMMON, GetItemCode, DWORD, __stdcall, (UnitAny* ptItem), -10604) // 1.13d
@@ -139,7 +139,7 @@ EXFUNCPTR(D2COMMON, GetActNoByLevelNo, int, __stdcall, (int dwLevelNo), -10864) 
 EXFUNCPTR(D2COMMON, GetTownLevel, int, __stdcall, (int dwActNo), -10353) //k
 EXFUNCPTR(D2COMMON, GetUnitMaxLife, unsigned int, __stdcall, (UnitAny *ptUnit), -10574) //k
 EXFUNCPTR(D2COMMON, GetUnitMaxMana, unsigned int, __stdcall, (UnitAny *ptUnit), -10084) //k
-EXFUNCPTR(D2COMMON, LoadAct, Act*, __stdcall, (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, DWORD* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2), -10024) // 1.13d
+EXFUNCPTR(D2COMMON, LoadAct, Act*, __stdcall, (DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGame, DWORD DiffLvl, D2PoolManager* pMemPool, DWORD TownLevelId, DWORD Func1, DWORD Func2), -10024) // 1.13d
 EXFUNCPTR(D2COMMON, GetRoomXYByLevel, Room1*, __stdcall, (Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitSize), -10632) // 1.13d
 EXFUNCPTR(D2COMMON, ChangeCurrentMode, int, __stdcall, (UnitAny* ptUnit, int Mode), -10193) // 1.13d
 EXFUNCPTR(D2COMMON, GetUnitRoom, Room1*, __stdcall, (UnitAny *ptUnit), -10846) //k
@@ -169,8 +169,8 @@ EXFUNCPTR(D2CMP, MixPalette, BYTE*, __stdcall, (int TransLvl, int ColorNo), -100
 EXFUNCPTR(FOG, EnterCriticalSection, void, __fastcall, (CRITICAL_SECTION *ptLock, int aLine), -10050)
 EXFUNCPTR(FOG, Error, void, __cdecl, (const char* File, void* Addr, int Line), -10024)
 EXFUNCPTR(FOG, GetErrorData, void*, __cdecl, (), -10265)
-EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (void *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
-EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (void *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
+EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (D2PoolManager *pMemPool, int nBytes, char *szFile, int Line, int aNull), -10045)
+EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (D2PoolManager *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
 EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
 EXFUNCPTR(FOG, InitBitBuffer, void, __stdcall, (BitBuffer* ptBitBuffer, void * ptBuffer, int nSize), -10126)
 
