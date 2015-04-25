@@ -344,7 +344,7 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 		
 			Log("HACK: %s (*%s) tried to crash GS!", ptClientData->CharName, ptClientData->AccountName);
 			*(DWORD*)&ThePacket[1] = 0;
-			BootPlayer(pClient->ClientID, 16);
+			BootPlayer(pClient->ClientID, BOOT_CONNECTION_INTERRUPTED);
 			D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame);
 		}
 	}
@@ -617,7 +617,7 @@ int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Doda
 		BYTE ArenaUnk;			// 0x13
 		BYTE DiffLvl;			// 0x14
 		char szCharName[16];	// 0x15
-		WORD Unk1;				// 0x25
+		WORD ArenaLvl;			// 0x25
 		DWORD ArenaFlags;		// 0x27
 		BYTE Unk2;				// 0x2B
 		BYTE Unk3;				// 0x2C
@@ -656,7 +656,7 @@ int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Doda
 				Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.", pJoinPacket->szCharName);
 			else
 				Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).", pJoinPacket->szCharName, D2Version);
-			BootPlayer(pPacket->ClientID, 16);
+			BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
 			return MSG_ERROR;
 		}
 	}

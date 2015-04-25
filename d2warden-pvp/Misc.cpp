@@ -190,7 +190,7 @@ void KickPlayer(DWORD ClientID)
 	D2Funcs.D2NET_SendPacket(0, ClientID, &Packet, 1);
 }
 
-void BootPlayer(DWORD ClientID, int dwReason)
+void BootPlayer(DWORD ClientID, BootReason dwReason)
 {
 	BYTE Packet[5] = { 0xb4, dwReason };
 	D2Funcs.D2NET_SendPacket(0, ClientID, (BYTE*)&Packet, 5);

@@ -805,7 +805,7 @@ DWORD WardenLoop()
 				RemoveWardenPacket(pWardenClient);
 				DWORD id = pWardenClient->ClientID;
 				pWardenClient = hWarden.Clients.erase(pWardenClient);
-				BootPlayer(id, 16);
+				BootPlayer(id, BOOT_CONNECTION_INTERRUPTED);
 				continue;
 			}
 			break;

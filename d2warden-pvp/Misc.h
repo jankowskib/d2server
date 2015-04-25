@@ -37,7 +37,7 @@ DWORD TransCode(const char* ptCode);
 char* TransCode(DWORD dwCode);
 void KickPlayer(ClientData* pClient);
 void KickPlayer(DWORD ClientID);
-void BootPlayer(DWORD ClientID, int dwReason);
+void BootPlayer(DWORD ClientID, BootReason dwReason);
 
 void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue);
 void BroadcastMsg(Game* pGame,char *Msg...);
