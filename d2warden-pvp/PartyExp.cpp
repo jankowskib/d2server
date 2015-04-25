@@ -132,8 +132,8 @@ void AddExp(Game *pGame, UnitAny* pMember, int ExpGained, int ExpLvl)
 
 void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, int PlayerLvl, int MonsterLvl, int PlayerExp)
 {
-	PartyExp hPartyExp;
-	::memset(&hPartyExp,0,sizeof(hPartyExp));
+	PartyExp hPartyExp = { 0 };
+
 	hPartyExp.pMonster = pMonster;
 	D2ASMFuncs::D2GAME_ForEachInParty(pPlayer, pGame, (void(__fastcall*)(Game*, UnitAny*, void*))&ExpCallback, &hPartyExp);
 	if(hPartyExp.nMembers > 0)

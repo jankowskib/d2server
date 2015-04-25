@@ -77,8 +77,8 @@ struct PacketTbl
 struct PartyExp // Tymczasowo rozszerzylem do 16 (originally sized 0x4C)
 {
 	UnitAny *pMonster;
-	UnitAny *pPartyMembers[16];
-	DWORD PartyLevels[16];
+	UnitAny *pPartyMembers[64];
+	DWORD PartyLevels[64];
 	DWORD nMembers;
 	DWORD LvlSum;
 };
