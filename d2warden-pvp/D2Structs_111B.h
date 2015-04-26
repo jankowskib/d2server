@@ -314,7 +314,7 @@ struct Attack
 struct AiGeneral
 {
   DWORD SpecialState;										  //0x00 - stuff like terror, confusion goes here
-  void* ( __fastcall * fpAiFunction)(Game*,UnitAny*,DWORD*);  //0x04 - the primary ai function to call
+  void* ( __fastcall * fpAiFunction)(Game*,UnitAny*, void*);  //0x04 - the primary ai function to call
   DWORD AiFlags;											  //0x08
   DWORD OwnerGUID;											  //0x0C- the global unique identifier of the boss or minion owner
   DWORD eOwnerType;											  //0x10 - the unit type of the boss or minion owner

@@ -251,6 +251,8 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NODE_OFFSET_I), 0x1E00, 4, "NodesEX: Change node offset I");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NODE_OFFSET_II), 0x1E00, 4, "NodesEX: Change node offset II");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NODE_OFFSET_III), 0x1E00, 4, "NodesEX: Change node offset III");
+#ifdef VER_113D
+#endif
 
 	//Basic fixes
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS), wcfgMaxPlayers, 1, "GameEnter: Check number of players");
@@ -273,7 +275,6 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEPLAYER_III_F3), NEU_NODE, 4, "NodesEX: Change neutral Node: CreatePlayer III -f3");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEPLAYER_IV_F4), NEU_NODE, 4, "NodesEX: Change neutral Node CreatePlayer IV -f4");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATECORPSE_I), NEU_NODE, 4, "NodesEX: Change neutral Node CreateCorpse I");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_PLAYER_EVENT_CONTROLLER), NEU_NODE, 1, "NodesEX: Change neutral Node Player Event Controller");
 
 	//UNIT_Object 
 
@@ -315,7 +316,7 @@ void PatchD2()
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEMONSTER_I_F1), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateMonster I - f1");
 
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_REMOVEMONSTERCORPSE_CHANGE_ITERATION_TO_16), NEU_NODE - 3, 1, "NodesEX: RemoveMonsterCorpse: Change iteration to 16");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_REMOVEMONSTERCORPSE_CHANGE_ITERATION_TO_16), wcfgMaxPlayers, 1, "NodesEX: RemoveMonsterCorpse: Change iteration to 16");
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_MONSTERS_SKILL_NECRO), NEU_NODE, 1, "NodesEX: Change neutral Node: Monsters Skill : Necro");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_17_SAME_FUNC_AS_ABOVE), NEU_NODE - 2, 4, "NodesEX: Change Monster Node to 17 same func as above");
@@ -337,5 +338,21 @@ void PatchD2()
 #ifdef VER_111B
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEOBJECT_IB), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateObject I");
 #endif
+
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_PLAYER_EVENT_CONTROLLER), NEU_NODE, 1, "NodesEX: MONAI_WUSSIE: Change neutral Node");
+#ifdef VER_113D
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_WUSSIE_AI_NODE_TO_16), wcfgMaxPlayers, 1, "NodesEX: MONAI_WUSSIE: Change iteration to 16");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ROGUE_SCOUT_SPAWN_NODE_TO_16), wcfgMaxPlayers, 1, "NodesEX: Rogue Scout spawn: Change iteration to 16");
+
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALLMAKER: Change iteration to 17");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17_SKILL), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALL: Change iteration to 17");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ATTRACT_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:ATTRACT: Change iteration to 17");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");
+	
+
+	
+#endif
+
+
 
 }
