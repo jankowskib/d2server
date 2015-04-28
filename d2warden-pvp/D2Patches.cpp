@@ -235,7 +235,7 @@ void PatchD2()
 	//	PatchGS(JUMP,GetDllOffset("Fog.dll",FOG_MEM_FREE_OVERRIDE),(DWORD)ExMemory::Free_STUB,5,"Mem Free Override");
 	//	PatchGS(JUMP,GetDllOffset("Fog.dll",FOG_MEM_REALLOC_OVERRIDE),(DWORD)ExMemory::Realloc,5,"Mem Realloc Override");
 
-	PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_NODESEX_AI_TEMP_FIX), 0x90909090, 9, "NodesEX: Ai Temp Fix");
+	//PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_NODESEX_AI_TEMP_FIX), 0x90909090, 9, "NodesEX: Ai Temp Fix"); // This temp fix is no more needed
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_BAAL_AI), (DWORD)NODES_BaalCheck, 7, "NodesEX: Baal Ai"); // bylo 0x2BB75
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_DIABLO_AI), (DWORD)NODES_NormalCheck, 7, "NodesEX: Diablo Ai");
@@ -267,7 +267,8 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP_II), wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop II");
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CREATE_UNITANY_CHANGE_NEUTRAL_NODE), NEU_NODE, 4, "NodesEX: Create UnitAny: Change neutral Node");
-
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_ITEM_CREATE_SUB), NEU_NODE, 4, "NodesEX: Create Item: Change neutral Node");
+	
 	//UNIT_Player
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEPLAYER_I_F1), NEU_NODE, 4, "NodesEX: Change neutral Node: CreatePlayer I -f1 ");
@@ -277,7 +278,7 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATECORPSE_I), NEU_NODE, 4, "NodesEX: Change neutral Node CreateCorpse I");
 
 	//UNIT_Object 
-
+	
 	//CreateObject Patches
 	//po chuj blizzowi tyle funkcji do tworzenia obiektow...
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEOBJECT_I), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateObject I");
@@ -337,6 +338,7 @@ void PatchD2()
 	//Missiles
 #ifdef VER_111B
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEOBJECT_IB), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateObject I");
+#pragma message ("Warning: Look at the patches below - they're not ported to 1.11b so game will crash randomly!")
 #endif
 
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_PLAYER_EVENT_CONTROLLER), NEU_NODE, 1, "NodesEX: MONAI_WUSSIE: Change neutral Node");
@@ -347,10 +349,7 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALLMAKER: Change iteration to 17");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17_SKILL), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALL: Change iteration to 17");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ATTRACT_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:ATTRACT: Change iteration to 17");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");
-	
-
-	
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");	
 #endif
 
 

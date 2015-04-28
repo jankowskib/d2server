@@ -20,7 +20,9 @@
 #include "stdafx.h"
 #include "NodesEx.h"
 
-
+/*
+	pChild is unused at all callers I checked
+*/
 void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild)  // 0xEDF00
 {
 	int NEU_NODE = wcfgMaxPlayers + 3;
