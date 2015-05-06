@@ -143,7 +143,7 @@ void PatchD2()
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_PLAYER_EVENTS_WRAPPER), (DWORD)D2Stubs::D2GAME_OnEventSend_STUB, 5, "Player Events Wrapper");
 
 
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X66_WARDEN_PACKET_WRAPPER), (DWORD)d2warden_0X66Handler, 5, "0x66 Warden Packet Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X66_WARDEN_PACKET_WRAPPER), (DWORD)d2warden_0X66Handler, 5, "0x66 Warden Packet Wrapper");
 	//Pakiety skilli
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X05_WRAPPER), (DWORD)OnClickLocation, 8, "0x05 Wrapper");
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0C_WRAPPER), (DWORD)OnClickLocation, 8, "0x0C Wrapper");

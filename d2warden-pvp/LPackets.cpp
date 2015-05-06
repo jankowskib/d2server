@@ -22,7 +22,7 @@
 #include "LSpectator.h"
 #include "Build.h"
 #include <atomic>
-
+#include "RC4.h"
 
 /*
 	Replacement for D2GAME.0xBB9F0
@@ -57,16 +57,16 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 	case 0xFD:
 		D2Funcs.D2NET_GetIpAddress(pPacket->ClientID, data, 16);
 		Log("WARNING: (%s) wanted to send malicious packet!", data);
-	
-		sprintf_s(response, 189, "This is D2GS %s by Lolet (build %d). Compiled on %s, %s\n%s",
-		#ifdef VER_111B
-					"1.11b",
-		#elif defined VER_113D
-					"1.13d",
-		#endif
-					__BUILDNO__, __DATE__, __TIME__, errata);
 
-		D2Funcs.D2NET_SendPacket(2, pPacket->ClientID, (BYTE*)response, strlen(response)+1);
+		sprintf_s(response, 189, "This is D2GS %s by Lolet (build %d). Compiled on %s, %s\n%s",
+#ifdef VER_111B
+			"1.11b",
+#elif defined VER_113D
+			"1.13d",
+#endif
+			__BUILDNO__, __DATE__, __TIME__, errata);
+
+		D2Funcs.D2NET_SendPacket(2, pPacket->ClientID, (BYTE*)response, strlen(response) + 1);
 		break;
 	default:
 		Log("WARNING: No action taken for received debug packet id (0x%x). Reason: No callback", pPacket->aPacket[1]);
@@ -79,7 +79,7 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 /*
 	Replacement for D2GAME.0x673A0
 	(BYTE *pPacket<ebx>, UnitAny *pUnit<esi>, Game *pGame, int nPacketLen)
-*/
+	*/
 int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nPacketLen)
 {
 	BYTE pType = pPacket[0];
@@ -95,64 +95,66 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 	switch (pType)
 	{
-		case 0x14: // Overhead chat
-		case 0x15: // Chat
-		case 0x3C: // Select skill
-		case 0x41: // Ressurect
-		case 0x43: // Unknown
-		case 0x66: // Warden packet
-		{
-			if (pType == 0x41)
-				if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
-					return 0;
-
-			if (pType == 0x20 || pType == 0x26)
-			{
-			}
-
-			if (pGame->nSyncTimer > 1)
-				pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-			return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
-		}
-		case 0x5E: // Party relation
-		{
-			px5e * p = (px5e*)pPacket;
-			if (nPacketLen != sizeof(px5e))
-			{
-				if (pUnit)
-					Log("HACK: Malformed packet 0x5E. **VERY SUSPECT**. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
-				return 3;
-			}
-			if (p->nButton != PB_SPECATE)
-			{
-				if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
-					return 0;
-			}
-			else
-			{
-				if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH)
-					return 0;
-			}
-
-			if (pGame->nSyncTimer > 1)
-				pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-			return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
-		}
-		default:
-		{
-			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+	case 0x14: // Overhead chat
+	case 0x15: // Chat
+	case 0x3C: // Select skill
+	case 0x41: // Ressurect
+	case 0x43: // Unknown
+	{
+		if (pType == 0x41)
+			if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
 				return 0;
 
-			if (pGame->nSyncTimer > 1)
-				pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
 
-			return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case 0x5E: // Party relation
+	{
+		px5e * p = (px5e*)pPacket;
+		if (nPacketLen != sizeof(px5e))
+		{
+			if (pUnit)
+				Log("HACK: Malformed packet 0x5E. **VERY SUSPECT**. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
 		}
+		if (p->nButton != PB_SPECATE)
+		{
+			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+				return MSG_OK;
+		}
+		else
+		{
+			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH)
+				return MSG_OK;
+		}
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case 0x66: // Warden packet
+	{
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return d2warden_0X66Handler(pGame, pUnit, pPacket, nPacketLen);
+	}
+	default:
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
 	}
 
-	return 3;
+	return MSG_HACK;
 }
 
 
@@ -303,9 +305,9 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 
 		D2ASMFuncs::D2GAME_CastSkill(pPlayer, ptSkill, pGame, ptPacket->xPos, ptPacket->yPos);
 		if (SkillId == D2S_TELEPORT || SkillId == D2S_CHARGE || SkillId == D2S_WHIRLWIND)
-		SPECTATOR_UpdatePositions(pGame, pPlayer, ptPacket->xPos, ptPacket->yPos);
+			SPECTATOR_UpdatePositions(pGame, pPlayer, ptPacket->xPos, ptPacket->yPos);
 		else
-		SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
+			SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
 
 		if (!wcfgDetectTrick)
 			return 0;
@@ -386,7 +388,7 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 			ptWardenClient->DupeDetected = 1;
 		}
 		UNLOCK
-		return MSG_HACK;
+			return MSG_HACK;
 	}
 	if (InRange)
 	{
@@ -416,3 +418,74 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 	}
 	return MSG_HACK;
 }
+
+DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, DWORD PacketLen) // packet 0x66 -> response for Warden question
+{
+	if (!ptPlayer)
+	{
+		DEBUGMSG("WardenPacket: ptPlayer == null!");
+		return MSG_HACK;
+	}
+
+	DWORD ClientID = ptPlayer->pPlayerData->pClientData->ClientID;
+
+	if (PacketLen < 3)
+	{
+		DEBUGMSG("WardenPacket: PacketLen < 3 !");
+		return MSG_HACK;
+	}
+
+	if (!ClientID)
+	{
+		DEBUGMSG("WardenPacket: No client id!");
+		return MSG_HACK;
+	}
+
+
+	WardenClient_i i = GetClientByID(ClientID);
+	if (i != hWarden.Clients.end())
+	{
+		i->pWardenPacket.ReceiveTime = GetTickCount();
+		i->pWardenPacket.PacketLen = ptPacket[2] * 256 + ptPacket[1];
+
+		if (i->pWardenPacket.PacketLen == 0 || i->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
+		{
+			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
+			UNLOCK
+			return MSG_HACK;
+		}
+
+		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
+		if (!ThePacket)
+		{
+			Log("WardenPacket: No memory to allocate packet data!");
+			UNLOCK
+			return MSG_HACK;
+		}
+
+		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
+		i->pWardenPacket.ThePacket = ThePacket;
+
+		rc4_crypt(i->RC4_KEY_0X66, i->pWardenPacket.ThePacket, i->pWardenPacket.PacketLen);
+		//DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
+		i->NextCheckTime = GetTickCount();
+		UNLOCK
+		//DEBUGMSG("WardenPacket: Triggering the check event...");
+		SetEvent(hWardenCheckEvent);
+		return MSG_OK; // Wszystko OK!
+	}
+	else
+	{
+		DEBUGMSG("WardenPacket: Client %d, %s (*%s) is not in WardenQueue!!", ClientID, ptPlayer->pPlayerData->pClientData->CharName, ptPlayer->pPlayerData->pClientData->AccountName);
+
+#ifdef _ENGLISH_LOGS
+		Log("WardenPacket: Unexpected packet from player %s (*%s)! Returning an error..", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
+#else
+		Log("WardenPacket: Nieoczekiwany pakiet od gracza %s (*%s)! Zwracam blad...", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
+#endif
+		return MSG_HACK;
+	}
+
+}
+
+

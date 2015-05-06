@@ -29,7 +29,6 @@
 #include "LWorldEvent.h"
 #include "process.h"
 #include "RC4.h"
-
 #include "Build.h"
 
 using namespace std;
@@ -518,79 +517,6 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 
 	return 0;
 }
-
-int  __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, int PacketLen) // Pakiet 66 -> Odpowiedz klienta na zapytanie Wardena
-{
-	// Mozliwe wartosci zwrotu kazdego pakietu:
-	// 0 - wszystko ok
-	// 1 - ?
-	// 2 - blad
-	// 3 - hack 
-	if (!ptPlayer)
-	{
-		DEBUGMSG("WardenPacket: ptPlayer == null!");
-		return 3;
-	}
-
-	DWORD ClientID = ptPlayer->pPlayerData->pClientData->ClientID;
-
-	if (PacketLen < 3)
-	{
-		DEBUGMSG("WardenPacket: PacketLen < 3 !");
-		return 3;
-	}
-
-	if (!ClientID)
-	{
-		DEBUGMSG("WardenPacket: No client id!");
-		return 3;
-	}
-
-
-	WardenClient_i i = GetClientByID(ClientID);
-	if (i != hWarden.Clients.end())
-	{
-		i->pWardenPacket.ReceiveTime = GetTickCount();
-		i->pWardenPacket.PacketLen = ptPacket[2] * 256 + ptPacket[1];
-
-		if (i->pWardenPacket.PacketLen == 0 || i->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
-		{
-			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
-			return 3;
-		}
-
-		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
-		if (!ThePacket)
-		{
-			Log("WardenPacket: No memory to allocate packet data!");
-			return 3;
-		}
-
-		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
-		i->pWardenPacket.ThePacket = ThePacket;
-
-		rc4_crypt(i->RC4_KEY_0X66, i->pWardenPacket.ThePacket, i->pWardenPacket.PacketLen);
-		//DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
-		i->NextCheckTime = GetTickCount();
-		UNLOCK
-		//DEBUGMSG("WardenPacket: Triggering the check event...");
-		SetEvent(hWardenCheckEvent);
-		return 0; // Wszystko OK!
-	}
-	else
-	{
-		DEBUGMSG("WardenPacket: Client %d, %s (*%s) is not in WardenQueue!!", ClientID, ptPlayer->pPlayerData->pClientData->CharName, ptPlayer->pPlayerData->pClientData->AccountName);
-
-#ifdef _ENGLISH_LOGS
-		Log("WardenPacket: Unexpected packet from player %s (*%s)! Returning an error..", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
-#else
-		Log("WardenPacket: Nieoczekiwany pakiet od gracza %s (*%s)! Zwracam blad...", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
-#endif
-		return 3;
-	}
-
-}
-
 
 int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Dodaj nowego klienta do petli Wardena
 {

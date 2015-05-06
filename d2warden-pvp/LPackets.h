@@ -28,4 +28,6 @@ DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *p
 DWORD __fastcall OnClickLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
 DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen);
 
+DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, DWORD PacketLen);
+
 #endif
