@@ -213,11 +213,7 @@ void Warden_Config()
 
 	}
 //	Warden_DownloadIni();
-#ifdef _ENGLISH_LOGS
 	Log("Settings loaded.");
-#else
-	Log("Ustawienia zaladowane.");
-#endif
 }
 
 void Warden_Init()
@@ -228,7 +224,6 @@ void Warden_Init()
 	FILE * fp = 0;
 	int i = 0;
 
-#ifdef _ENGLISH_LOGS
 	Log("Warden ver. 1.6b build %d (%s) by Lolet has started. Compiled on %s, %s", __BUILDNO__,
 #ifdef VER_111B
 		"1.11b",
@@ -236,15 +231,6 @@ void Warden_Init()
 		"1.13d",
 #endif
 		__DATE__, __TIME__);
-#else
-	Log("Warden ver. 1.6a build %d (%s) by Lolet rozpoczal dzialanie. Skompilowano %s o %s",__BUILDNO__,
-#ifdef VER_111B
-		"1.11b",
-#elif defined VER_113D
-		"1.13d",
-#endif
-		__DATE__,__TIME__);
-#endif
 
 	Warden_Config();
 #ifdef D2EX_MYSQL
@@ -253,27 +239,14 @@ void Warden_Init()
 		Log("Failed to connect to MySQL server");
 	}
 #endif
-#ifdef _ENGLISH_LOGS
 	Log("Setting allowed player limit on %d", wcfgMaxPlayers);
-#else
-	Log("Ustalam dozwolona liczbe graczy w grze na %d", wcfgMaxPlayers);
-#endif
-
-#ifdef _ENGLISH_LOGS
 	Log("Patching game...");
-#else
-	Log("Przeprogramowuje gre...");
-#endif
 
 	PatchD2();
 
 	if (strlen(Warden_MOD) != 36)
 	{
-#ifdef _ENGLISH_LOGS
 		Log("Incorrect name of module '%s' (len!=36)",Warden_MOD);
-#else
-		Log("Nieprawidlowa nawa modulu '%s' (len!=36)",Warden_MOD);
-#endif
 		Warden_Enable = false;
 		return;
 	}
@@ -281,11 +254,7 @@ void Warden_Init()
 	fopen_s(&fp,Warden_MOD,"rb");
 	if (!fp)
 	{
-#ifdef _ENGLISH_LOGS
 		Log("Cannot find module filename '%s'!",Warden_MOD);
-#else
-		Log("Nie moge znalesc pliku modulu '%s'!",Warden_MOD);
-#endif
 		Warden_Enable = false;
 		return;
 	}
@@ -294,11 +263,7 @@ void Warden_Init()
 	
 	if (MOD_Length <= 260 || MOD_Length > 100000)
 	{
-#ifdef _ENGLISH_LOGS
 		Log("Incorrect module size (%d)",MOD_Length);
-#else
-		Log("Nieprawidlowa wielkosc modulu (%d)",MOD_Length);
-#endif
 		Warden_Enable = false;
 		fclose(fp);
 		return;
@@ -307,11 +272,7 @@ void Warden_Init()
 	MOD_Enrypted = new unsigned char[MOD_Length];
 	if (MOD_Enrypted == NULL)
 	{
-#ifdef _ENGLISH_LOGS
 		Log("No memory to allocate module!");
-#else
-		Log("Brak pamieci na zaincjowanie modulu!");
-#endif
 		Warden_Enable = false;
 		fclose(fp);
 		return;
@@ -323,11 +284,7 @@ void Warden_Init()
 	
 	if (MOD_Enrypted[MOD_Length-260] != 'N' || MOD_Enrypted[MOD_Length-259] != 'G' || MOD_Enrypted[MOD_Length-258] != 'I' || MOD_Enrypted[MOD_Length-257] != 'S')
 	{
-#ifdef _ENGLISH_LOGS
 		Log("Damaged module file!");
-#else
-		Log("Uszkodzony plik modulu!");
-#endif
 		Warden_Enable = false;
 		delete[] MOD_Enrypted;
 		return;
@@ -361,22 +318,14 @@ void Warden_Init()
 
 	Warden_Enable = true;
 
-#ifdef _ENGLISH_LOGS
 	Log("Module '%s' has loaded correctly!",Warden_MOD);
-#else
-	Log("Modul '%s' wczytany!",Warden_MOD);
-#endif
 
 	if(wcfgDumpInterval)
 	{
 		if(!DumpHandle)
 			DumpHandle = (HANDLE)_beginthreadex(0,0,&StatThread,0,0,&StatID);
 		if(DumpHandle)
-	#ifdef _ENGLISH_LOGS
 			Log("Started stat dump, every %d second(s).",wcfgDumpInterval);
-	#else
-			Log("Rozpoczeto zrzut statystyk, co %d sekund(y).",wcfgDumpInterval);
-	#endif
 	}
 	else
 	{
@@ -1040,7 +989,7 @@ void SendPtrRequest(WardenClient_i pWardenClient, DWORD Addr, BYTE Bytes)
 	//DEBUGMSG("Sending Warden request...")
 		unsigned char WardenCMD2_local[100] = { 0 };
 	WORD PacketSize = 10;
-	BYTE * Packet = new BYTE[10];
+	BYTE Packet[10];
 	Packet[0] = 0x02;
 	Packet[1] = 0x00;
 	Packet[2] = 0xEC;
@@ -1055,7 +1004,6 @@ void SendPtrRequest(WardenClient_i pWardenClient, DWORD Addr, BYTE Bytes)
 	D2Funcs.D2NET_SendPacket(0, pWardenClient->ClientID, WardenCMD2_local, PacketSize + 3);
 	//if(D2Funcs.D2NET_GetClient(pWardenClient->ClientID))
 	//D2ASMFuncs::D2GAME_SendPacket(pWardenClient->ptClientData,WardenCMD2_local,PacketSize+3);
-	delete[] Packet;
 }
 
 
