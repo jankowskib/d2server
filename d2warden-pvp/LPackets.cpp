@@ -84,33 +84,69 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 {
 	BYTE pType = pPacket[0];
 	if (pType > 0x66)
-		return 3;
+		return MSG_HACK;
 	PacketTbl* cbCallback = (PacketTbl*)&D2Vars.D2GAME_ClientPacketTable[pType];
 
 	if (!cbCallback->Callback)
 	{
 		Log("WARNING: No action taken for received packet id (0x%x). Reason: No callback", pType);
-		return 3;
+		return MSG_HACK;
 	}
 
 	switch (pType)
 	{
-	case 0x14: // Overhead chat
-	case 0x15: // Chat
-	case 0x3C: // Select skill
-	case 0x41: // Ressurect
-	case 0x43: // Unknown
+	case D2SRVMSG_LEFT_CLICK_ON_LOC:	//0x05
+	case D2SRVMSG_RIGHT_CLICK_ON_LOC:	//0x0C
+	case D2SRVMSG_HOLD_LEFT_CLICK_ON_LOC: //0x08
+	case D2SRVMSG_HOLD_RIGHT_CLICK_ON_LOC: //0x0F
 	{
-		if (pType == 0x41)
-			if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
-				return 0;
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
 
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return OnClickLocation(pGame, pUnit, (SkillPacket*)pPacket, nPacketLen);
+	}
+	// left button
+	case D2SRVMSG_LEFT_CLICK_ON_UNIT:			// 0x06
+	case D2SRVMSG_SHIFT_LEFT_CLICK_ON_UNIT:		// 0x07
+	case D2SRVMSG_HOLD_LEFT_CLICK_ON_UNIT:		// 0x09
+	case D2SRVMSG_SHIFT_LEFT_CLICK_ON_UNIT_2:	// 0x0A
+	// right button
+	case D2SRVMSG_RIGHT_CLICK_ON_UNIT:			// 0x0D
+	case D2SRVMSG_SHIFT_RIGHT_CLICK_ON_UNIT:	// 0x0E
+	case D2SRVMSG_HOLD_RIGHT_CLICK_ON_UNIT:		// 0x10
+	case D2SRVMSG_SHIFT_RIGHT_CLICK_ON_UNIT_2:	// 0x11
+	{
+
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return OnClickUnit(pGame, pUnit, (SkillTargetPacket*)pPacket, nPacketLen);
+	}
+	case D2SRVMSG_RESSURECT: // Ressurect
+	{
+		if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
+			return MSG_OK;
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+		return OnResurrect(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_OVERHEAD:
+	case D2SRVMSG_CHAT:
+	case D2SRVMSG_SELECT_SKILL: 
+	case D2SRVMSG_UNKNOWN_0x43:
+	{
 		if (pGame->nSyncTimer > 1)
 			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
 
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
-	case 0x5E: // Party relation
+	case D2SRVMSG_PARTY_OPTIONS_2: // Party relation
 	{
 		px5e * p = (px5e*)pPacket;
 		if (nPacketLen != sizeof(px5e))
@@ -135,7 +171,7 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
-	case 0x66: // Warden packet
+	case D2SRVMSG_WARDEN_RESPONSE:
 	{
 		if (pGame->nSyncTimer > 1)
 			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
@@ -229,7 +265,7 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 
 	D2ASMFuncs::D2GAME_CastSkillOnUnit(pPlayer, ptSkill, pGame, ptPacket->UnitType, ptPacket->UnitId, (ptPacket->Header == 6 || ptPacket->Header == 9 || ptPacket->Header == 0xD || ptPacket->Header == 0x10) ? 1 : 0);
 
-	UnitAny * pDest = D2ASMFuncs::D2GAME_FindUnit(pGame, ptPacket->UnitId, ptPacket->UnitType);
+	UnitAny * pDest = D2ASMFuncs::D2GAME_FindUnit(pGame, ptPacket->UnitId, (BYTE)ptPacket->UnitType);
 	if (pDest)
 	{
 		int mX = D2Funcs.D2COMMON_GetPathX(pDest->pPath);
@@ -249,9 +285,12 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 {
 	bool InRange = false;
 	static int AttackCount;
-	if (PacketLen != 5) return MSG_HACK; // zwroc hack
-	if (!pGame) return MSG_HACK;
-	if (pPlayer->dwType != UNIT_PLAYER) return MSG_HACK;
+	if (PacketLen != 5)
+		return MSG_HACK; 
+	if (!pGame)
+		return MSG_HACK;
+	if (pPlayer->dwType != UNIT_PLAYER)
+		return MSG_HACK;
 
 	WORD UnitX = D2Funcs.D2GAME_GetUnitX(pPlayer);
 	WORD UnitY = D2Funcs.D2GAME_GetUnitY(pPlayer);
@@ -274,18 +313,18 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 	{
 		pPlayerData->GameFrame = pGame->GameFrame;
 		Skill * ptSkill = (ptPacket->Header == 5 || ptPacket->Header == 8) ? D2Funcs.D2COMMON_GetLeftSkill(pPlayer) : D2Funcs.D2COMMON_GetRightSkill(pPlayer);
-		if (!ptSkill) return 3;
+		if (!ptSkill) return MSG_HACK;
 		int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
 
 		if (TeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == D2S_TELEPORT)
 		{
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
-			return 0;
+			return MSG_OK;
 		}
 
 		if (SkillId == D2S_HOLYBOLT && !wcfgAllowHB) {
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
-			return 0;
+			return MSG_OK;
 		}
 
 		int nPierceIdx = D2Funcs.D2COMMON_GetBaseStatSigned(pPlayer, 328, 0);
@@ -300,7 +339,7 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 			AttackCount++;
 			if (AttackCount > 4)
 				AttackCount = 0;
-			return 0;
+			return MSG_OK;
 		}
 
 		D2ASMFuncs::D2GAME_CastSkill(pPlayer, ptSkill, pGame, ptPacket->xPos, ptPacket->yPos);
@@ -310,7 +349,7 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 			SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
 
 		if (!wcfgDetectTrick)
-			return 0;
+			return MSG_OK;
 
 		WardenClient_i ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
 		if (ptWardenClient == hWarden.Clients.end()) return 0;
@@ -331,7 +370,7 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 				Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]", ptWardenClient->CharName.c_str(), ptWardenClient->AccountName.c_str(), ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory" : "Skill Tree", ConvertSkill(SkillId).c_str(), ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition);
 			}
 		UNLOCK
-			return 0;
+			return MSG_OK;
 	}
 	else
 	{
@@ -350,7 +389,7 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 				D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hReassign, 11);
 			}
 		}
-		return 1;
+		return MSG_UNK;
 	}
 	return MSG_HACK;
 }
@@ -395,7 +434,7 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 		SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
 		pPlayerData->GameFrame = pGame->GameFrame;
 		D2Funcs.D2GAME_SetUnitModeXY(pGame, pPlayer, 0, PLAYER_MODE_RUN, ptPacket->xPos, ptPacket->yPos, 0);
-		return 0;
+		return MSG_OK;
 	}
 	else
 	{
@@ -452,7 +491,7 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 		{
 			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
 			UNLOCK
-			return MSG_HACK;
+				return MSG_HACK;
 		}
 
 		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
@@ -460,7 +499,7 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 		{
 			Log("WardenPacket: No memory to allocate packet data!");
 			UNLOCK
-			return MSG_HACK;
+				return MSG_HACK;
 		}
 
 		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
@@ -470,8 +509,8 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 		//DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
 		i->NextCheckTime = GetTickCount();
 		UNLOCK
-		//DEBUGMSG("WardenPacket: Triggering the check event...");
-		SetEvent(hWardenCheckEvent);
+			//DEBUGMSG("WardenPacket: Triggering the check event...");
+			SetEvent(hWardenCheckEvent);
 		return MSG_OK; // Wszystko OK!
 	}
 	else
@@ -488,4 +527,86 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 
 }
 
+// Replacement for 0x41 parse (1.11b: D2Game.6FC51F60)
+DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, DWORD PacketSize)
+{
+	ClientData *pClientData = 0;
+	DEBUGMSG(__FUNCTION__)
+	if (PacketSize != 1)
+		return MSG_HACK;
 
+	if (!pPlayer || pPlayer->dwMode != PLAYER_MODE_DEAD)
+		return MSG_OK;
+
+
+	if (pPlayer->dwType == UNIT_PLAYER)
+		pClientData = pPlayer->pPlayerData->pClientData;
+
+	if (!pClientData)
+		return MSG_HACK;
+	if (pClientData->PlayerStatus & 4)
+	{
+		D2ASMFuncs::D2GAME_BroadcastLeavingEvent(pClientData, pGame, EVENT_LEFT);
+		return MSG_OK;
+	}
+
+	if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (wcfgRespawnTimer * 1000))
+		return MSG_OK;
+
+	if (pPlayer->pSkills)
+	{
+		for (Skill* s = pPlayer->pSkills->pFirstSkill; s; s = s->pNextSkill)
+		{
+			WORD nSkill = D2Funcs.D2COMMON_GetSkillId(s, __FILE__, __LINE__);
+			int nState = D2Funcs.D2COMMON_GetStateNoBySkillId(nSkill);
+			if (nState > 0)
+			{
+				D2Funcs.D2COMMON_SetGfxState(pPlayer, nState, 1);
+				D2Funcs.D2COMMON_RefreshAura(pPlayer, nSkill);
+			}
+		}
+	}
+
+	int dwMaxLife = D2Funcs.D2COMMON_GetUnitMaxLife(pPlayer);
+	int dwMaxMana = D2Funcs.D2COMMON_GetUnitMaxMana(pPlayer);
+	int dwMaxStamina = D2Funcs.D2COMMON_GetStatSigned(pPlayer, STAT_MAXSTAMINA, 0);
+
+	D2Funcs.D2COMMON_SetStat(pPlayer, STAT_HP, dwMaxLife, 0);
+	D2Funcs.D2COMMON_SetStat(pPlayer, STAT_MANA, dwMaxMana, 0);
+	D2Funcs.D2COMMON_SetStat(pPlayer, STAT_STAMINA, dwMaxStamina, 0);
+
+	D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_HP, dwMaxLife, pPlayer);
+	D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_MANA, dwMaxMana, pPlayer);
+	D2Funcs.D2GAME_UpdatePlayerStats(pPlayer, STAT_STAMINA, dwMaxStamina, pPlayer);
+	pPlayer->dwFlags |= UNITFLAG_SELECTABLE;				  // Make unit selectable
+
+	D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 1);   // Uninterrupable
+	D2Funcs.D2COMMON_SetGfxState(pPlayer, uninterruptable, 0);
+
+	int aLevel = D2Funcs.D2COMMON_GetTownLevel(pPlayer->dwAct);
+
+	//Room1* aRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pRoom->pAct, aLevel, 0, &aX, &aY, 2);
+	//D2ASMFuncs::D2GAME_TeleportUnit(aX, aY, aRoom, pGame, pUnit);
+
+	D2ASMFuncs::D2GAME_MoveUnitToLevelId(pPlayer, aLevel, pGame);
+	D2Funcs.D2GAME_SetUnitModeXY(pGame, pPlayer, 0, PLAYER_MODE_STAND_OUTTOWN, 0, 0, 1);
+
+	Skill* pLeftSkill = D2Funcs.D2COMMON_GetLeftSkill(pPlayer);
+	Skill* pRightSkill = D2Funcs.D2COMMON_GetRightSkill(pPlayer);
+	if (pLeftSkill)
+	{
+		DWORD nFlags = pLeftSkill->dwFlags;
+		WORD nSkill = D2Funcs.D2COMMON_GetSkillId(pLeftSkill, __FILE__, __LINE__);
+
+		D2Funcs.D2GAME_SetMonSkill(pPlayer, 1, nSkill, nFlags);
+	}
+
+	if (pRightSkill)
+	{
+		DWORD nFlags = pRightSkill->dwFlags;
+		WORD nSkill = D2Funcs.D2COMMON_GetSkillId(pRightSkill, __FILE__, __LINE__);
+		D2Funcs.D2GAME_SetMonSkill(pPlayer, 0, nSkill, nFlags);
+	}
+
+	return MSG_OK;
+}

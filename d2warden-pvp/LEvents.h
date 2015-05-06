@@ -21,7 +21,6 @@
 #define LEVENTS_H__
 
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent);
-DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, int PacketSize);
 void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame);
 void __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, Room1 *pRoom);
 

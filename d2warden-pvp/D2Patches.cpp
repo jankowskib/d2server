@@ -132,7 +132,7 @@ void PatchD2()
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_CHAT_WRAPPER), (DWORD)D2Stubs::D2GAME_Chat_STUB, 6, "Chat Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_NPC_SLOW_MISSILE_HEAL), (DWORD)D2Stubs::D2GAME_NPCHeal_STUB, 61, "NPC Slow Missile Heal");
 	//PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_RESSURECT_FIX), (DWORD)D2Stubs::D2GAME_Ressurect_STUB, 39, "Ressurect Fix");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X41_WRAPPER), (DWORD)OnResurrect, 6, "0x41 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X41_WRAPPER), (DWORD)OnResurrect, 6, "0x41 Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ROSTER_WRAPPER), (DWORD)D2Stubs::D2GAME_DeathMsg_STUB, 5, "Roster Wrapper");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ON_MONSTER_DEATH), (DWORD)D2Stubs::D2GAME_OnMonsterDeath_STUB, 9, "On Monster Death");
 
@@ -145,21 +145,21 @@ void PatchD2()
 
 	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X66_WARDEN_PACKET_WRAPPER), (DWORD)d2warden_0X66Handler, 5, "0x66 Warden Packet Wrapper");
 	//Pakiety skilli
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X05_WRAPPER), (DWORD)OnClickLocation, 8, "0x05 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0C_WRAPPER), (DWORD)OnClickLocation, 8, "0x0C Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X08_WRAPPER), (DWORD)OnClickLocation, 5, "0x08 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0F_WRAPPER), (DWORD)OnClickLocation, 5, "0x0F Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X05_WRAPPER), (DWORD)OnClickLocation, 8, "0x05 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0C_WRAPPER), (DWORD)OnClickLocation, 8, "0x0C Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X08_WRAPPER), (DWORD)OnClickLocation, 5, "0x08 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0F_WRAPPER), (DWORD)OnClickLocation, 5, "0x0F Wrapper");
 	//--------------
 	//Pakiety skill on Unit 0x06*, 0x07, 0x09*, 0x0A,  || 0x0D*, 0x0E, 0x10*, 0x11
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X06_WRAPPER), (DWORD)OnClickUnit, 6, "0x06 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X07_WRAPPER), (DWORD)OnClickUnit, 6, "0x07 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X09_WRAPPER), (DWORD)OnClickUnit, 6, "0x09 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0A_WRAPPER), (DWORD)OnClickUnit, 6, "0x0A Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X06_WRAPPER), (DWORD)OnClickUnit, 6, "0x06 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X07_WRAPPER), (DWORD)OnClickUnit, 6, "0x07 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X09_WRAPPER), (DWORD)OnClickUnit, 6, "0x09 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0A_WRAPPER), (DWORD)OnClickUnit, 6, "0x0A Wrapper");
 
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0D_WRAPPER), (DWORD)OnClickUnit, 6, "0x0D Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0E_WRAPPER), (DWORD)OnClickUnit, 6, "0x0E Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X10_WRAPPER), (DWORD)OnClickUnit, 6, "0x10 Wrapper");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X11_WRAPPER), (DWORD)OnClickUnit, 6, "0x11 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0D_WRAPPER), (DWORD)OnClickUnit, 6, "0x0D Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X0E_WRAPPER), (DWORD)OnClickUnit, 6, "0x0E Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X10_WRAPPER), (DWORD)OnClickUnit, 6, "0x10 Wrapper");
+	//PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X11_WRAPPER), (DWORD)OnClickUnit, 6, "0x11 Wrapper");
 	//-----------
 
 	//On Run to Location
