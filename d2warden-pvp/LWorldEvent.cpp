@@ -112,8 +112,8 @@ void WE_CreateDCKey(UnitAny* pUnit)
 
 			if(ptItem)
 			{
-				POINT Pos = {pUnit->pPath->xPos,pUnit->pPath->yPos};
-				POINT Out = {0,0};
+				D2POINT Pos = {pUnit->pPath->xPos,pUnit->pPath->yPos};
+				D2POINT Out = {0,0};
 				Room1* aRoom =	D2ASMFuncs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
 				if(!aRoom) return;
 				D2ASMFuncs::D2GAME_DropItem(ptItem,aRoom,pUnit->pGame,pUnit,Out.x,Out.y);
@@ -137,8 +137,8 @@ int __fastcall WE_Spawn(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *
 		if(aLvl==39)
 		{
 
-			POINT Pos = {pUnit->pPath->xPos,pUnit->pPath->yPos};
-			POINT Out = {0,0};
+			D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
+			D2POINT Out = { 0, 0 };
 			Room1* aRoom =	D2ASMFuncs::D2GAME_FindFreeCoords(&Pos,pUnit->pPath->pRoom1,&Out,1);
 
 			if(aRoom)

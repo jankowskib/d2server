@@ -43,8 +43,8 @@ void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, int xPos, i
 			if (!mRoom || !aRoom) continue;
 
 			//POINT Pos = { (xPos + UnitX) / 2, (yPos + UnitY) / 2 };
-			POINT Pos = { xPos, yPos};
-			POINT Out = { 0, 0 };
+			D2POINT Pos = { xPos, yPos };
+			D2POINT Out = { 0, 0 };
 
 			aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, aRoom, &Out, 0);
 			if (aRoom && Out.x && Out.y)

@@ -61,6 +61,7 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	SetupD2Pointers();
 	SetupD2Funcs();
 	
+
 	Warden_Init();
 	if (Warden_Enable == false)
 	{
