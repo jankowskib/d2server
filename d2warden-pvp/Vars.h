@@ -75,7 +75,7 @@ extern unsigned StatID;
 extern BYTE DesyncFix;
 extern unsigned int AfkDrop;
 extern int PNo;
-extern int wcfgRespawnTimer;
+extern DWORD wcfgRespawnTimer;
 
 //-----------
 extern int SellCount;

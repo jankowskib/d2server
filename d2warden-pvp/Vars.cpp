@@ -82,7 +82,7 @@ int NextDC = 0;
 int MinSell = 0;
 int MaxSell = 0;
 int InfoDelay = 0;
-int wcfgRespawnTimer = 0;
+DWORD wcfgRespawnTimer = 0;
 WEItem WItem;
 
 
