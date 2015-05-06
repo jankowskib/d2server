@@ -23,8 +23,6 @@
 
 #ifdef D2EX_MYSQL
 
-
-
 #include "mysql_driver.h"
 #include "mysql_connection.h"
 
@@ -38,40 +36,66 @@ using namespace sql;
 
 static unique_ptr<Connection> gCon;
 
+
+bool FG_WaitForMySQLServer(unsigned int msTimeout)
+{
+	DWORD tick = GetTickCount();
+
+	do {
+		try {
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			return true;
+		}
+		catch (SQLException& e) {
+			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
+		}
+	} while (tick + msTimeout > GetTickCount());
+
+	return false;
+}
+
 /*
 	Make global connection to a MySQL server
 	Default: "tcp://127.0.0.1:3306"
 */
-BOOL FG_ConnectToSQL(string szServer, string szUser, string szPass, string szDatabase)
+void FG_ConnectToSQL(string szServer, string szUser, string szPass, string szDatabase)
 {
-	BOOL result = false;
 	try
 	{
 		Driver* driver = get_driver_instance();
 		gCon = unique_ptr<Connection>(driver->connect(szServer.c_str(), szUser.c_str(), szPass.c_str()));
+		int nTimeout = 2;
 		bool bReconnect = true;
-		int nTimeout = 3;
-		gCon->setClientOption("MYSQL_OPT_RECONNECT", &bReconnect);
-		gCon->setClientOption("MYSQL_OPT_CONNECT_TIMEOUT", &nTimeout);
+		gCon->setClientOption("OPT_CONNECT_TIMEOUT", &nTimeout);
+		gCon->setClientOption("OPT_RECONNECT", &bReconnect);
+		gCon->setClientOption("OPT_READ_TIMEOUT", &nTimeout);
 		gCon->setSchema(szDatabase.c_str());
-		result = true;
 	}
 	catch (SQLException& e)
 	{
-		DEBUGMSG("MySQL error!: %s", e.what());
-		Log("MySQL error!: %s", e.what());
+		DEBUGMSG("MySQL error (%d): %s", e.getErrorCode(), e.what());
+		throw;
 	}
-	return result;
 }
+
 
 
 int FG_GetGoldByAccount(string szAccount)
 {
 	int result = 0;
 
+	if (!gCon || gCon->isClosed()) {
+		try {
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+		} catch (SQLException& e) {
+			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
+			return 0;
+		}
+	}
+
 	try
 	{
-		auto_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
+		unique_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
 
 		stmt->setString(1, szAccount);
 		if (stmt->execute())
@@ -86,8 +110,7 @@ int FG_GetGoldByAccount(string szAccount)
 	}
 	catch (SQLException& e)
 	{
-		DEBUGMSG("MySQL error!: %s", e.what());
-		Log("MySQL error!: %s", e.what());
+		Log("MySQL error (%d): %s", e.getErrorCode(), e.what());
 	}
 
 	return result;
@@ -95,6 +118,15 @@ int FG_GetGoldByAccount(string szAccount)
 
 bool FG_BuyItem(string szAccount, int nValue)
 {
+	if (!gCon || gCon->isClosed()) {
+		try {
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+		}
+		catch (SQLException& e) {
+			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
+			return 0;
+		}
+	}
 
 	try
 	{
@@ -122,8 +154,7 @@ bool FG_BuyItem(string szAccount, int nValue)
 	}
 	catch (SQLException& e)
 	{
-		DEBUGMSG("MySQL connection failed!: %s", e.what());
-		Log("MySQL connection failed!: %s", e.what());
+		Log("MySQL error (%d): %s", e.getErrorCode(), e.what());
 	}
 
 	return false;
@@ -131,6 +162,16 @@ bool FG_BuyItem(string szAccount, int nValue)
 
 bool FG_RollbackCost(string szAccount, int nCost)
 {
+	if (!gCon || gCon->isClosed()) {
+		try {
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+		}
+		catch (SQLException& e) {
+			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
+			return 0;
+		}
+	}
+
 	try
 	{
 		unique_ptr<PreparedStatement> stmt2(gCon->prepareStatement("UPDATE user AS u INNER JOIN userfield AS f ON u.userid = f.userid SET u.Gold = u.Gold + ? WHERE f.Field5=?"));
@@ -141,8 +182,7 @@ bool FG_RollbackCost(string szAccount, int nCost)
 	}
 	catch (SQLException& e)
 	{
-		DEBUGMSG("MySQL connection failed!: %s", e.what());
-		Log("MySQL connection failed!: %s", e.what());
+		Log("MySQL error (%d): %s", e.getErrorCode(), e.what());
 	}
 
 	return false;
@@ -151,6 +191,16 @@ bool FG_RollbackCost(string szAccount, int nCost)
 
 bool FG_SetValue(string szAccount, int nValue)
 {
+	if (!gCon || gCon->isClosed()) {
+		try {
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+		}
+		catch (SQLException& e) {
+			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
+			return 0;
+		}
+	}
+
 	try
 	{
 		unique_ptr<PreparedStatement>  stmt(gCon->prepareStatement("SELECT user.Gold FROM user INNER JOIN userfield ON user.userid = userfield.userid WHERE userfield.Field5=?"));
@@ -177,8 +227,8 @@ bool FG_SetValue(string szAccount, int nValue)
 	}
 	catch (SQLException& e)
 	{
-		DEBUGMSG("MySQL connection failed!: %s", e.what());
-		Log("MySQL connection failed!: %s", e.what());
+		DEBUGMSG("MySQL error (%d): %s", e.getErrorCode(), e.what());
+		Log("MySQL error (%d): %s", e.getErrorCode(), e.what());
 	}
 
 	return false;

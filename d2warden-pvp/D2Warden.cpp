@@ -249,11 +249,8 @@ void Warden_Init()
 	Warden_Config();
 #ifdef D2EX_MYSQL
 	Log("Connecting to MYSQL server...");
-	if (!FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase))
-	{
-		Log("Failed to connect to database!");
-		Warden_Enable = false;
-		return;
+	if (!FG_WaitForMySQLServer(1000 * 6)) { // 6 sec for connection
+		Log("Failed to connect to MySQL server");
 	}
 #endif
 #ifdef _ENGLISH_LOGS
