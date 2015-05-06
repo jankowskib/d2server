@@ -27,11 +27,9 @@
 /*
 	Replacement for D2GAME.0xBB9F0
 	(PacketData* pPacket<eax>)
-*/
+	*/
 void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 {
-	std::atomic_uint nDebugClients;
-
 	if (!*D2Vars.D2GAME_gpfnEventCallbacks)
 		return;
 
@@ -42,10 +40,8 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 	switch (pPacket->aPacket[1])
 	{
 	case 0xFA:
-		++nDebugClients;
 		break;
 	case 0xFB:
-		--nDebugClients;
 		break;
 	case 0xFC:
 		D2Funcs.D2NET_GetIpAddress(pPacket->ClientID, data, 16);
