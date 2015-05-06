@@ -623,11 +623,12 @@ D2GamePatch proc
 	push 0
 	call UnProtectDLL2
 	
-	; 1.13 CompareFileTime workaround -> skipping cause Warden patches that in better way
-	mov	ecx,esi
-	add	ecx, 024F0Ah		;6FC44F35 7E14
-	mov	ax, 053EBh
-	mov	word ptr[ecx],ax
+	; 1.13 CompareFileTime workaround -> skipping cause Warden patches that in better way (commented out 29.04.2015)
+	;mov	ecx,esi
+	;add	ecx, 024F0Ah		;6FC44F35 7E14
+	;mov	ax, 053EBh
+	;mov	word ptr[ecx],ax
+    
 	; for warden patch 0x68,0x66 packet handler
 	;mov ecx,esi
 	;add ecx,0FA9C8h		; packet 0x66 handler .113d
