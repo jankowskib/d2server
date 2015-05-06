@@ -795,13 +795,17 @@ void Log(char *format,...)
 	EnterCriticalSection(&LOG_CS);
 	FILE *fp = 0;
 	fopen_s(&fp,"d2warden.log","a+");
-	if(!fp) { 	LeaveCriticalSection(&LOG_CS); return; }
+	if (!fp) { delete[] text; 	LeaveCriticalSection(&LOG_CS); return; }
 	fseek(fp,0,SEEK_END);
 	fwrite(timebuf,strlen(timebuf),1,fp);
 	fwrite(text,strlen(text),1,fp);
 	fwrite("\n",1,1,fp);
 	fclose(fp);
 
+#if _DEBUG
+	OutputDebugString(text);
+	OutputDebugString("\n");
+#endif
 	delete[] text;
 	LeaveCriticalSection(&LOG_CS);
 };
@@ -822,7 +826,7 @@ void LogNoLock(char *format,...)
 
 	FILE *fp = 0;
 	fopen_s(&fp,"d2warden.log","a+");
-	if(!fp) { 	LeaveCriticalSection(&LOG_CS); return; }
+	if (!fp) { delete[] text;	LeaveCriticalSection(&LOG_CS); return; }
 	fseek(fp,0,SEEK_END);
 	fwrite(timebuf,strlen(timebuf),1,fp);
 	fwrite(text,strlen(text),1,fp);
@@ -910,7 +914,7 @@ void LogToFile(char *FileName, bool PutTime, char *format,...)
 	EnterCriticalSection(&LOG_CS);
 	FILE *fp = 0;
 	fopen_s(&fp,FileName,"a+");
-	if(!fp) { LeaveCriticalSection(&LOG_CS); return;}
+	if (!fp) { delete[] text; LeaveCriticalSection(&LOG_CS); return; }
 	fseek(fp,0,SEEK_END);
 
 if(PutTime)
@@ -974,7 +978,7 @@ void LogMsg(char * GameName, char *format,...)
 	sprintf_s(fn,40,"Msgs-%s.log",GameName);
 	FILE *fp = 0;
 	fopen_s(&fp,fn,"a+");
-	if(!fp) return;
+	if (!fp) { delete[] text; return; }
 	fseek(fp,0,SEEK_END);
 	fwrite(timebuf,strlen(timebuf),1,fp);
 	fwrite(text,strlen(text),1,fp);
