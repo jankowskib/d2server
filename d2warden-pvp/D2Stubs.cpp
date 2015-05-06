@@ -1357,7 +1357,7 @@ namespace D2ASMFuncs
 		}
 	}
 
-	__declspec(naked) Room1* __fastcall D2GAME_FindFreeCoords(POINT* Desired, Room1* ptRoom, POINT* Output, BOOL Unk)
+	__declspec(naked) Room1* __fastcall D2GAME_FindFreeCoords(D2POINT* Desired, Room1* ptRoom, D2POINT* Output, BOOL Unk)
 	{
 		__asm
 		{

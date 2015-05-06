@@ -124,8 +124,8 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		}
 
 		
-		POINT Pos = {xPos, yPos};
-		POINT Out = {0,0};
+		D2POINT Pos = { xPos, yPos };
+		D2POINT Out = { 0, 0 };
 
 		ptMonster = 0;
 

@@ -53,7 +53,7 @@ EXFUNCPTR(D2GAME, CreateItemEx, UnitAny*, __fastcall, (Game *pGame, PresetItem *
 EXFUNCPTR(D2GAME, SetMonSkill, void, __fastcall, (UnitAny *pUnit, int HowSet, int SkillId, int SkillFlags), 0x19FA0) // 1.13d
 EXFUNCPTR(D2GAME, AddItemToNPC, int, __fastcall, (char *szFile, int aLine, Game *pGame, UnitAny *pNPCUnit, int ItemId, WORD iX, WORD iY, int a6, int a7, int a8), 0xB7640) // 1.13d
 EXFUNCPTR(D2GAME, DeleteUnit, int, __fastcall, (Game *ptGame, UnitAny *ptUnit), 0x6FC70) // 1.13d
-EXFUNCPTR(D2GAME, CopyPortal, UnitAny*, __stdcall, (Game *pGame, UnitAny *pSourceUnit, int nLevel, POINT Coords), 0x15F40) // 1.13d
+EXFUNCPTR(D2GAME, CopyPortal, UnitAny*, __stdcall, (Game *pGame, UnitAny *pSourceUnit, int nLevel, D2POINT Coords), 0x15F40) // 1.13d
 EXFUNCPTR(D2GAME, CreateUnit, UnitAny*, __fastcall, (DWORD UnitType, DWORD ClassId, int xPos, int yPos, Game *pGame, Room1 *pRoom1, WORD wFlags, DWORD InitMode, int UnitId), 0x6FE10) //1.13d
 EXFUNCPTR(D2GAME, SetUnitModeXY, int, __fastcall, (Game *pGame, UnitAny *pUnit, Skill *pSkill, int aMode, int xPos, int yPos, BOOL bForce), 0x922E0) // 1.13d
 EXFUNCPTR(D2GAME, RemoveFromPickedUp, void, __stdcall, (UnitAny *pPlayer), 0xB41D0) // 1.13d

@@ -183,12 +183,14 @@ void __fastcall OnMonsterDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptG
 	switch (ptVictim->dwType)
 	{
 	case UNIT_MONSTER:
+#if (_DEBUG)
 		int nStr = ptVictim->pMonsterData->pMonStatsTxt->wNameStr;
 		wchar_t* wStr = D2Funcs.D2LANG_GetLocaleText(nStr);
 		char* szMonster = new char[wcslen(wStr) + 1];
 		WideToChar(szMonster, wStr);
 		DEBUGMSG("Killed a '%s'", szMonster);
 		delete[] szMonster;
+#endif
 	break;
 	}
 
@@ -415,8 +417,7 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	//LRoster::SendKills(Data->ptGame);
 	//LRoster::SendDeaths(Data->ptGame);
 
-	ExEventDownload pEvent;
-	::memset(&pEvent, 0, sizeof(ExEventDownload));
+	ExEventDownload pEvent = {};
 	pEvent.P_A6 = 0xA6;
 	pEvent.MsgType = EXEVENT_DOWNLOAD;
 	strcpy_s(pEvent.szURL, 255, wcfgClansURL.c_str());
@@ -567,7 +568,7 @@ int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Doda
 
 
 	int D2Version = pJoinPacket->VerByte;
-	ServerHashMap[pJoinPacket->szCharName].VerCode = pJoinPacket->VerByte;
+	ServerHashMap[pJoinPacket->szCharName].VerCode = (BYTE)pJoinPacket->VerByte;
 	ServerHashMap[pJoinPacket->szCharName].bNeedUpdate = false;
 
 	if (D2Version < wcfgD2EXVersion && !wcfgAllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
@@ -1084,8 +1085,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#movexy <x> <y>"); return false; }
 				int nY = atoi(str);
 
-				POINT Pos = { nX, nY };
-				POINT Out = { 0, 0 };
+				D2POINT Pos = { nX, nY };
+				D2POINT Out = { 0, 0 };
 
 				Room1 * mRoom = 0;
 					
@@ -1127,7 +1128,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 				str = strtok_s(NULL, " ", &t);
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Usage: #setstate <stateid> <1,0>"); return false; }
-				int nState = atoi(str);
+				DWORD nState = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Usage: #setstate <stateid> <1,0>"); return false; }
 				int nHowSet = atoi(str);
@@ -1183,8 +1184,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 						if (pObj->dwClassId == ObjId)
 						{
-							POINT Pos = { pObj->xPos, pObj->yPos };
-							POINT Out = { 0, 0 };
+							D2POINT Pos = { pObj->xPos, pObj->yPos };
+							D2POINT Out = { 0, 0 };
 
 							Room1 * mRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pUnit->pAct, 39, 0, (int*)&Out.x, (int*)&Out.y, 2);
 
@@ -1212,8 +1213,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 							{
 								SendMsgToClient(pUnit->pPlayerData->pClientData, "Room not found!"); return false;
 							}
-							POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
-							POINT Out = { 0, 0 };
+							D2POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
+							D2POINT Out = { 0, 0 };
 
 							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
 							SendMsgToClient(aUnit->pPlayerData->pClientData, "II method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
@@ -1233,8 +1234,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 							{
 								SendMsgToClient(pUnit->pPlayerData->pClientData, "III method: Room not found!"); return false;
 							}
-							POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
-							POINT Out = { 0, 0 };
+							D2POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
+							D2POINT Out = { 0, 0 };
 
 							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
 							SendMsgToClient(aUnit->pPlayerData->pClientData, "III method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);

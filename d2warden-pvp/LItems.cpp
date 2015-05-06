@@ -564,8 +564,8 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 			if (ptItem)
 			{
 				if (isGold) D2Funcs.D2COMMON_SetStat(ptItem, STAT_GOLD, 1000000, 0);
-				POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
-				POINT Out = { 0, 0 };
+				D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
+				D2POINT Out = { 0, 0 };
 				Room1* aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, pUnit->pPath->pRoom1, &Out, 1);
 				if (!aRoom) { SendMsgToClient(pUnit->pPlayerData->pClientData, "FindFreeCoords failed!"); return false; }
 				D2ASMFuncs::D2GAME_DropItem(ptItem, aRoom, pUnit->pGame, pUnit, Out.x, Out.y);

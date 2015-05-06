@@ -99,7 +99,7 @@ int __fastcall D2GAME_DeleteItem(Game* ptGame, UnitAny* ptItem);
 void __fastcall D2GAME_UpdateClient(WORD ItemFormat, UnitAny *ptItem, ClientData *pClient, BYTE SomeBool, int StatNo, int StatValue);
 void __fastcall D2GAME_DropItem(UnitAny* ptItem, Room1* ptRoom, Game* ptGame, UnitAny* ptOwner, int xPos, int yPos);
 UnitAny* __stdcall D2GAME_CreateItem(int iLvl, int a2, int a3, UnitAny* pOwner, int ItemIdx, Game* ptGame, int InitMode, int iQuality, BOOL Personalize, int LoSeed, int HiSeed);
-Room1* __fastcall D2GAME_FindFreeCoords(POINT* Desired, Room1* ptRoom, POINT* Output, BOOL Unk);
+Room1* __fastcall D2GAME_FindFreeCoords(D2POINT* Desired, Room1* ptRoom, D2POINT* Output, BOOL Unk);
 Room1* __fastcall D2GAME_CheckXYOccupy(Room1* ptRoom, int xPos, int yPos);
 int __fastcall D2GAME_isUnitInRange(Game *pGame, DWORD UnitId, DWORD UnitType, UnitAny *pUnit, int Range);
 void __fastcall D2GAME_CreatePlayer(Game* ptGame, ClientData* ptClient, int Unk, UnitAny** out);
