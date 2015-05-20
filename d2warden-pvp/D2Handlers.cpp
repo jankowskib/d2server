@@ -417,8 +417,9 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	//LRoster::SendKills(Data->ptGame);
 	//LRoster::SendDeaths(Data->ptGame);
 
-	ExEventDownload pEvent = {};
+	ExEventDownload pEvent;
 	pEvent.P_A6 = 0xA6;
+	pEvent.bExec = 0;
 	pEvent.MsgType = EXEVENT_DOWNLOAD;
 	strcpy_s(pEvent.szURL, 255, wcfgClansURL.c_str());
 	if (pEvent.szURL[0])
