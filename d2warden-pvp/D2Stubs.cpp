@@ -29,6 +29,41 @@
 
 namespace D2Stubs
 {
+	int __stdcall D2Stubs::D2COMMON_GetMercCost(UnitAny* pPlayer)
+	{
+		return 0;
+	}
+
+	BOOL __stdcall ITEMS_CheckRemoveCostFlag(UnitAny* pItem) 
+	{
+
+		ItemsTxt* pTxt = D2Funcs.D2COMMON_GetItemTxt(pItem->dwClassId);
+		if (pTxt)
+		return pTxt->dwgamblecost > 0;
+
+		return 0;
+	}
+
+	//__stdcall (UnitAny *pPlayer, UnitAny *ptItem, int DiffLvl, QuestFlags *pQuestFlags, int NpcClassId, int InvPage)
+	__declspec(naked) void D2Stubs::D2COMMON_GetItemCost_STUB()
+	{
+		__asm
+		{
+			push eax
+			push[esp + 8 + 4]
+
+			call ITEMS_CheckRemoveCostFlag
+
+			cmp eax, 1
+			pop eax
+			je dont_remove_cost
+			xor eax, eax
+
+		dont_remove_cost:
+			ret 18h
+		}
+	}
+
 
 	/*
 	void __usercall ParseDebugPackets_6FCDB9F0(PacketData *hPacket<eax>)

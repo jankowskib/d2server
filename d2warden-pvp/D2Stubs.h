@@ -22,6 +22,8 @@
 
 namespace D2Stubs 
 {
+	int __stdcall D2COMMON_GetMercCost(UnitAny* pPlayer);
+	void D2COMMON_GetItemCost_STUB();
 	void __fastcall OnDebugPacketReceive_STUB();
 	void __fastcall D2GAME_IsUnitDead_STUB();
 	void __stdcall D2GAME_OnPacketReceive_STUB();

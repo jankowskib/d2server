@@ -180,8 +180,11 @@ void PatchD2()
 #ifdef D2EX_MYSQL
 	PatchGS(JUMP, GetDllOffset("D2Common.dll", -10550), (DWORD)ITEMS_OnStatFetch, 6, "Gold value override");
 
+#ifdef VER_113D
+	PatchGS(JUMP, GetDllOffset("D2Common.dll", -10186) + 34, (DWORD)D2Stubs::D2COMMON_GetItemCost_STUB, 5, "Remove item cost"); // Set 'gamble cost' column to 0 to remove item cost
+	PatchGS(JUMP, GetDllOffset("D2Common.dll", -10243), (DWORD)D2Stubs::D2COMMON_GetMercCost, 5, "Remove merc cost");
+#endif
 
-	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ITEM_COST_STUB), (DWORD)ITEMS_GetItemCost, 5, "Item Cost Stub");
 	PatchGS(JUMP, GetDllOffset("D2Common.dll", D2COMMON_GETBANKGOLDLIMIT_J), (DWORD)GetGoldBankLimit, 5, "Nullify stash gold");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ADDGOLD_I), (DWORD)D2Stubs::D2GAME_AddStat_STUB, 5, "Fetch forum gold value instead of gold stat I");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ADDGOLD_II), (DWORD)D2Stubs::D2GAME_AddStat_STUB, 5, "Fetch forum gold value instead of gold stat II");
