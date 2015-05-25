@@ -12,6 +12,117 @@ struct ArenaTxt
 
 #pragma pack(push,1)
 
+struct LevelsTxt
+{
+	WORD wLevelNo;
+	BYTE nPal;
+	BYTE nAct;
+	BYTE nTeleport;
+	BYTE nRain;
+	BYTE nMud;
+	BYTE nNoPer;
+	BYTE nIsInside;
+	BYTE nDrawEdges;
+	WORD unk0x0A;
+	DWORD dwWarpDist;
+	WORD wMonLvl1;
+	WORD wMonLvl2;
+	WORD wMonLvl3;
+	WORD wMonLvl1Ex;
+	WORD wMonLvl2Ex;
+	WORD wMonLvl3Ex;
+	DWORD dwMonDen[3];
+	BYTE nMonUMin[3];
+	BYTE nMonUMax[3];
+	BYTE nMonWndr;
+	BYTE nMonSpcWalk;
+	BYTE nQuest;
+	BYTE nRangedSpawn;
+	DWORD dwNumMon;
+	WORD wMon[25];
+	WORD wNMon[25];
+	WORD wUMon[25];
+	WORD wCMon[4];
+	WORD wCPct[4];
+	WORD wCAmt[4];
+	BYTE nWaypoint;
+	BYTE nObjGroup[8];
+	BYTE nObjPrb[8];
+	char szLevelName[40];
+	char szLevelWarp[40];
+	char szEntryFile[41];
+	wchar_t wszLevelName[40];
+	wchar_t wszLevelWarp[41];
+	DWORD dwThemes;
+	DWORD dwFloorFilter;
+	DWORD dwBlankScreen;
+	DWORD dwSoundEnv;
+};
+
+
+struct ItemsTxtStat
+{
+	DWORD dwProp;                 //0x00
+	DWORD dwPar;                  //0x04
+	int dwMin;					  //0x08
+	int dwMax;			          //0x0C
+};
+
+
+struct UniqueItemsTxt
+{
+	WORD _1;	                  //0x00
+	char szName[34];              //0x02
+	DWORD dwVersion;              //0x24
+	union
+	{
+		DWORD dwCode;
+		char szCode[4];
+	};							  //0x28
+	DWORD dwUniqueItemFlags;      //0x2C
+	DWORD dwRarity;               //0x30
+	WORD wLvl;                    //0x34
+	WORD wLvlReq;                 //0x36
+	BYTE nChrTransform;           //0x38
+	BYTE nInvTransform;           //0x39
+	char szFlippyFile[32];        //0x3A
+	char szInvFile[34];           //0x5A
+	DWORD dwCostMult;             //0x7C
+	DWORD dwCostAdd;              //0x80
+	WORD wDropSound;              //0x84
+	WORD wUseSound;               //0x86
+	DWORD dwDropSfxFrame;         //0x88   
+	ItemsTxtStat hStats[12];      //0x90
+};
+
+struct SetItemsTxt
+{
+	WORD wSetItemId;               //0x00
+	char szName[32];               //0x02
+	WORD _1;	                   //0x22
+	DWORD dwTblIndex;              //0x24
+	union
+	{
+		DWORD dwCode;
+		char szCode[4];
+	};							   //0x28
+	DWORD _2;	                   //0x2C
+	WORD wLvl;                     //0x30
+	WORD wLvlReq;                  //0x32
+	DWORD dwRarity;                //0x34
+	DWORD dwCostMult;              //0x38
+	DWORD dwCostAdd;               //0x3C
+	BYTE nChrTransform;            //0x40
+	BYTE nInvTransform;            //0x41
+	char szFlippyFile[32];         //0x42
+	char szInvFile[32];            //0x62
+	WORD wDropSound;               //0x82
+	WORD wUseSound;                //0x84
+	BYTE nDropSfxFrame;            //0x86
+	BYTE nAddFunc;                 //0x87
+	ItemsTxtStat hStats[9];        //0x88
+	ItemsTxtStat hGreenStats[10];   //0x118
+};
 
 struct D2ItemTypesTxt
 {
@@ -590,17 +701,22 @@ BYTE	bItemFlags;			//0x00
 BYTE	ItemType;			//0x01
 WORD	Item;				//0x02
 WORD	ItemID;				//0x04
-BYTE	Quality;			//0x06
-BYTE	Quantity;			//0x07
+union
+{
+	struct
+	{
+		BYTE nQuality;               //0x06
+		BYTE nQuantity;              //0x07
+	};
+
+	WORD nParam;               //0x06
+};
 BYTE	Type;				//0x08
 BYTE	Lvl;				//0x09
 BYTE	PLvl;				//0x0A
 BYTE	ILvl;				//0x0B
-WORD	PrefixId;			//0x0C
-WORD	_1;					//0x0E
-WORD	_2;					//0x10
-WORD	SuffixId;			//0x12
-DWORD	UnknownField;		//0x14
+WORD	PrefixId[3];		//0x0C
+WORD	SuffixId[3];		//0x12
 struct {							//size 0x0C
 DWORD	dwMod;				//0x00
 WORD	wModParam;			//0x04
@@ -1538,7 +1654,7 @@ struct sgptDataTable {
 	BYTE*	pSuperUniquesTxt;		//0xAD4
 	BYTE*	pSuperUniques;			//0xAD8
 	DWORD	dwSuperUniquesRecs;		//0xADC
-	WORD	SuperUniqeIdxList[66];	//0xAE0
+	WORD	SuperUniqueIdxList[66];	//0xAE0
 	MissilesTxt*	pMissilesTxt;	//0xB64
 	BYTE*	pMissiles;				//0xB68
 	DWORD	dwMissilesRecs;			//0xB6C
@@ -1584,10 +1700,10 @@ struct sgptDataTable {
 	BYTE*	pSetsTxt;				//0xC0C
 	DWORD	dwSetsRecs;				//0xC10
 	BYTE*	pSetItems;				//0xC14
-	BYTE*	pSetItemsTxt;			//0xC18
+	SetItemsTxt*	pSetItemsTxt;	//0xC18
 	DWORD	dwSetItemsRecs;			//0xC1C
 	BYTE*	pUniqueItems;			//0xC20
-	BYTE*	pUniqueItemsTxt;		//0xC24
+	UniqueItemsTxt*	pUniqueItemsTxt;//0xC24
 	DWORD	dwUniqItemsRecs;		//0xC28
 	BYTE*	pMonProp;				//0xC2C
 	BYTE*	pMonPropTxt;			//0xC30
@@ -1600,7 +1716,7 @@ struct sgptDataTable {
 	BYTE*	pMonUMod;				//0xC4C
 	BYTE*	pMonUModTxt;			//0xC50
 	DWORD	dwMonUModRecs;			//0xC54
-	BYTE*	pLevels;				//0xC58
+	LevelsTxt*	pLevelsTxt;			//0xC58
 	DWORD	dwLevelsRecs;			//0xC5C
 	BYTE*	pLvlDefs;				//0xC60
 	BYTE*	pLvlPrest;				//0xC64
@@ -1610,6 +1726,34 @@ struct sgptDataTable {
 	BYTE*	pExperience;			//0xC78
 	DifficultyLevelsTxt*pDiffLvlsTxt;//0xC7C
 	DWORD	dwDiffLvlsRecs;			//0xC80
+	// An unexpected surprise!
+#ifdef VER_113D // NOTE: not all members are correct
+	DWORD	_1;						//0xC84
+	BYTE*	pCharTemp;				//0xC88
+	DWORD	dwCharTempRecs;			//0xC8C
+	ArenaTxt*	pArena;				//0xC90
+	CubeMainTxt*	pCubeMain;		//0xC94
+	DWORD	dwCubeMainRecs;			//0xC98
+	DWORD   _2;						//0xC9C
+	BYTE*	pLvlSubExtra;			//0xCA0
+	BYTE*	pExpFieldD2;			//0xCA4
+	DWORD   ExpFieldData[5];		//0xCA8
+	BYTE*	pLvlTypes;				//0xCBC
+	BYTE*   pWaypoints;				//0xCC0
+	DWORD	dwWaypointsRecs;		//0xCC4
+	DWORD	dwLvlTypes;				//0xCC8
+	BYTE*	pLvlWarp;				//0xCCC
+	DWORD	dwLvlWarpRecs;			//0xCD0
+	BYTE*	pLvlMaze;				//0xCD4
+	DWORD	dwLvlMazeRecs;			//0xCD8
+	BYTE*	pLvlSub;				//0xCDC
+	DWORD	dwLvlSubRecs;			//0xCE0
+	DWORD   pLvlSubCache;			//0xCE4 aka sgpnTileSubsTypeStart
+	DWORD	_5[5];					//0xCE8
+	BYTE*	pMapCache;				//0xCFC
+	DWORD	dwMapCacheRecs;			//0xD00
+	DWORD	_6[2];					//0xD04
+#else
 	BYTE*	pExpFieldD2;			//0xC84
 	DWORD	ExpFieldData[10];		//0xC88
 	BYTE*	pLvlSubExtra;			//0xCB0
@@ -1623,7 +1767,7 @@ struct sgptDataTable {
 	DWORD	dwLvlTypes;				//0xCD0
 	BYTE*	pLvlWarp;				//0xCD4
 	DWORD	dwLvlWarpRecs;			//0xCD8
-	BYTE*	pLvlMaze;				//0xCDC
+	LvlMazeTxt*	pLvlMaze;				//0xCDC
 	DWORD	dwLvlMazeRecs;			//0xCE0
 	BYTE*	pLvlSub;				//0xCE4
 	DWORD	dwLvlSubRecs;			//0xCE8
@@ -1633,5 +1777,6 @@ struct sgptDataTable {
 	DWORD	dwMapCacheRecs;			//0xD00
 	CubeMainTxt*	pCubeMain;		//0xD04
 	DWORD	dwCubeMainRecs;			//0xD08
+#endif
 	BOOL	bWriteBinFiles;			//0xD0C
 	};

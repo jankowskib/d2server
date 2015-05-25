@@ -26,6 +26,7 @@ BYTE * __stdcall DYES_DrawItem(UnitAny *ptPlayer, UnitAny* ptItem, BYTE* out, BO
 
 void QUESTS_UpdateUnit(UnitAny* pUnit, WORD UpdateType, UnitAny*pUpdateUnit);
 BOOL __stdcall QUESTS_CowLevelOpenPortal(Game *pGame, UnitAny *pUnit);
+BOOL __stdcall QUESTS_OpenPortal(Game *pGame, UnitAny *pUnit, DWORD LevelId);
 bool __stdcall QUESTS_OnUseItem(Game* pGame, UnitAny* pUnit, UnitAny* pItem, DWORD dwItemCode);
 
 

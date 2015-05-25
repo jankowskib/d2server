@@ -38,6 +38,7 @@
 #include "NodesEx.h"
 #include "LParty.h"
 #include "LPackets.h"
+#include "LCube.h"
 
 void PatchD2()
 {
@@ -71,6 +72,25 @@ void PatchD2()
 //	PatchGS(NOP, GetDllOffset("D2Game.dll", D2GAME_DISABLE_ROOM_CACHE), 0x90, 6, "Disable Room Cache");
 	
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
+
+#ifdef VER_113D
+
+	PatchGS(CALL, GetDllOffset("D2Game.dll", 0xBFFC0), (DWORD)D2Stubs::UBERQUEST_SpawnMonsters_STUB, 5, "Spawn uber monsters");
+		
+
+	// I'd rather to avoid using __asm stubs
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x4F330), (DWORD)LEVELS_GetActByLevel, 22, "Replace inline GetActByLevel"); //  Ordinal11007
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x4F3C7), (DWORD)LEVELS_GetActByLevel, 26, "Replace inline GetActByLevel"); //  Ordinal11051
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x4F160), (DWORD)LEVELS_GetActByRoom2, 22, "Replace inline GetActByLevel"); //  Ordinal10301
+
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x2AD76), (DWORD)D2Stubs::GetActByLevelNo_STUB1, 20, "Replace inline GetActByLevel"); //  sub_6FD7AD60
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x56F40), (DWORD)D2Stubs::GetActByLevelNo_STUB1, 20, "Replace inline GetActByLevel"); //  sub_6FDA6EA0
+	PatchGS(CALL, GetDllOffset("D2Common.dll", 0x510A0), (DWORD)D2Stubs::GetActByLevelNo_STUB2, 20, "Replace inline GetActByLevel"); //  sub_6FDA1070
+
+	PatchGS(JUMP, GetDllOffset("D2Common.dll", -10864), (DWORD)LEVELS_GetActByLevelNo, 5, "Replace original GetActByLevelNo");
+
+	PatchGS(CALL, GetDllOffset("D2Game.dll", 0x970FC), (DWORD)D2Stubs::D2GAME_OnCustomFunc_STUB, 49, "CubeMain.Txt custom functions replacement");
+#endif
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ON_DEBUG_PACKET), (DWORD)D2Stubs::OnDebugPacketReceive_STUB, 5, "Fix Debug Packet Parser");
 
@@ -219,7 +239,7 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NULL_IRON_MAIDEN), 0, 1, "Null Iron Maiden");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NULL_LOWER_RESIST), 0, 1, "Null Lower Resist");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_COWS_DROP_FIX), 0xEB, 1, "Cows' drop fix");
-	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_COW_LEVEL_QUEST_OVERRIDE), (DWORD)QUESTS_CowLevelOpenPortal, 5, "Cow Level Quest Override");
+//	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_COW_LEVEL_QUEST_OVERRIDE), (DWORD)QUESTS_CowLevelOpenPortal, 5, "Cow Level Quest Override");
 #ifdef VER_111B
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_RESPEC), (DWORD)D2Stubs::D2GAME_OnUseItem_STUB, 5, "Respec");
 #endif

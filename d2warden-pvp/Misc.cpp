@@ -163,10 +163,10 @@ DWORD TransCode(const char* ptCode) // taken from afj666
    return ItemCode;
 }
 
-char* TransCode(DWORD dwCode)
+const char* TransCode(DWORD dwCode)
 {
 	BYTE* aCode = (BYTE*)&dwCode;
-	static char ItemCode[5] = {0};
+	char ItemCode[5] = {0};
 
 	ItemCode[0] = aCode[0];
 	ItemCode[1] = aCode[1];
@@ -174,7 +174,9 @@ char* TransCode(DWORD dwCode)
 	ItemCode[3] = aCode[3];
 	ItemCode[4] = 0;
 
-   return ItemCode;
+	std::string str(ItemCode);
+
+   return str.c_str();
 }
 
 void KickPlayer(ClientData* pClient)

@@ -1,4 +1,4 @@
-/* ==========================================================
+/* =================	=========================================
  * d2warden
  * https://github.com/lolet/d2warden
  * ==========================================================
@@ -26,9 +26,99 @@
 #include "LEvents.h"
 #include "LPackets.h"
 #include "LItems.h"
+#include "LCube.h"
+#include "LUberQuest.h"
 
 namespace D2Stubs
 {
+
+	__declspec(naked) void UBERQUEST_SpawnMonsters_STUB()
+	{
+		__asm
+		{
+			push eax
+			call UBERQUEST_SpawnMonsters
+
+			ret
+		}
+	}
+
+	// nLevel@ecx
+	__declspec(naked) BYTE __fastcall GetActByLevelNo_STUB1(DWORD nLevel)
+	{
+		__asm
+		{
+			// They are changed in my GetActByLevelNo, so need to preserve
+			push edx
+				push ecx
+				push edi
+
+				push ecx
+				call LEVELS_GetActByLevelNo
+
+
+				pop edi
+				pop ecx
+				pop edx
+
+				mov[esp + 13h + 4h], al
+				ret
+		}
+	}
+
+	// nLevel@edx
+	__declspec(naked) BYTE __fastcall GetActByLevelNo_STUB2(DWORD nLevel)
+	{
+		__asm
+		{
+
+			push edx
+				push ecx
+				push edi
+
+
+				push edx
+				call LEVELS_GetActByLevelNo
+
+
+				pop edi
+				pop ecx
+				pop edx
+
+				mov[esp + 13h + 4h], al
+				ret
+		}
+	}
+
+
+	// ESI - clean, EDI - clean - safe to call our func
+	__declspec(naked) void D2GAME_OnCustomFunc_STUB()
+	{
+		__asm
+		{
+			mov[esp + 14h + 4], esi // preserve item level
+
+			push ebp
+
+			push ebp // CubeOutputItem
+			push [esp + 12Ch + 8 + 4] // pPlayer
+			push [esp + 12Ch + 8 + 4] // PGame
+
+			call CUBE_OnCustomFunc
+
+			pop ebp 
+			
+			cmp eax, -1
+
+			je invalid_func
+
+			mov[esp + 38h + 4], eax // Store result of the function
+
+		invalid_func:
+			ret
+		}
+	}
+
 	int __stdcall D2Stubs::D2COMMON_GetMercCost(UnitAny* pPlayer)
 	{
 		return 0;
@@ -794,6 +884,18 @@ namespace D2Stubs
 
 namespace D2ASMFuncs
 {
+
+
+	__declspec(naked) void __stdcall D2GAME_UpdateRoomUnits(Game* pGame)
+	{
+		__asm
+		{
+				mov eax, [esp + 4]
+				call D2Ptrs.D2GAME_UpdateRoomUnits
+
+				ret 4
+		}
+	}
 
 	// void __userpurge sub_6FD103B0(UnitAny *pPlayer<ebx>, Game *a2)
 

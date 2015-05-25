@@ -245,8 +245,10 @@ EXIT 0</Command>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
     <ClCompile Include="D2Patches.cpp" />
+    <ClCompile Include="LCube.cpp" />
     <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
+    <ClCompile Include="LUberQuest.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
     <ClCompile Include="D2Warden.cpp" />
@@ -308,6 +310,7 @@ EXIT 0</Command>
     <ClInclude Include="ExPointers_113D.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="introtate.h" />
+    <ClInclude Include="LCube.h" />
     <ClInclude Include="LEvents.h" />
     <ClInclude Include="LItems.h" />
     <ClInclude Include="LMonsters.h" />
@@ -315,6 +318,7 @@ EXIT 0</Command>
     <ClInclude Include="LParty.h" />
     <ClInclude Include="LQuests.h" />
     <ClInclude Include="LRoster.h" />
+    <ClInclude Include="LUberQuest.h" />
     <ClInclude Include="LWorldEvent.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="NodesEx.h" />

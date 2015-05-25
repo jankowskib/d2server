@@ -22,6 +22,11 @@
 
 namespace D2Stubs 
 {
+	void UBERQUEST_SpawnMonsters_STUB();
+	BYTE __fastcall GetActByLevelNo_STUB1(DWORD nLevel);
+	BYTE __fastcall GetActByLevelNo_STUB2(DWORD nLevel);
+	
+	void D2GAME_OnCustomFunc_STUB();
 	int __stdcall D2COMMON_GetMercCost(UnitAny* pPlayer);
 	void D2COMMON_GetItemCost_STUB();
 	void __fastcall OnDebugPacketReceive_STUB();
@@ -65,6 +70,7 @@ namespace D2Stubs
 // -- ASM SUBS -- 
 namespace D2ASMFuncs 
 {
+void __stdcall D2GAME_UpdateRoomUnits(Game* pGame);
 void __fastcall D2GAME_RemovePets(Game* pGame, UnitAny* pPlayer);
 void __stdcall D2GAME_BroadcastLeavingEvent(ClientData *ptClient, Game *ptGame, BYTE MsgType);
 void __fastcall D2GAME_SetPlayerUnitModeTarget(Game *pGame, UnitAny *pUnit, Skill *pSkill, int nMode, int UnitType, int UnitId, int bAllowReEnter);

@@ -371,8 +371,8 @@ struct InactiveMonster // sizeof 0x5C
 	DWORD dwFlags2;			//0x14
 	DWORD dwFlags3;			//0x18
 	DWORD dwOwnerUid;		//0x1C
-	DWORD* pMinionList;		//0x20
-	DWORD* _2;				//0x24 -> ai related
+	DWORD* pMinionList;		//0x20 -> ai related
+	DWORD* pAi;				//0x24 -> ai related
 	DWORD dwSpecialState;	//0x28
 	DWORD dwMonLvl;			//0x2C
 	WORD dwNameSeed;		//0x30
@@ -414,7 +414,7 @@ struct InactiveObject // sizeof 0x34
 
 struct InactiveItem // sizeof 0xF + (vary)
 {
-	DWORD _1;
+	InactiveItem* pNext;		//0x00
 	// ...
 };
 
@@ -435,7 +435,7 @@ struct InactiveRoom // sizeof(0x18)
 {
 	DWORD dwXStart;					//0x00
 	DWORD dwYStart;					//0x04
-	InactiveItem *pItem;
+	InactiveItem *pItem;			//0x08
 	InactiveMonster *pMonster;		//0x0C
 	InactiveObject *pObject;		//0x10
 	InactiveRoom* pNextRoom;		//0x14
@@ -823,6 +823,17 @@ struct Game
 	DWORD LastVictim;					//0x201C
 	char szRekordHolder[16];			//0x2020
 	LSpectator *pLSpectator;			//0x2030
+	BOOL bOpenedDurielPortal;			//0x2034
+	BOOL bOpenedLilithPortal;			//0x2038
+	BOOL bOpenedIzualPortal;			//0x203C
+	BOOL bOpenedTristramPortal;			//0x2040
+	BOOL bSpawnedDuriel;				//0x2044
+	BOOL bSpawnedLilith;				//0x2048
+	BOOL bSpawnedIzual;					//0x204C
+
+	BOOL bSpawnedDiablo;				//0x2050
+	BOOL bSpawnedMephisto;				//0x2054
+	BOOL bSpawnedBaal;					//0x2059
 };
 
 

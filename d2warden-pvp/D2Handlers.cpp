@@ -42,6 +42,40 @@ struct ServerJoinData
 
 map<string, ServerJoinData> ServerHashMap;
 
+BYTE __fastcall LEVELS_GetActByLevel(Level* pLevel)
+{
+	ASSERT(pLevel)
+		return LEVELS_GetActByLevelNo(pLevel->dwLevelNo);
+}
+
+BYTE __fastcall LEVELS_GetActByRoom2(int _1, Room2* pRoom2)
+{
+	ASSERT(pRoom2)
+	ASSERT(pRoom2->pLevel)
+	return LEVELS_GetActByLevelNo(pRoom2->pLevel->dwLevelNo);
+
+}
+
+
+/*
+Modified beacuse the original function uses town lvl to determine act
+*/
+DWORD __stdcall LEVELS_GetActByLevelNo(DWORD nLevel)
+{
+
+	if (nLevel >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs)
+	{
+		DEBUGMSG("Invalid level id (%d)", nLevel)
+		return 0;
+	}
+	LevelsTxt* pLevel = &(*D2Vars.D2COMMON_sgptDataTables)->pLevelsTxt[nLevel];
+	if (pLevel)
+	{
+		return pLevel->nAct;
+	}
+	return 0;
+}
+
 
 BOOL __fastcall D2GAME_IsUnitDead(UnitAny* pUnit)
 {
@@ -770,7 +804,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#dumpunits") == 0)
 			{
-				/*map<DWORD, UnitAny*> hmap;
+				map<DWORD, UnitAny*> hmap;
 				for (int i = 0; i < 128; ++i)
 				{	
 					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pListNext)
@@ -781,16 +815,16 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					{
 						hmap[u->dwUnitId] = u;
 					}
-				}*/
-				for (InactiveRoom * r = pUnit->pGame->pDrlgRoomList[0]; r; r = r->pNextRoom)
+				}
+				for (InactiveRoom * r = pUnit->pGame->pDrlgRoomList[D2ACT_V]; r; r = r->pNextRoom)
 					for (InactiveObject *o = r->pObject; o; o = o->pNext)
 				{
 						DEBUGMSG("Class [%d], xy= [%d,%d]", o->dwClassId, o->xPos, o->yPos)
 				}
-			/*	for (auto u = hmap.begin(); u != hmap.end(); ++u)
+				for (auto u = hmap.begin(); u != hmap.end(); ++u)
 				{
 					DEBUGMSG("%d:, %d @ [%d,%d]", u->second->dwUnitId, u->second->dwClassId, D2Funcs.D2GAME_GetUnitX(u->second), D2Funcs.D2GAME_GetUnitY(u->second));
-				}*/
+				}
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "OK!");
 				return false;
 			}
@@ -1070,7 +1104,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					UNLOCK
 				}
 				if (!LvlId) return false;
-				if (LvlId > 136) return false;
+				if (LvlId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) return false;
 				SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to level '%d'...", aUnit->pPlayerData->szName, LvlId);
 				D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit, LvlId, aUnit->pGame);
 				return false;
@@ -1179,7 +1213,9 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				}
 				*/
 
-				for (InactiveRoom * pRoom = pUnit->pGame->pDrlgRoomList[0]; pRoom; pRoom = pRoom->pNextRoom)
+				int nAct = aUnit->pPath->pRoom1->pAct->dwAct;
+
+				for (InactiveRoom * pRoom = pUnit->pGame->pDrlgRoomList[nAct]; pRoom; pRoom = pRoom->pNextRoom)
 					for (InactiveObject * pObj = pRoom->pObject; pObj; pObj = pObj->pNext)
 					{
 
@@ -1188,7 +1224,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 							D2POINT Pos = { pObj->xPos, pObj->yPos };
 							D2POINT Out = { 0, 0 };
 
-							Room1 * mRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(pUnit->pAct, 39, 0, (int*)&Out.x, (int*)&Out.y, 2);
+							Room1 * mRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(aUnit->pAct, 133, 0, (int*)&Out.x, (int*)&Out.y, 2);
 
 							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
 							if (!mRoom)

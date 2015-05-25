@@ -110,6 +110,12 @@
     <ClCompile Include="LPackets.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
+    <ClCompile Include="LCube.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
+    <ClCompile Include="LUberQuest.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -215,6 +221,12 @@
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
     <ClInclude Include="LPackets.h">
+      <Filter>Header Files\ModuLes</Filter>
+    </ClInclude>
+    <ClInclude Include="LCube.h">
+      <Filter>Header Files\ModuLes</Filter>
+    </ClInclude>
+    <ClInclude Include="LUberQuest.h">
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
   </ItemGroup>

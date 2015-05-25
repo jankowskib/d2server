@@ -20,6 +20,9 @@
 #ifndef D2HANDS_H__
 #define D2HANDS_H__
 
+DWORD __stdcall  LEVELS_GetActByLevelNo(DWORD nLevel);
+BYTE __fastcall LEVELS_GetActByLevel(Level* pLevel);
+BYTE __fastcall LEVELS_GetActByRoom2(int _1, Room2* pRoom2);
 
 BOOL __fastcall D2GAME_IsUnitDead(UnitAny* pUnit);
 void __fastcall DAMAGE_FireEnchanted(Game *pGame, UnitAny *pUnit, int a4, int a5);

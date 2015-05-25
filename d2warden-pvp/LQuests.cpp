@@ -172,7 +172,7 @@ bool __stdcall QUESTS_OnUseItem(Game* pGame, UnitAny* pUnit, UnitAny* pItem, DWO
 
 		D2ASMFuncs::D2GAME_RemoveItem(pGame, pUnit, pItem);
 		QUESTS_UpdateUnit(pUnit, 2, pUnit);
-		LogToFile("Respec.log", true, "%s (*%s) zresetowal swoja postac!", pUnit->pPlayerData->szName, pUnit->pPlayerData->pClientData->AccountName);
+		LogToFile("Respec.log", true, "%s (*%s) has respeced his character!", pUnit->pPlayerData->szName, pUnit->pPlayerData->pClientData->AccountName);
 		return true;
 	}
 
@@ -264,17 +264,62 @@ int __fastcall DYES_Colorize(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, Unit
 	return 1;
 }
 
+BOOL __stdcall QUESTS_OpenPortal(Game *pGame, UnitAny *pUnit, DWORD LevelId)
+{
+	ASSERT(pGame)
+	ASSERT(pUnit)
+
+	if (LevelId == 0 || LevelId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) {
+		Log("Invalid level id for portal! (%d)", LevelId);
+		return FALSE;
+	}
+
+	Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
+	if (pRoom)
+	{
+		int aLvl = D2Funcs.D2COMMON_GetLevelNoByRoom(pRoom);
+		if (aLvl != LevelId)
+		{
+
+			D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
+			D2POINT Out = { 0, 0 };
+			Room1* aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, pUnit->pPath->pRoom1, &Out, 1);
+
+			if (aRoom)
+			{
+				UnitAny* pTown = D2Funcs.D2GAME_CreateUnit(UNIT_OBJECT, 60, Out.x, Out.y, pGame, aRoom, 1, 1, 0);
+				if (pTown) {
+					D2Funcs.D2COMMON_ChangeCurrentMode(pTown, OBJ_MODE_OPERATING);
+					pTown->pObjectData->InteractType = LevelId;
+
+					UnitAny* pWayback = D2Funcs.D2GAME_CopyPortal(pGame, pTown, LevelId, aLvl);
+					if (pWayback)
+					{
+						D2Funcs.D2COMMON_UpdateRoomWithPortal(aRoom, 0);
+						Room1* bRoom = D2Funcs.D2COMMON_GetUnitRoom(pWayback);
+						D2Funcs.D2COMMON_UpdateRoomWithPortal(bRoom, 0);
+						return TRUE;
+					}
+				}
+			}
+		}
+	}
+	QUESTS_UpdateUnit(pUnit, 20, pUnit);
+
+	return FALSE;
+}
+
 BOOL __stdcall QUESTS_CowLevelOpenPortal(Game *pGame, UnitAny *pUnit)
 {
 	ASSERT(pUnit)
 	ASSERT(pGame->pQuestControl)
 	ASSERT(pGame->pQuestControl->bPickedSet)
 
-		Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
+	Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
 	if (pRoom)
 	{
 		int aLvl = D2Funcs.D2COMMON_GetLevelNoByRoom(pRoom);
-		if (aLvl == 1)
+		if (aLvl == ROGUE_ENCAMPMENT)
 		{
 
 			D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
@@ -285,8 +330,8 @@ BOOL __stdcall QUESTS_CowLevelOpenPortal(Game *pGame, UnitAny *pUnit)
 			{
 
 				UnitAny* pTown = D2Funcs.D2GAME_CreateUnit(UNIT_OBJECT, 60, Out.x, Out.y, pGame, aRoom, 1, 1, 0);
-				D2Funcs.D2COMMON_ChangeCurrentMode(pTown, 1);
-				UnitAny* pCow = D2Funcs.D2GAME_CopyPortal(pGame, pTown, 39, Out);
+				D2Funcs.D2COMMON_ChangeCurrentMode(pTown, OBJ_MODE_OPERATING);
+				UnitAny* pCow = D2Funcs.D2GAME_CopyPortal(pGame, pTown, MOO_MOO_FARM, aLvl);
 				if (pCow)
 				{
 					DWORD Flags = D2Funcs.D2COMMON_GetPortalFlags(pCow) | 3;
@@ -294,14 +339,14 @@ BOOL __stdcall QUESTS_CowLevelOpenPortal(Game *pGame, UnitAny *pUnit)
 					D2Funcs.D2COMMON_UpdateRoomWithPortal(aRoom, 0);
 					Room1* bRoom = D2Funcs.D2COMMON_GetUnitRoom(pCow);
 					D2Funcs.D2COMMON_UpdateRoomWithPortal(bRoom, 0);
-					return 1;
+					return TRUE;
 				}
 			}
 		}
 	}
 	QUESTS_UpdateUnit(pUnit, 20, pUnit);
 
-	return 0;
+	return FALSE;
 }
 
 

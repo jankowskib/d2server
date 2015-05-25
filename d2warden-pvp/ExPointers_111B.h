@@ -199,6 +199,8 @@ EXFUNCPTR(FOG, AllocServerMemory, void*, __fastcall, (D2PoolManager *pMemPool, i
 EXFUNCPTR(FOG, FreeServerMemory, void, __fastcall, (D2PoolManager *pMemPool, void *Mem, char *szFile, int Line, int aNull), -10046)
 EXFUNCPTR(FOG, GetTime, DWORD, __cdecl, (), -10055)
 EXFUNCPTR(FOG, InitBitBuffer, void, __stdcall, (BitBuffer* ptBitBuffer, void * ptBuffer, int nSize), -10126)
+EXFUNCPTR(FOG, GetBinTxtIndex, int, __stdcall, (void *pLink, DWORD dwOrgin, BOOL bLogError), -10213)
+EXFUNCPTR(FOG, GetBinTxtRowByText, int, __stdcall, (void *pLink, const char* szText, DWORD nColumn), -10217)
 
 //D2NET 0xa30000+0xFA7C0 +  2*(4*0xPACKET) -> TO SVR PACKET HANDLER
 EXFUNCPTR(D2NET, SendPacket, DWORD, __stdcall, (DWORD unk1, DWORD ClientID, BYTE *ThePacket, DWORD PacketLen), -10018) // Bardzo zla metoda wysylania pakietow (16.06.11 -> jednak jest bezpieczniejsza)

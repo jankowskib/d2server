@@ -94,6 +94,8 @@ void Warden_Config()
 	wcfgConfigFile.assign(filename);
 	wcfgConfigFile+="\\D2Warden.ini";
 
+	srand(time(0));
+
 	GetPrivateProfileString("Warden", "AllowTeleport", "1,5", temp, 100, wcfgConfigFile.c_str());
 	for (rt = strtok_s(temp, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
 		if (atoi(rt) < 7) TeleChars[atoi(rt)] = TRUE;
