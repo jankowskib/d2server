@@ -25,18 +25,27 @@
 
 using namespace std;
 
+DWORD GetXYRange(DWORD x1, DWORD y1, DWORD x2, DWORD y2)
+{
+	return (DWORD)sqrt((double)((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
+}
+
+
 void __stdcall UBERQUEST_SpawnMonsters(Game* pGame)
 {
-	if (!pGame->bOpenedLilithPortal && !pGame->bOpenedDurielPortal && !pGame->bOpenedIzualPortal && !pGame->bOpenedTristramPortal) {
+	if (!pGame->bUberQuestFlags.bOpenedLilithPortal && !pGame->bUberQuestFlags.bOpenedDurielPortal &&
+		!pGame->bUberQuestFlags.bOpenedIzualPortal && !pGame->bUberQuestFlags.bOpenedTristramPortal) {
 		D2ASMFuncs::D2GAME_UpdateRoomUnits(pGame);
 		return;
 	}
-	if (pGame->bSpawnedLilith && pGame->bSpawnedDuriel && pGame->bSpawnedIzual) {
+	if (pGame->bUberQuestFlags.bSpawnedLilith && pGame->bUberQuestFlags.bSpawnedDuriel && pGame->bUberQuestFlags.bSpawnedIzual
+		&& pGame->bUberQuestFlags.bSpawnedDiablo && pGame->bUberQuestFlags.bSpawnedMephisto && pGame->bUberQuestFlags.bSpawnedBaal) {
 		D2ASMFuncs::D2GAME_UpdateRoomUnits(pGame);
 		return;
 	}
 
 	Act* pAct = pGame->pDrlgAct[D2ACT_V];
+	static D2POINT hSpawnDuriel = { 0, 0 };
 	if (pAct) {
 		for (Room1* pRoom = pAct->pRoom1; pRoom; pRoom = pRoom->pRoomNext) {
 			if (!(pRoom->nUnknown & 1))
@@ -45,80 +54,123 @@ void __stdcall UBERQUEST_SpawnMonsters(Game* pGame)
 			switch (lvl) {
 			case PANDEMONIUM_RUN_1:
 			{
-				if (!pGame->bSpawnedLilith) {
+				if (!pGame->bUberQuestFlags.bSpawnedLilith) {
 
-					D2POINT Out = { 0, 0 };
-					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERANDARIEL, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
-					if (!found)
-						continue;
-					if (D2Funcs.D2GAME_SpawnMonster(UBERANDARIEL, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedLilith = true;
-					else continue;
+					for (PresetUnit* p = pRoom->pRoom2->pPreset; p; p = p->pPresetNext) {
+
+						if (p->dwType == UNIT_OBJECT && p->dwClassId == OBJ_SPARKLYCHEST) { // Spawn Lilith near Golden Chest automap blob
+							DWORD xPos;
+							DWORD yPos;
+
+							CoordsInfo* pCoords = D2Funcs.D2COMMON_GetCoordsInfo(pRoom, pRoom->hCoords.dwXStart + p->dwPosX, pRoom->hCoords.dwYStart + p->dwPosY);
+							if (D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, pCoords, UBERANDARIEL, &xPos, &yPos, FALSE)) {
+
+								if (D2Funcs.D2GAME_SpawnMonster(UBERANDARIEL, 1, pGame, pRoom, xPos, yPos, -1, 0)) {
+									pGame->bUberQuestFlags.bSpawnedLilith = true;
+									DEBUGMSG("Spawned Uber Andy!")
+								}
+							}
+							break;
+						}
+
+					}
 				}
 				break;
 			}
 			case PANDEMONIUM_RUN_2:
 			{
-				if (!pGame->bSpawnedDuriel) {
-					D2POINT Out = { 0, 0 };
-					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERDURIEL, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
-					if (!found)
-						continue;
+				if (!pGame->bUberQuestFlags.bSpawnedDuriel) {
+					for (PresetUnit* p = pRoom->pRoom2->pPreset; p; p = p->pPresetNext) {
 
-					if (D2Funcs.D2GAME_SpawnMonster(UBERDURIEL, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedDuriel = true;
-					else continue;
+						if (!hSpawnDuriel.x && p->dwType == UNIT_OBJECT && p->dwClassId == OBJ_WAYPOINT_VALLEYWAYPOINT) { // Spawn Duriel near Waypoint, but not on it
+							hSpawnDuriel.x = pRoom->hCoords.dwXStart + p->dwPosX;
+							hSpawnDuriel.y = pRoom->hCoords.dwYStart + p->dwPosY;
+							continue;
+						}
+					}
+					if (hSpawnDuriel.x && hSpawnDuriel.y && (GetXYRange(hSpawnDuriel.x, hSpawnDuriel.y, pRoom->hCoords.dwXStart, pRoom->hCoords.dwYStart) > 50))
+					{
+						DWORD xPos;
+						DWORD yPos;
+
+						CoordsInfo* pCoords = D2Funcs.D2COMMON_GetCoordsInfo(pRoom, (pRoom->hCoords.dwXStart + pRoom->hCoords.dwYSize / 2), (pRoom->hCoords.dwYStart + pRoom->hCoords.dwYSize) / 2);
+						if (D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, pCoords, UBERDURIEL, &xPos, &yPos, FALSE)) {
+
+							if (D2Funcs.D2GAME_SpawnMonster(UBERDURIEL, 1, pGame, pRoom, xPos, yPos, -1, 0)) {
+								pGame->bUberQuestFlags.bSpawnedDuriel = true;
+								DEBUGMSG("Spawned Uber Duriel!")
+							}
+						}
+						break;
+					}
+
+
 				}
 				break;
 			}
 			case PANDEMONIUM_RUN_3:
 			{
-				if (!pGame->bSpawnedIzual) {
-					D2POINT Out = { 0, 0 };
-					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERIZUAL, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
-					if (!found)
-						continue;
+				if (!pGame->bUberQuestFlags.bSpawnedIzual) {
+					for (PresetUnit* p = pRoom->pRoom2->pPreset; p; p = p->pPresetNext) {
 
+						if (p->dwType == UNIT_OBJECT && p->dwClassId == OBJ_SPARKLYCHEST) { // Spawn Izual near Golden Chest automap blob
+							DWORD xPos;
+							DWORD yPos;
 
-					if (D2Funcs.D2GAME_SpawnMonster(UBERIZUAL, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedIzual = true;
-					else continue;
+							CoordsInfo* pCoords = D2Funcs.D2COMMON_GetCoordsInfo(pRoom, pRoom->hCoords.dwXStart + p->dwPosX, pRoom->hCoords.dwYStart + p->dwPosY);
+							if (D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, pCoords, UBERIZUAL, &xPos, &yPos, FALSE)) {
+
+								if (D2Funcs.D2GAME_SpawnMonster(UBERIZUAL, 1, pGame, pRoom, xPos, yPos, -1, 0)) {
+									pGame->bUberQuestFlags.bSpawnedIzual = true;
+									DEBUGMSG("Spawned Uber Izual!")
+								}
+							}
+							break;
+						}
+
+					}
 				}
 				break;
 			}
 			case UBER_TRISTRAM:
 			{
-				if (!pGame->bSpawnedBaal) {
+				if (!pGame->bUberQuestFlags.bSpawnedBaal) {
 					D2POINT Out = { 0, 0 };
 					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERBAAL, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
 					if (!found)
 						continue;
 
 
-					if (D2Funcs.D2GAME_SpawnMonster(UBERBAAL, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedBaal = true;
+					if (D2Funcs.D2GAME_SpawnMonster(UBERBAAL, 1, pGame, pRoom, Out.x, Out.y, -1, 0)) {
+						pGame->bUberQuestFlags.bSpawnedBaal = true;
+						DEBUGMSG("Spawned Uber Baal!")
+					}
 					else continue;
 				}
-				if (!pGame->bSpawnedMephisto) {
+				if (!pGame->bUberQuestFlags.bSpawnedMephisto) {
 					D2POINT Out = { 0, 0 };
 					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERMEPHISTO, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
 					if (!found)
 						continue;
 
 
-					if (D2Funcs.D2GAME_SpawnMonster(UBERMEPHISTO, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedMephisto = true;
+					if (D2Funcs.D2GAME_SpawnMonster(UBERMEPHISTO, 1, pGame, pRoom, Out.x, Out.y, -1, 0)) {
+						pGame->bUberQuestFlags.bSpawnedMephisto = true;
+						DEBUGMSG("Spawned Uber Meph!")
+					}
 					else continue;
 				}
-				if (!pGame->bSpawnedDiablo) {
+				if (!pGame->bUberQuestFlags.bSpawnedDiablo) {
 					D2POINT Out = { 0, 0 };
 					BOOL found = D2Funcs.D2GAME_FindMonsterRoom(pGame, pRoom, 0, UBERDIABLO, (DWORD*)&Out.x, (DWORD*)&Out.y, 1);
 					if (!found)
 						continue;
 
 
-					if (D2Funcs.D2GAME_SpawnMonster(UBERDIABLO, 1, pGame, pRoom, Out.x, Out.y, -1, 0))
-						pGame->bSpawnedDiablo = true;
+					if (D2Funcs.D2GAME_SpawnMonster(UBERDIABLO, 1, pGame, pRoom, Out.x, Out.y, -1, 0)) {
+						pGame->bUberQuestFlags.bSpawnedDiablo = true;
+						DEBUGMSG("Spawned Uber D2!")
+					}
 					else continue;
 				}
 				break;
@@ -142,11 +194,11 @@ BOOL UBERQUEST_OpenPandemoniumPortal(Game *pGame, UnitAny *pPlayer)
 			return FALSE;
 
 		vector<DWORD> quest_levels;
-		if (!pGame->bOpenedLilithPortal)
+		if (!pGame->bUberQuestFlags.bOpenedLilithPortal)
 			quest_levels.push_back(PANDEMONIUM_RUN_1);
-		if (!pGame->bOpenedDurielPortal)
+		if (!pGame->bUberQuestFlags.bOpenedDurielPortal)
 			quest_levels.push_back(PANDEMONIUM_RUN_2);
-		if (!pGame->bOpenedIzualPortal)
+		if (!pGame->bUberQuestFlags.bOpenedIzualPortal)
 			quest_levels.push_back(PANDEMONIUM_RUN_3);
 
 		if (quest_levels.size() == 0)
@@ -159,12 +211,12 @@ BOOL UBERQUEST_OpenPandemoniumPortal(Game *pGame, UnitAny *pPlayer)
 
 
 		if (levelToSpawn == PANDEMONIUM_RUN_1) {
-			pGame->bOpenedLilithPortal = TRUE;
+			pGame->bUberQuestFlags.bOpenedLilithPortal = TRUE;
 		}
 		else if (levelToSpawn == PANDEMONIUM_RUN_2)
-			pGame->bOpenedDurielPortal = TRUE;
+			pGame->bUberQuestFlags.bOpenedDurielPortal = TRUE;
 		else if (levelToSpawn == PANDEMONIUM_RUN_3)
-			pGame->bOpenedIzualPortal = TRUE;
+			pGame->bUberQuestFlags.bOpenedIzualPortal = TRUE;
 
 		
 		if (levelToSpawn)
@@ -177,7 +229,7 @@ BOOL UBERQUEST_OpenPandemoniumPortal(Game *pGame, UnitAny *pPlayer)
 
 BOOL UBERQUEST_OpenPandemoniumFinalPortal(Game *pGame, UnitAny *pPlayer)
 {
-	if (pGame->DifficultyLevel != DIFF_HELL || pGame->bOpenedTristramPortal) // Open only in hell
+	if (pGame->DifficultyLevel != DIFF_HELL || pGame->bUberQuestFlags.bOpenedTristramPortal) // Open only in hell
 		return FALSE;
 
 	Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pPlayer);
@@ -190,7 +242,7 @@ BOOL UBERQUEST_OpenPandemoniumFinalPortal(Game *pGame, UnitAny *pPlayer)
 		if (!QUESTS_OpenPortal(pGame, pPlayer, UBER_TRISTRAM))
 			return FALSE;
 
-		pGame->bOpenedTristramPortal = TRUE;
+		pGame->bUberQuestFlags.bOpenedTristramPortal = TRUE;
 		return TRUE;
 	}
 	return FALSE;

@@ -160,6 +160,47 @@ struct CollMap  // (1.13d)
 };
 
 
+struct CoordsInfo // size 0x2C
+{
+	DWORD dwStartX;					//0x00
+	DWORD dwStartY;					//0x04
+	DWORD dwEndX;					//0x08
+	DWORD dwEndY;					//0x0C
+	DWORD dwPosX;					//0x10
+	DWORD dwPosY;					//0x14
+	DWORD dwEndX2;					//0x18
+	DWORD dwEndY2;					//0x1C
+	DWORD dword20;					//0x20
+	DWORD dword24;					//0x24
+	DWORD Levels6_2;				//0x28
+};
+
+struct LogicalRoomInfo // sizeof(0x34)
+{
+	DWORD dwFlags;
+	DWORD _2;
+	DWORD _3;
+	DWORD _4;
+	DWORD _5;
+	DWORD _6;
+	DWORD _7;
+	DWORD _8;
+	DWORD _9;
+	DWORD _10;
+	DWORD _11;
+	DWORD _12;
+	CoordsInfo *pCoordsInfo;
+};
+
+struct PresetUnit {
+	DWORD _1;						//0x00
+	DWORD dwClassId;				//0x04
+	DWORD dwPosX;					//0x08
+	PresetUnit* pPresetNext;		//0x0C
+	DWORD _3;						//0x10
+	DWORD dwType;					//0x14
+	DWORD dwPosY;					//0x18
+};
 
 struct DrlgPreset // sizeof(0x08), type 2
 {
@@ -224,11 +265,7 @@ struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 	DWORD nUnknown;			//0x34
 	DWORD _5[4];			//0x38
 	ClientData** pClients;	//0x48
-	DWORD dwXStart;			//0x4C
-	DWORD dwYStart;			//0x50
-	DWORD dwXSize;			//0x54
-	DWORD dwYSize;			//0x58
-	DWORD _6[4];			//0x5C
+	RoomCoords hCoords;		//0x4C
 	DWORD dwSeed[2];		//0x6C
 	UnitAny* pUnitFirst;	//0x74
 	DWORD nNumClients;		//0x78
@@ -259,9 +296,9 @@ struct Room2 //sizeof(0xEC)
 	void* pRoomTiles;		//0x4C
 	DWORD _4[2];			//0x50
 	Level* pLevel;			//0x58
-	void* pPreset;			//0x5C
+	PresetUnit* pPreset;	//0x5C
 	DWORD _5;				//0x60
-	DWORD _6;				//0x64
+	LogicalRoomInfo* pLogicalRoomInfo;//0x64
 	DWORD _7;				//0x68
 	DWORD _8;				//0x6C
 	DWORD _9;				//0x70

@@ -42,7 +42,7 @@ struct _d2f {
 _d2f D2Funcs = { 0 }; void SetupD2Funcs() {
 #endif
 EXFUNCPTR(D2GAME, GetGameByNetSocket, Game*, __stdcall, (DWORD NetSocket), 0xBC700) //1.13d -- Uwaga ! Kazde uzycie zostawia watek w sekcji krytycznej!!!
-EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (DWORD MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int a7, int a8), 0xC8D70) // 1.13d
+EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (DWORD MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int nSearchRadius, WORD wFlags), 0xC8D70) // 1.13d
 EXFUNCPTR(D2GAME, SpawnSuperUniqueMonster, UnitAny*, __fastcall, (Game *pGame, int pRoom, int nX, int nY, DWORD nTxtIdx), 0xCFB40)
 EXFUNCPTR(D2GAME, SpawnPresetMonster, UnitAny*, __fastcall, (PresetMonster* pPreset), 0xCA320)
 EXFUNCPTR(D2GAME, GetUnitX, int, __fastcall, (UnitAny* ptUnit), 0x10F0) // 1.13d
@@ -60,7 +60,7 @@ EXFUNCPTR(D2GAME, SetUnitModeXY, int, __fastcall, (Game *pGame, UnitAny *pUnit, 
 EXFUNCPTR(D2GAME, RemoveFromPickedUp, void, __stdcall, (UnitAny *pPlayer), 0xB41D0) // 1.13d
 EXFUNCPTR(D2GAME, KillPlayer, void, __fastcall, (Game *pGame, UnitAny *pVictim, int nMode, UnitAny *pKiller), 0x93C80) // 1.13d
 EXFUNCPTR(D2GAME, SetTimer, void, __fastcall, (Game *pGame, UnitAny *pUnit, int nTimerType, DWORD nGameFrame, DWORD fTimerFunc, void* dwArg, void *dwArgEx), 0xC07A0) // 1.11b: 0x70F00
-EXFUNCPTR(D2GAME, FindMonsterRoom, BOOL, __stdcall, (Game *pGame, Room1 *pRoom, unsigned int a3, DWORD nMonIdx, DWORD *nX, DWORD *nY, int a7), 0xD4360)
+EXFUNCPTR(D2GAME, FindMonsterRoom, BOOL, __stdcall, (Game *pGame, Room1 *pRoom, CoordsInfo *pCoords, DWORD nMonIdx, DWORD *nX, DWORD *nY, BOOL bTryHard), 0xD4360)
 
 //D2COMMON
 EXFUNCPTR(D2COMMON, AddStatToStatList, int, __stdcall, (StatList* ptStatList, int nStat, int nValue, int nValue2), -10818) // 1.13d
@@ -158,6 +158,8 @@ EXFUNCPTR(D2COMMON, UpdateRoomWithPortal, void, __stdcall, (Room1* pRoom, int bU
 EXFUNCPTR(D2COMMON, 10555, int, __stdcall, (Act* ptPath, int nLevel), -10555)
 EXFUNCPTR(D2COMMON, 10736, void, __stdcall, (Level * pLevel), -10736)
 EXFUNCPTR(D2COMMON, GetLevel, Level*, __fastcall, (ActMisc* pMisc, int dwLevelNo), -10283) //k
+EXFUNCPTR(D2COMMON, GetCoordsInfo, CoordsInfo*, __stdcall, (Room1* pRoom, DWORD nX, DWORD nY), -10463)
+EXFUNCPTR(D2COMMON, GetRoomCoords, BOOL, __stdcall, (Room1* pRoom, RoomCoords** pCoords), -10463)
 //QUESTS
 
 //D2LANG

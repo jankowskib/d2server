@@ -823,17 +823,18 @@ struct Game
 	DWORD LastVictim;					//0x201C
 	char szRekordHolder[16];			//0x2020
 	LSpectator *pLSpectator;			//0x2030
-	BOOL bOpenedDurielPortal;			//0x2034
-	BOOL bOpenedLilithPortal;			//0x2038
-	BOOL bOpenedIzualPortal;			//0x203C
-	BOOL bOpenedTristramPortal;			//0x2040
-	BOOL bSpawnedDuriel;				//0x2044
-	BOOL bSpawnedLilith;				//0x2048
-	BOOL bSpawnedIzual;					//0x204C
-
-	BOOL bSpawnedDiablo;				//0x2050
-	BOOL bSpawnedMephisto;				//0x2054
-	BOOL bSpawnedBaal;					//0x2059
+	struct {			
+		BOOL bOpenedDurielPortal : 1;		
+		BOOL bOpenedLilithPortal : 1;
+		BOOL bOpenedIzualPortal : 1;
+		BOOL bOpenedTristramPortal : 1;
+		BOOL bSpawnedDuriel : 1;
+		BOOL bSpawnedLilith : 1;
+		BOOL bSpawnedIzual : 1;	
+		BOOL bSpawnedDiablo : 1;
+		BOOL bSpawnedMephisto : 1;
+		BOOL bSpawnedBaal : 1;
+	} bUberQuestFlags;					//0x2034
 };
 
 

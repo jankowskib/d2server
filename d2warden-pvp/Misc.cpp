@@ -20,6 +20,19 @@
 #include "stdafx.h"
 
 
+const char* UnitTypeToStr(DWORD type)
+{
+	switch (type)
+	{
+	case UNIT_PLAYER: return "PLAYER";
+	case UNIT_MONSTER: return "MONSTER";
+	case UNIT_ITEM: return "ITEM";
+	case UNIT_MISSILE: return "MISSILE";
+	case UNIT_OBJECT: return "OBJECT"; 
+	}
+	return "INVALIDTYPE!";
+}
+
 DWORD __declspec(naked) GetEIP()
 {
 	__asm

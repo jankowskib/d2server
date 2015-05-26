@@ -20,6 +20,8 @@
 #ifndef __WARDENMISC_H_
 #define __WARDENMISC_H_
 
+
+const char* UnitTypeToStr(DWORD type);
 DWORD GetEIP();
 short CalculateDistance(short x1, short y1, short x2, short y2);
 void ClearSayGoFlag(Game* pGame);

@@ -35,53 +35,42 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 {
 	int ClientID = pUnit->pPlayerData->pClientData->ClientID;
 
-	if (_stricmp(str, "#mspawnxy") == 0)
+
+	if (_stricmp(str, "#mspawntest") == 0) 
 	{
-		str = strtok_s(NULL, " ", &t);
-		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Type number 0-733"); UNLOCK return false; }
-		int No = atoi(str);
-		if (No>733)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Type number 0-733"); UNLOCK return false; }
+		if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
+		DWORD nMonsters = (*D2Vars.D2COMMON_sgptDataTables)->dwMonStatsRecs;
 
 		str = strtok_s(NULL, " ", &t);
-		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#mspawnxy <id> <x> <y>"); return false; }
-		int nX = atoi(str);
-		str = strtok_s(NULL, " ", &t);
-		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#mspawnxy <id> <x> <y>"); return false; }
-		int nY = atoi(str);
+		if (!str) {
+			SendMsgToClient(pUnit->pPlayerData->pClientData, "Type monster index 0-%d", nMonsters);
+			return false;
+		}
 
-		POINT Pos = { nX, nY };
-		POINT Out = { 0, 0 };
+		DWORD monIdx = atoi(str);
+		if (!str) {
+			SendMsgToClient(pUnit->pPlayerData->pClientData, "Type monster index 0-%d", nMonsters);
+			return false;
+		}
 
+		Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
+		if (pRoom) {
+			DWORD xPos = pUnit->pPath->xPos;
+			DWORD yPos = pUnit->pPath->yPos;
 
+			CoordsInfo* pCoords = D2Funcs.D2COMMON_GetCoordsInfo(pRoom, xPos, yPos);
+			if (D2Funcs.D2GAME_FindMonsterRoom(pUnit->pGame, pRoom, pCoords, monIdx, &xPos, &yPos, FALSE)) {
 
-		ptMonster = 0;
-
-		for (int i = 0; i<10; i++)
-		{
-			Room1 * mRoom = 0;
-
-			for (Room1* dRoom = pUnit->pAct->pRoom1; dRoom; dRoom = dRoom->pRoomNext)
-			{
-				if (dRoom->dwXStart < Pos.x && (dRoom->dwXStart + dRoom->dwXSize) >= Pos.x &&
-					dRoom->dwYStart < Pos.y && (dRoom->dwYStart + dRoom->dwYSize) >= Pos.y)
+				if (D2Funcs.D2GAME_SpawnMonster(monIdx, 1, pUnit->pGame, pRoom, xPos, yPos, -1, 0))
 				{
-					SendMsgToClient(pUnit->pPlayerData->pClientData, "Find suitable room!");
-					mRoom = dRoom;
-					break;
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "Done!");
 				}
 			}
-
-			if (!mRoom) { SendMsgToClient(pUnit->pPlayerData->pClientData, "FindFreeCoords failed!"); break; }
-
-			ptMonster = D2Funcs.D2GAME_SpawnMonster(No, 5, pUnit->pGame, mRoom, Pos.x, Pos.y, -1, 0);
-			if (ptMonster) break;
-
-			if (i % 2) Pos.x = Pos.x + (rand() % 4); else  Pos.x = Pos.x - (rand() % 4);
-			if (i % 2) Pos.y = Pos.y + (rand() % 4); else  Pos.y = Pos.y - (rand() % 4);
+			else
+			{
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "D2GAME_FindMonsterRoom() failed!");
+			}
 		}
-		if (!ptMonster) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Error limit exceeded!"); return false; }
-
-		SendMsgToClient(pUnit->pPlayerData->pClientData, "Monster spawned!");
 
 		return false;
 	}

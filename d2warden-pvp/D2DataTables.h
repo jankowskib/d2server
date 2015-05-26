@@ -10,6 +10,16 @@ struct ArenaTxt
   DWORD dwMonsterDeath;
 };
 
+struct ObjGroupTxt
+{
+	DWORD dwID[8];                          //0x00
+	BYTE bDENSITY[8];                       //0x20
+	BYTE bPROB[8];                          //0x28
+	BYTE bSHRINES;                          //0x30
+	BYTE bWELLS;                            //0x31
+	WORD _2;								//0x32
+};
+
 #pragma pack(push,1)
 
 struct LevelsTxt

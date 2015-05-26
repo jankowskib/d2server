@@ -30,6 +30,7 @@
 #include "process.h"
 #include "RC4.h"
 #include "Build.h"
+#include "LQuests.h"
 
 using namespace std;
 
@@ -816,16 +817,29 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 						hmap[u->dwUnitId] = u;
 					}
 				}
+				/*
 				for (InactiveRoom * r = pUnit->pGame->pDrlgRoomList[D2ACT_V]; r; r = r->pNextRoom)
 					for (InactiveObject *o = r->pObject; o; o = o->pNext)
 				{
 						DEBUGMSG("Class [%d], xy= [%d,%d]", o->dwClassId, o->xPos, o->yPos)
-				}
+				}*/
 				for (auto u = hmap.begin(); u != hmap.end(); ++u)
 				{
 					DEBUGMSG("%d:, %d @ [%d,%d]", u->second->dwUnitId, u->second->dwClassId, D2Funcs.D2GAME_GetUnitX(u->second), D2Funcs.D2GAME_GetUnitY(u->second));
 				}
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "OK!");
+				return false;
+			}
+			if (_stricmp(str, "#dumppresets") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
+
+				Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pUnit);
+				if (pRoom) {
+					for (PresetUnit* p = pRoom->pRoom2->pPreset; p; p = p->pPresetNext) {
+						DEBUGMSG("hcIdx: %d[%s] @[%d, %d]", p->dwClassId, UnitTypeToStr(p->dwType), p->dwPosX, p->dwPosY)
+					}
+				}
 				return false;
 			}
 			if (_stricmp(str, "#update") == 0)
@@ -1109,40 +1123,30 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit, LvlId, aUnit->pGame);
 				return false;
 			}
-			if (_stricmp(str, "#movexy") == 0)
+			if (_stricmp(str, "#op") == 0)
 			{
 				UnitAny* aUnit = pUnit;
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
 				str = strtok_s(NULL, " ", &t);
-				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#movexy <x> <y>"); return false; }
-				int nX = atoi(str);
-				str = strtok_s(NULL, " ", &t);
-				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#movexy <x> <y>"); return false; }
-				int nY = atoi(str);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#op <levelid> - opens a portal to levelid"); return false; }
+				int LvlId = atoi(str);
+				if (!LvlId) return false;
+				if (LvlId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) return false;
+				SendMsgToClient(aUnit->pPlayerData->pClientData, "Opening a portal to level '%d'...", LvlId);
+				if (QUESTS_OpenPortal(pUnit->pGame, pUnit, LvlId)) {
+					if (LvlId == UBER_TRISTRAM)
+						pUnit->pGame->bUberQuestFlags.bOpenedTristramPortal = true;
+					else if(LvlId == PANDEMONIUM_RUN_1)
+						pUnit->pGame->bUberQuestFlags.bOpenedLilithPortal = true;
+					else if (LvlId == PANDEMONIUM_RUN_2)
+						pUnit->pGame->bUberQuestFlags.bOpenedDurielPortal = true;
+					else if (LvlId == PANDEMONIUM_RUN_3)
+						pUnit->pGame->bUberQuestFlags.bOpenedIzualPortal = true;
 
-				D2POINT Pos = { nX, nY };
-				D2POINT Out = { 0, 0 };
-
-				Room1 * mRoom = 0;
-					
-				for (Room1* dRoom = pUnit->pAct->pRoom1; dRoom; dRoom = dRoom->pRoomNext)
-					{
-						if (dRoom->dwXStart < nX && (dRoom->dwXStart + dRoom->dwXSize) >= nX &&
-							dRoom->dwYStart < nY && (dRoom->dwYStart + dRoom->dwYSize) >= nY)
-						{
-							SendMsgToClient(pUnit->pPlayerData->pClientData, "Find suitable room!");
-							mRoom = dRoom;
-							break;
-						}
-					}
-				
-				SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to <%d,%d>...", aUnit->pPlayerData->szName, nX, nY);
-				mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 1);
-				
-				D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
-
+				}
 				return false;
 			}
+
 			if (_stricmp(str, "#removepets") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
