@@ -174,6 +174,22 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		return d2warden_0X66Handler(pGame, pUnit, pPacket, nPacketLen);
 	}
+	case D2SRVMSG_USE_WAYPOINT:
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pUnit->pPlayerData->pTrade) {
+			Log("HACK: D2SRVMSG_USE_WAYPOINT used while in-trade. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
+			BootPlayer(pUnit->pPlayerData->pClientData->ClientID, BOOT_BAD_WAYPOINT_DATA);
+			return MSG_OK;
+		}
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
 	default:
 	{
 		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
