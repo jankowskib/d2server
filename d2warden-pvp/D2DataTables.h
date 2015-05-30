@@ -22,6 +22,23 @@ struct ObjGroupTxt
 
 #pragma pack(push,1)
 
+struct LvlWarpTxt
+{
+	DWORD dwId;
+	DWORD dwSelectX;
+	DWORD dwSelectY;
+	DWORD dwSelectDX;
+	DWORD dwSelectDY;
+	DWORD dwExitWalkX;
+	DWORD dwExitWalkY;
+	DWORD dwOffsetX;
+	DWORD dwOffsetY;
+	DWORD dwLitVersion;
+	DWORD dwTiles;
+	BYTE bDirection;
+	BYTE _1[3];
+};
+
 struct LevelsTxt
 {
 	WORD wLevelNo;
@@ -718,7 +735,11 @@ union
 		BYTE nQuality;               //0x06
 		BYTE nQuantity;              //0x07
 	};
-
+	struct
+	{
+		BYTE nLevel;
+		BYTE nAct;
+	};						   //for CUBE_OUTPUT_PORTAL
 	WORD nParam;               //0x06
 };
 BYTE	Type;				//0x08
@@ -743,6 +764,7 @@ BYTE	bLadder;			//0x01
 BYTE	bMindiff;			//0x02
 BYTE	bClass;				//0x03
 BYTE	bOp;				//0x04
+BYTE	_1[3];				//0x05
 DWORD	dwParam;			//0x08
 DWORD	dwValue;			//0x0C
 WORD	bNuminputs;			//0x10
@@ -1752,7 +1774,7 @@ struct sgptDataTable {
 	BYTE*   pWaypoints;				//0xCC0
 	DWORD	dwWaypointsRecs;		//0xCC4
 	DWORD	dwLvlTypes;				//0xCC8
-	BYTE*	pLvlWarp;				//0xCCC
+	LvlWarpTxt*	pLvlWarp;			//0xCCC
 	DWORD	dwLvlWarpRecs;			//0xCD0
 	BYTE*	pLvlMaze;				//0xCD4
 	DWORD	dwLvlMazeRecs;			//0xCD8

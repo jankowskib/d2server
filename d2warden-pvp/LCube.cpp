@@ -28,9 +28,16 @@
 DWORD __stdcall CUBE_OnCustomFunc(Game* pGame, UnitAny* pPlayer, CubeOutputItem *pCubeOutput)
 {
 	if (pCubeOutput->Type == CUBEOUTPUT_PORTAL) { // Portal
-		if (pCubeOutput->nParam >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) // Invalid level has set
+		if (pCubeOutput->nLevel >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) // Invalid level has set
 			return FALSE;
-		
+		Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pPlayer);
+		ASSERT(pRoom)
+
+		if (pCubeOutput->nAct != pRoom->pAct->dwAct) {
+			QUESTS_UpdateUnit(pPlayer, 19, pPlayer);
+			return FALSE;
+		}
+
 		return QUESTS_OpenPortal(pGame, pPlayer, pCubeOutput->nParam);
 	}
 	else if (pCubeOutput->Type == CUBEOUTPUT_COWPORTAL) {
