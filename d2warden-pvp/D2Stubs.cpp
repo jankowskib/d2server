@@ -32,6 +32,76 @@
 namespace D2Stubs
 {
 
+	void NODES_CrashDump(UnitNode* pNode, UnitAny* pMonster)
+	{
+		Log("======== NODESEX CRASH LOG ==========");
+		if (pNode) {
+			Log("pNode->pUnit = %d", pNode->ptUnit);
+			if (pNode->ptUnit) {
+				Log("\tpNode->pUnit->dwType: %s", UnitTypeToStr(pNode->ptUnit->dwType));
+				Log("\tpNode->pUnit->dwClassId: %d", pNode->ptUnit->dwClassId);
+				Log("\tpNode->pUnit->NodeIdx: %d", pNode->ptUnit->dwNodeIdx);
+				Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pNode->ptUnit);
+				if (pRoom)
+				{
+					Log("\tpNode location: %d [%d, %d]", pRoom->pRoom2->pLevel->dwLevelNo, pRoom->pRoom2->dwPosX, pRoom->pRoom2->dwPosY);
+				}
+				else Log("\tp Node location is unknown!!!");
+			}
+		} else
+		Log("pNode == NULL");
+
+		Log("pMonster = %d", pMonster);
+		if (pMonster) {
+			Log("\tpMonster->dwType: %s", UnitTypeToStr(pMonster->dwType));
+			Log("\tpMonster->dwClassId: %d", pMonster->dwClassId);
+			Log("\tpMonster->NodeIdx: %d", pMonster->dwNodeIdx);
+			Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pMonster);
+			if (pRoom)
+			{
+				Log("\tpMonster location: %d [%d, %d]", pRoom->pRoom2->pLevel->dwLevelNo, pRoom->pRoom2->dwPosX, pRoom->pRoom2->dwPosY);
+			}
+			else Log("\tp NodetpMonster location is unknown!!!");
+		}
+		else
+		Log("pMonster == NULL");
+
+		Log("======== Dump of old nodes ======");
+		for (int i = 0; i < 10; ++i)
+		{
+			Log("NODES[%d] = %d", i, pMonster->pGame->pOldNodes[i]);
+			if (pMonster->pGame->pOldNodes[i]) {
+				Log("Found non null old node!!!!");
+				if (pMonster->pGame->pOldNodes[i]->ptUnit)
+				{
+					Log("\tpNode->dwType: %s", UnitTypeToStr(pMonster->pGame->pOldNodes[i]->ptUnit->dwType));
+					Log("\tpNode->dwClassId: %d", pMonster->pGame->pOldNodes[i]->ptUnit->dwClassId);
+					Log("\tpNode->NodeIdx: %d", pMonster->pGame->pOldNodes[i]->ptUnit->dwNodeIdx);
+				}
+			}
+		}
+
+		Log("======== Dump of new nodes ======");
+		for (int i = 0; i < wcfgMaxPlayers + 2; ++i)
+		{
+			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
+		}
+
+
+		Log("========== Now game will crash :( ==");
+	}
+
+	__declspec(naked) void D2GAME_TestCrash_STUB()
+	{
+		__asm
+		{
+			push [esp + 64h] // pMonster
+			push edi  // NodeUnit
+			call NODES_CrashDump
+			
+		}
+	}
+
 	__declspec(naked) void UBERQUEST_SpawnMonsters_STUB()
 	{
 		__asm

@@ -22,6 +22,7 @@
 
 namespace D2Stubs 
 {
+	void D2GAME_TestCrash_STUB();
 	void UBERQUEST_SpawnMonsters_STUB();
 	BYTE __fastcall GetActByLevelNo_STUB1(DWORD nLevel);
 	BYTE __fastcall GetActByLevelNo_STUB2(DWORD nLevel);
