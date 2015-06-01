@@ -59,6 +59,7 @@ struct TimerList;
 struct TimerQuene;
 struct ObjectRegion;
 struct BitBuffer;
+struct DrlgGrid;
 
 struct pSpellTbl
 {
@@ -156,7 +157,7 @@ struct CollMap  // (1.13d)
 	DWORD dwSizeRoomX;				//0x18
 	DWORD dwSizeRoomY;				//0x1C
 	WORD* pMapStart;				//0x20
-	WORD* pMapEnd;					//0x22
+	WORD* pMapEnd;					//0x24
 };
 
 
@@ -208,10 +209,30 @@ struct DrlgPreset // sizeof(0x08), type 2
 	DWORD dwPresetId;				//0x04 ds1 id used to generate level
 };
 
-struct DrlgWildreness // sizeof(0x268), type 3
+struct DrlgGrid // size 0x14
 {
-
+	DWORD *gridX;			//0x00
+	DWORD *gridY;			//0x04 points to memory of (4 * ySize * (xSize + 1)) 
+	DWORD dwXSize;			//0x08
+	DWORD dwYSize;			//0x0C
+	DWORD _5;				//0x10
 };
+
+
+//sizeof = 0x268
+struct WildernessData
+{
+	DWORD dwFlags;				//0x00
+	DrlgGrid hGrid[4];			//0x08
+	DWORD  _12[2];				//0x0C
+	DWORD dwSizeX;				// LevelSizeX / 8
+	DWORD dwSizeY;				// LevelSizeY / 8
+	DWORD  _13[7];				//0x0C
+	DWORD _UnkArr[4][30];		//0x80
+	DWORD _14;					//0x260
+	DWORD _15;					//0x264
+};
+
 
 struct Level //sizeof(0x230)
 {
@@ -219,7 +240,11 @@ struct Level //sizeof(0x230)
 	DWORD dwLevelFlags;		//0x04
 	DWORD _1[2];			//0x08
 	Room2* pRoom2First;		//0x10
-	DWORD *pDrlgUNK;		//0x14 union depends on DrlgType: 1: pLvlWarpTxt, 2: DrlgPreset, 3: DrlgWildreness
+	union {
+		void* pMazeTxt;    				//     for dwDrlgType == 1 (RANDOM MAZE)
+		void* pPreset;					//     for dwDrlgType == 2 (PRESET MAP)
+		WildernessData* pWilderness;	//     for dwDrlgType == 3 (RANDOM AREA WITH PRESET SIZE)
+	}; // 0x14
 	DWORD _2;				//0x18
 	DWORD dwPosX;			//0x1C
 	DWORD dwPosY;			//0x20
@@ -247,10 +272,33 @@ struct Level //sizeof(0x230)
 	DWORD _7;				//0x22C pointer to mem 4 * _1[0]
 };
 
+struct RoomTile { //size 0x18
+	Room2* pRoom2;				//0x00
+	RoomTile* pNext; 			//0x04
+	DWORD _2[2];				//0x08
+	LvlWarpTxt *pWaybackWarpTxt;//0x10
+	DWORD _3;					//0x14
+};
+
+
+
+
+struct DrlgMaze { // sizeof(0x70)
+	DrlgGrid hGrid[4];			//0x00
+	DWORD _21;
+	DWORD _22;
+	DWORD _23;
+	DWORD _24;
+	DWORD _25;
+	DWORD _26;
+	DWORD _27;
+	DWORD _28;					//0x6C
+};
+
 
 struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 {
-	Room1** pRoomsNear; 	//0x00
+	Room1** pRoomsNear; 	//0x00 aka pptVisibleRooms
 	DWORD _1;				//0x04
 	void* _1s;				//0x08
 	DWORD _1b;				//0x0C
@@ -258,7 +306,7 @@ struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 	DWORD _2[2];			//0x14
 	UnitAny* pUnitChanged;	//0x1C
 	CollMap* Coll;			//0x20
-	DWORD dwRoomsNear;		//0x24 9 rooms
+	DWORD dwRoomsNear;		//0x24 9 rooms  aka nVisibleRooms
 	DWORD nPlayerUnits;		//0x28
 	Act* pAct;				//0x2C
 	DWORD _4;				//0x30
@@ -266,26 +314,24 @@ struct Room1 // Checked. Need to find: nRoomsNear, nRoomUnits, 0x6FD742D0
 	DWORD _5[4];			//0x38
 	ClientData** pClients;	//0x48
 	RoomCoords hCoords;		//0x4C
-	DWORD dwSeed[2];		//0x6C
+	D2Seed hSeed;			//0x6C
 	UnitAny* pUnitFirst;	//0x74
 	DWORD nNumClients;		//0x78
-	Room1* pRoomNext;		//0x7C
+	Room1* pRoomNext;		//0x7C Act's previous
 };
 
-struct Room2 //sizeof(0xEC)
+struct Room2 //sizeof(0xEC) aka DrlgRoom
 {
 	DWORD _1[2];			//0x00
-	Room2** pRoom2Near;		//0x08
+	Room2** pRoom2Near;		//0x08 aka pptVisibleRooms
 	DWORD _2[5];			//0x0C
-	struct {
-		DWORD dwRoomNumber; //0x00
-		DWORD _1;			//0x04
-		DWORD* pdwSubNumber;//0x08
-		//... dwPresetType == 1, sizeof(0x70), 2, sizeof(0xF8)
-	} *pType2Info;			//0x20
+	union {
+		DrlgMaze* pMazeData;//dwPresetType == 1
+		//... dwPresetType == MAZE, sizeof(0x70), PRESET, sizeof(0xF8)
+	};							//0x20
 	Room2* pRoom2Next;		//0x24
 	DWORD dwRoomFlags;		//0x28 if Vis[1-8] : 0x10, 0x20, 0x40, 0x80, 0x100, 0x200, 0x400, 0x800
-	DWORD dwRoomsNear;		//0x2C
+	DWORD dwRoomsNear;		//0x2C aka nVisibleRooms
 	Room1* pRoom1;			//0x30
 	DWORD dwPosX;			//0x34
 	DWORD dwPosY;			//0x38
@@ -293,7 +339,7 @@ struct Room2 //sizeof(0xEC)
 	DWORD dwSizeY;			//0x40
 	DWORD _3;				//0x44
 	DWORD dwPresetType;		//0x48
-	void* pRoomTiles;		//0x4C
+	RoomTile* pRoomTile;	//0x4C
 	DWORD _4[2];			//0x50
 	Level* pLevel;			//0x58
 	PresetUnit* pPreset;	//0x5C
@@ -352,7 +398,7 @@ struct ActMisc // sizeof(0x48C) aka Drlg
 	DWORD _2d[4];			//0x45C
 	Act* pAct;				//0x46C
 	DWORD _3[2];			//0x470
-	D2PoolManager *pMemPool;			//0x478
+	D2PoolManager *pMemPool;//0x478
 	Level* pLevelFirst;		//0x47C
 	DWORD nAct;				//0x480
 	DWORD _5;				//0x484 Tomb Levels Related 66 + rand(7)
@@ -379,19 +425,19 @@ struct ActEnvironment // sizeof(0x38)
 
 struct Act // sizeof(0x60)
 {
-	DWORD _1a;						//0x00
-	ActEnvironment* pEnviroment;	//0x04
-	DWORD dwTownLvl;				//0x08
-	DWORD dwMapSeed;				//0x0C
-	Room1* pRoom1;					//0x10
-	DWORD dwAct;					//0x14
-	DWORD hTile[12];				//0x18 not sure, some inline struct of 0x30 size seems fit
-	ActMisc* pMisc;					//0x48
-	DWORD _4;						//0x4C
-	DWORD _5;						//0x50
-	DWORD _6;						//0x54
-	DWORD _7;						//0x58
-	D2PoolManager* pMemPool;		//0x5C
+	DWORD _1a;											//0x00
+	ActEnvironment* pEnviroment;						//0x04
+	DWORD dwTownLvl;									//0x08
+	DWORD dwMapSeed;									//0x0C
+	Room1* pRoom1;										//0x10
+	DWORD dwAct;										//0x14
+	DWORD hTile[12];									//0x18 not sure, some inline struct of 0x30 size seems fit
+	ActMisc* pMisc;										//0x48
+	void (__fastcall *fnRoom1InitCallback)(Room1*);		//0x4C
+	DWORD _5;											//0x50
+	DWORD _6;											//0x54
+	DWORD _7;											//0x58
+	D2PoolManager* pMemPool;							//0x5C
 };
 
 
