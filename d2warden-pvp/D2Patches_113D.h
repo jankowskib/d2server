@@ -190,5 +190,7 @@
 
 // One more missing...
 #define D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_ITEM_CREATE_SUB	0xE3267
+// And one more
+#define D2GAME_NODESEX_CHANGE_ITERATION_TO_16_MISSING_I	0x496B2 // k
 
 #endif

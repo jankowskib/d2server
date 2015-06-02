@@ -372,7 +372,9 @@ void PatchD2()
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALLMAKER: Change iteration to 17");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17_SKILL), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALL: Change iteration to 17");
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ATTRACT_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:ATTRACT: Change iteration to 17");
-	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");	
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");
+	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_MISSING_I), wcfgMaxPlayers, 1, "NodesEX: Change iteration to 17 [unknown]");
+	
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", 0xB2255), (DWORD)D2Stubs::D2GAME_TestCrash_STUB, 5, "NodesEX: Test why the game keeps crashing");
 	
