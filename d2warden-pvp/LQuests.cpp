@@ -19,6 +19,7 @@
 
 #include "stdafx.h"
 #include "LQuests.h"
+#include "D2Handlers.h"
 
 static QuestArray gQuestInit[37] = {};
 static QuestIntroArray gQuestIntro[4] = {};
@@ -291,7 +292,7 @@ BOOL __stdcall QUESTS_OpenPortal(Game *pGame, UnitAny *pUnit, DWORD LevelId)
 				if (pTown) {
 					D2Funcs.D2COMMON_ChangeCurrentMode(pTown, OBJ_MODE_OPERATING);
 					pTown->pObjectData->InteractType = LevelId;
-
+					
 					UnitAny* pWayback = D2Funcs.D2GAME_CopyPortal(pGame, pTown, LevelId, aLvl);
 					if (pWayback)
 					{
@@ -429,4 +430,6 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 
 	pGame->pQuestControl = pQControl;
 	FINISHDEBUGMSG("ok!")
+
+	GAME_EmptyExtendedMemory(pGame);
 }

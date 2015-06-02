@@ -20,6 +20,7 @@
 #ifndef D2HANDS_H__
 #define D2HANDS_H__
 
+void GAME_EmptyExtendedMemory(Game* pGame);
 DWORD __stdcall  LEVELS_GetActByLevelNo(DWORD nLevel);
 BYTE __fastcall LEVELS_GetActByLevel(Level* pLevel);
 BYTE __fastcall LEVELS_GetActByRoom2(int _1, Room2* pRoom2);
