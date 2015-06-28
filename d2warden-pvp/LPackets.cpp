@@ -190,6 +190,23 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
+	case D2SRVMSG_INTERACT: //0x13
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+		px13* packet = (px13*)pPacket;
+		if (packet->dwUnitType == UNIT_OBJECT) {
+			UnitAny* obj = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->dwUnitId, UNIT_OBJECT);
+			if (obj) {
+				if (obj->dwAct != pUnit->dwAct)
+					return MSG_HACK;
+			}
+		}
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
 	default:
 	{
 		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))

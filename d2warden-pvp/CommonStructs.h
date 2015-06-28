@@ -896,6 +896,16 @@ struct ExEventSpecatorEnd : ExEvent // (size 0x4)
 };
 
 /*
+Interact with a unit
+*/
+struct px13
+{
+	BYTE P_13;			//0x00
+	DWORD dwUnitType;	//0x01
+	DWORD dwUnitId;		//0x05
+};
+
+/*
 Request players chat relation change
 */
 struct px5d
