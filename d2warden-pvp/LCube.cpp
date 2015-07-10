@@ -38,7 +38,7 @@ DWORD __stdcall CUBE_OnCustomFunc(Game* pGame, UnitAny* pPlayer, CubeOutputItem 
 			return FALSE;
 		}
 
-		return QUESTS_OpenPortal(pGame, pPlayer, pCubeOutput->nParam);
+		return QUESTS_OpenPortal(pGame, pPlayer, pCubeOutput->nLevel);
 	}
 	else if (pCubeOutput->Type == CUBEOUTPUT_COWPORTAL) {
 		return QUESTS_CowLevelOpenPortal(pGame, pPlayer);
