@@ -207,6 +207,25 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 		}
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
+	case D2SRVMSG_STAFF_IN_ORIFICE: // 0x44
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+
+		px44* packet = (px44*)pPacket;
+		if (pUnit->bInteracting && packet->dwHolderId != pUnit->dwInteractId) {
+			Log("HACK: D2SRVMSG_STAFF_IN_ORIFICE used on %s but player is interacting with %s. Received from *%s", UnitTypeToStr(packet->dwHolderType),
+				UnitTypeToStr(pUnit->dwInteractType), pUnit->pPlayerData->pClientData->AccountName);
+			BootPlayer(pUnit->pPlayerData->pClientData->ClientID, BOOT_BAD_QUEST_DATA); 
+			return MSG_HACK;
+		}
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
 	default:
 	{
 		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))

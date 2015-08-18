@@ -765,7 +765,8 @@ struct Game
 	char GamePass[16];					//0x3A
 	char GameDesc[32];					//0x4A
 	BYTE GameType;						//0x6A - whenever this is single player (etc)
-	BYTE _3a[2];						//0x6B _3a[0] - Arena's _2;
+	BYTE bArenaLvlId;					//0x6B
+	BYTE _3;							//0x6C
 	BYTE DifficultyLevel;				//0x6D
 	BYTE _4[2];							//0x6E
 	DWORD bExpansion;					//0x70
@@ -903,6 +904,18 @@ struct px13
 	BYTE P_13;			//0x00
 	DWORD dwUnitType;	//0x01
 	DWORD dwUnitId;		//0x05
+};
+
+/*
+Put an item into holder
+*/
+struct px44
+{
+	BYTE P_44;			//0x00
+	DWORD dwHolderType;	//0x01
+	DWORD dwHolderId;	//0x05
+	DWORD dwItemId;		//0x09
+	DWORD dwObjectState;//0x0D 2 -> Cancel, 3-> Accept
 };
 
 /*
