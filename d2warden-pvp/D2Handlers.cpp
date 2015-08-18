@@ -1295,6 +1295,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 void GAME_EmptyExtendedMemory(Game* pGame)
 {
-	Log("Clearing memory of extended Game...");
+	BEGINDEBUGMSG("Clearing memory of extended Game...");
 	memset((BYTE*)pGame + 0x1DF4, 0, sizeof(Game) - 0x1DF4);
+	FINISHDEBUGMSG("ok!");
 }
