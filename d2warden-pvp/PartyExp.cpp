@@ -67,6 +67,11 @@ int __fastcall EXPFormula(int nPlayers)
 	return 50 * (nPlayers - 1);
 }
 
+int __fastcall HPFormula(int nPlayers)
+{
+	return 50 * ((nPlayers > 16 ? 16 : nPlayers) - 1);
+}
+
 __declspec(naked) int nPlayersFormula()
 {
 	__asm
@@ -75,6 +80,20 @@ __declspec(naked) int nPlayersFormula()
 		mov ecx, eax
 
 		call EXPFormula
+
+		pop ecx
+		ret
+	}
+}
+
+__declspec(naked) int HpGainFormula()
+{
+	__asm
+	{
+		push ecx
+		mov ecx, eax
+
+		call HPFormula
 
 		pop ecx
 		ret

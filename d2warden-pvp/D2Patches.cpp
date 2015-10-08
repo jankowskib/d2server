@@ -229,8 +229,8 @@ void PatchD2()
 	//EXP FIX
 	PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_PARTY_SHARE_FIX_PREPARE), 0x5690, 2, "Party Share Fix Prepare");
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PARTY_SHARE_FIX), (DWORD)ExpShare_NEW, 5, "Party Share Fix");
-	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_EXP_INCREASE_FIX), GetDllOffset("D2Game.dll", D2GAME_EXP_INCREASE_FIX_2), 5, "Exp Increase Fix");
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_EXP_INCREASE_FIX_2), (DWORD)nPlayersFormula, 5, "Exp Increase Fix 2");
+	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_EXP_INCREASE_FIX), (DWORD)nPlayersFormula, 5, "Exp Increase Fix");
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_EXP_INCREASE_FIX_2), (DWORD)HpGainFormula, 5, "Hp Increase Fix");
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_MAX_PLAYERS_CHANGE),(DWORD)D2Stubs::D2GAME_GetPlayers_STUB,5,"Max Players Change");
 
