@@ -163,8 +163,6 @@ void PatchD2()
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_PLAYER_EVENTS_WRAPPER), (DWORD)D2Stubs::D2GAME_OnEventSend_STUB, 5, "Player Events Wrapper");
 
 
-	//On Run to Location
-	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_0X03_WRAPPER), (DWORD)OnRunToLocation, 6, "0x03 Wrapper");
 
 	if (wcfgSpectator)
 	{
