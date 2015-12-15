@@ -22,3 +22,11 @@
 *.opensdf
 *.ipch
 *.suo
+d2warden-pvp/Debug/
+d2warden-pvp/D2Patches.cpp.PVS-Studio.cfg
+d2gs/1.map
+d2warden-pvp/d2warden.sdf
+d2warden-pvp/none
+d2warden-pvp/D2Patches.i
+d2warden-pvp/LEvents.i-66bba5db
+d2warden-pvp/Release/
