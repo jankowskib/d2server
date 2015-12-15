@@ -197,6 +197,7 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		if (pGame->nSyncTimer > 1)
 			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
 		px13* packet = (px13*)pPacket;
 		if (packet->dwUnitType == UNIT_OBJECT) {
 			UnitAny* obj = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->dwUnitId, UNIT_OBJECT);
@@ -283,12 +284,12 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 		return 0;
 	}
 
-	if (SkillId == 0x65 && !wcfgAllowHB)
+	if (SkillId == D2S_HOLYBOLT && !wcfgAllowHB)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
 		return 0;
 	}
-	if (SkillId == 151 && !wcfgAllowNLWW)
+	if (SkillId == D2S_WHIRLWIND && !wcfgAllowNLWW)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" : "NLWW Is Not Allowed On This Server");
 		return 0;
