@@ -1160,6 +1160,25 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "I? %d, Id: %d, Type %d", pUnit->bInteracting, pUnit->dwInteractId, pUnit->dwInteractType);
 				return false;
 			}
+			if (_stricmp(str, "#checkroom") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				
+				for (int a = 0; a < D2ACT_V; ++a) {
+					if (pUnit->dwAct == a) continue;
+					if (!pUnit->pGame->pDrlgAct[a]) {
+						SendMsgToClient(pUnit->pPlayerData->pClientData, "Skipping A%d because is not initialized!", a+1);
+						continue;
+					}
+					for (InactiveRoom* room = pUnit->pGame->pDrlgRoomList[a]; room; room = room->pNextRoom) {
+						if (room->dwXStart <= pUnit->pPath->pRoom1->pRoom2->dwPosX && room->dwYStart <= pUnit->pPath->pRoom1->pRoom2->dwPosY &&
+							(room->dwXStart + 48 * 5) >= pUnit->pPath->pRoom1->pRoom2->dwPosX && (room->dwYStart + 48 * 5) >= pUnit->pPath->pRoom1->pRoom2->dwPosY)
+							SendMsgToClient(pUnit->pPlayerData->pClientData, "Possible room found @ A%d", a+1);
+						}
+					}
+
+				return false;
+			}
 
 			if (_stricmp(str, "#setstate") == 0)
 			{
