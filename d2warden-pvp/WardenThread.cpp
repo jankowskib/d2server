@@ -86,8 +86,10 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	//while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
 	while(gWardenRunning)
 	{
-		if(!isWardenQueueEmpty()) 
+		if (!isWardenQueueEmpty())
 			WaitForSingleObject(hWardenCheckEvent, WardenLoop());
+		else
+			Sleep(1000);
 	}
 #ifdef _ENGLISH_LOGS
 	LogNoLock("End of main thread!");
