@@ -1146,7 +1146,75 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				}
 				return false;
 			}
+#ifdef ENABLE_LEVEL_COMMAND
+			if (_stricmp(str, "#level") == 0 || _stricmp(str, "#lvl") == 0)
+			{
+				if (D2Funcs.D2COMMON_GetStatSigned(pUnit, STAT_LEVEL, NULL) != 1)
+					return TRUE;
+			
+				D2Funcs.D2COMMON_SetStat(pUnit, STAT_LEVEL, 99, 0); // Free skills
+				D2Funcs.D2COMMON_SetStat(pUnit, 5, 110, 0);
+				D2Funcs.D2COMMON_SetStat(pUnit, STAT_EXP, 3520485254, 0);
+				D2Funcs.D2COMMON_SetStat(pUnit, 4, 505, 0); // Stat points
+				D2Funcs.D2COMMON_AddStat(pUnit, STAT_MAXHP, 60 << 8, 0); // 
+				DWORD ClassId = pUnit->dwClassId;
+				CharStatsTxt* pTxt = &(*D2Vars.D2COMMON_sgptDataTables)->pCharStatsTxt[ClassId];
+				if (pTxt) {
+					D2Funcs.D2COMMON_AddStat(pUnit, STAT_MAXSTAMINA, ((pTxt->bStaminaPerLevel * 98) / 4) << 8, 0);
+					D2Funcs.D2COMMON_AddStat(pUnit, STAT_MAXMANA, ((pTxt->bManaPerLevel * 98) / 4) << 8, 0);
+					D2Funcs.D2COMMON_AddStat(pUnit, STAT_MAXHP, ((pTxt->bLifePerLevel * 98) / 4) << 8, 0);
+				}
+				for (int diff = 0; diff < 3; ++diff) {
+					for (int lvl = 1; lvl < (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs; ++lvl) {
+						LevelsTxt * pLevelTxt = &(*D2Vars.D2COMMON_sgptDataTables)->pLevelsTxt[lvl];
+						if (pLevelTxt && pLevelTxt->nWaypoint != 255) {
+							D2Funcs.D2COMMON_EnableWaypoint(pUnit->pPlayerData->pWaypoints[diff], pLevelTxt->nWaypoint);
+						}
+					}
+						for (int i = 0; i < 41; ++i) {
+							D2Funcs.D2COMMON_SetQuestFlag(pUnit->pPlayerData->QuestsFlags[diff], i, 0);
+							D2Funcs.D2COMMON_SetQuestFlag(pUnit->pPlayerData->QuestsFlags[diff], i, 13);
+						}
+				}
+					
+				D2Funcs.D2COMMON_SetStat(pUnit, STAT_GOLD, 500 * 1000, 0); //Gold
+				D2Funcs.D2COMMON_SetStat(pUnit, STAT_GOLDBANK, 800 * 1000, 0); //Gold
+				D2ASMFuncs::D2GAME_UpdateBonuses(pUnit);
 
+
+				PresetItem  box;
+				int cubeIdx;
+				D2Funcs.D2COMMON_GetItemIdx(' xob', &cubeIdx);
+				memset(&box, 0, sizeof(box));
+
+				box.pOwner = pUnit;
+				box.wItemFormat = pUnit->pGame->ItemFormat;
+				box.pGame = pUnit->pGame;
+				box.iMode = ITEM_MODE_ON_CURSOR;
+				box.iQuality = ITEM_QUALITY_NORMAL;
+				box.iIdx = cubeIdx;
+				box.dwItemFlags.bIdentified = 1;
+				box.dwItemFlags.bRepaired = 1;
+				box.wCreateFlags = 1;
+				box.iLvl = 99;
+
+
+				UnitAny* ptItem = D2Funcs.D2GAME_CreateItemEx(pUnit->pGame, &box, 0);
+
+				if (ptItem)
+				{
+					D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
+					D2POINT Out = { 0, 0 };
+					Room1* aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, pUnit->pPath->pRoom1, &Out, 1);
+					if (!aRoom) { SendMsgToClient(pUnit->pPlayerData->pClientData, "FindFreeCoords failed!"); return false; }
+					D2ASMFuncs::D2GAME_DropItem(ptItem, aRoom, pUnit->pGame, pUnit, Out.x, Out.y);
+				}
+				QUESTS_UpdateUnit(pUnit, 2, pUnit);
+				D2Funcs.D2COMMON_SetStartFlags(pUnit, 1);
+
+				return false;
+			}
+#endif
 			if (_stricmp(str, "#removepets") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;

@@ -17,10 +17,11 @@
  * limitations under the License.
  * ========================================================== */
 #define _ENGLISH_LOGS
-#define D2EX_COLOR_STAT		189					// ItemStatCost.Txt record which stores item color value
-#define D2EX_LOOTED_STAT	190					// ItemStatCost.Txt record which stores monster id which gave the item 
-#define D2EX_SPECTATOR_STATE 245				// States.Txt record set on spectators
+#define D2EX_COLOR_STAT		183					// ItemStatCost.Txt record which stores item color value
+#define D2EX_LOOTED_STAT	184					// ItemStatCost.Txt record which stores monster id which gave the item 
+#define D2EX_SPECTATOR_STATE 185				// States.Txt record set on spectators
 //#define D2EX_MYSQL							// Replace gold with mysql database currency
+#define ENABLE_LEVEL_COMMAND
 
 #define WIN32_LEAN_AND_MEAN
 //******** SET HERE WORKING VERSION *********
