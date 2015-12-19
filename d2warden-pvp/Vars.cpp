@@ -53,6 +53,7 @@ BYTE wcfgAllowD2Ex;
 BYTE wcfgAllowNLWW;
 BYTE wcfgDetectTrick;
 BYTE wcfgDisableRepairCost;
+BYTE wcfgAllowQuests;
 std::string wcfgDatabase;
 std::string wcfgDBUser;
 std::string wcfgDBPass;

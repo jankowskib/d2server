@@ -55,6 +55,7 @@ extern BYTE wcfgEnableSeed;
 extern BYTE wcfgAllowD2Ex;
 extern BYTE wcfgDetectTrick;
 extern BYTE wcfgDisableRepairCost;
+extern BYTE wcfgAllowQuests;
 
 extern std::list<std::string> wcfgAdmins;
 

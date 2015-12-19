@@ -377,13 +377,14 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 			pNewQuest->bActive = 0;
 			pNewQuest->bLastState = 0;
 			pNewQuest->bNotIntro = 1;
+			pNewQuest->bState = 1;
 			pNewQuest->bAct = gQuestInit[n].nAct;
 			pNewQuest->hGUIDs.nGUIDCount = 0;
 			pQuest = pNewQuest;
 
 			if (gQuestInit[n].pQuestInit)
 				gQuestInit[n].pQuestInit(pNewQuest);
-
+			
 		}
 	}
 
@@ -397,6 +398,7 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 			pNewQuest->pPrev = pQuest;
 			pNewQuest->QuestID = gnQuestsToInit + n;
 			pNewQuest->pGame = pGame;
+			
 			pNewQuest->bActive = 1;
 			pNewQuest->bLastState = 0;
 			pNewQuest->bNotIntro = 0;
@@ -429,7 +431,11 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 	pQControl->pQuestFlags = pBuffer;
 
 	pGame->pQuestControl = pQControl;
+	if (!wcfgAllowQuests) {
+		for (int n = 0; n < gnQuestsToInit; ++n)
+			D2Funcs.D2COMMON_SetQuestFlag((QuestFlags*)pQControl->pQuestFlags, n, 0xD);
+	}
 	FINISHDEBUGMSG("ok!")
-
+	DEBUGMSG("Quest are %d", wcfgAllowQuests)
 	GAME_EmptyExtendedMemory(pGame);
 }

@@ -124,13 +124,13 @@ void Warden_Config()
 	wcfgDetectTrick = GetPrivateProfileInt("Warden", "DetectTrick", 1, wcfgConfigFile.c_str());
 	wcfgExpRange = GetPrivateProfileInt("Warden", "ExpRange", 6400, wcfgConfigFile.c_str());
 	wcfgDisableRepairCost = GetPrivateProfileInt("Warden", "DisableRepairCosts", 1, wcfgConfigFile.c_str());
-	//DmgRekord = GetPrivateProfileInt("Warden","DmgRekord",1,wcfgConfigFile.c_str());
+	wcfgAllowQuests = GetPrivateProfileInt("Warden", "AllowQuests", 1, wcfgConfigFile.c_str());
+
 	GetPrivateProfileString("Warden", "ClanDataURL", "http://www.lolet.yoyo.pl/Clans.ini", URL, 255, wcfgConfigFile.c_str());
 	wcfgClansURL = URL;
 	GetPrivateProfileString("Warden", "UpdateURL", "", URL, 255, wcfgConfigFile.c_str());
 	wcfgUpdateURL = URL;
-	//GetPrivateProfileString("Warden","DmgOwner","N/A",URL,255,wcfgConfigFile.c_str());
-	//DmgOwner = URL;
+
 	GetPrivateProfileString("Warden", "GSName", "N/A", URL, 255, wcfgConfigFile.c_str());
 	wcfgGSName = URL;
 	GetPrivateProfileString("Warden", "Admins", "LOLET", URL, 255, wcfgConfigFile.c_str());
@@ -141,13 +141,14 @@ void Warden_Config()
 		if (rt[0]) wcfgAdmins.push_back(rt);
 	}
 
+#ifdef D2EX_MYSQL
 	GetPrivateProfileString("Warden", "FGDatabaseName", "projectdvb", URL, 255, wcfgConfigFile.c_str());
 	wcfgDatabase = URL;
 	GetPrivateProfileString("Warden", "FGDatabaseUser", "root", URL, 255, wcfgConfigFile.c_str());
 	wcfgDBUser = URL;
 	GetPrivateProfileString("Warden", "FGDatabasePass", "", URL, 255, wcfgConfigFile.c_str());
 	wcfgDBPass = URL;
-
+#endif
 	//World Event Stuff
 	wcfgEnableWE = GetPrivateProfileInt("World Event", "Enabled", 0, wcfgConfigFile.c_str());
 

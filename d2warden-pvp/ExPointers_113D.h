@@ -160,7 +160,11 @@ EXFUNCPTR(D2COMMON, 10736, void, __stdcall, (Level * pLevel), -10736)
 EXFUNCPTR(D2COMMON, GetLevel, Level*, __fastcall, (ActMisc* pMisc, int dwLevelNo), -10283) //k
 EXFUNCPTR(D2COMMON, GetCoordsInfo, CoordsInfo*, __stdcall, (Room1* pRoom, DWORD nX, DWORD nY), -10463)
 EXFUNCPTR(D2COMMON, GetRoomCoords, BOOL, __stdcall, (Room1* pRoom, RoomCoords** pCoords), -10463)
+
+EXFUNCPTR(D2COMMON, GetWaypointId, BOOL, __stdcall, (int nLevel, int *wpId), -10978) // 1.13d
+EXFUNCPTR(D2COMMON, EnableWaypoint, BOOL, __stdcall, (Waypoint* pWaypoint, int wpId), -10967) // 1.13d
 //QUESTS
+EXFUNCPTR(D2COMMON, SetQuestFlag, int, __stdcall, (QuestFlags* pFlags, int nQuest, int nFlag), -10595) // 1.13d
 
 //D2LANG
 EXFUNCPTR(D2LANG, GetLocaleText, wchar_t*, __fastcall, (short nLocaleTxtNo), -10004) //k
