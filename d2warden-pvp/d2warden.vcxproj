@@ -249,10 +249,10 @@ EXIT 0</Command>
     <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
     <ClCompile Include="LUberQuest.cpp" />
+    <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
     <ClCompile Include="D2Warden.cpp" />
-    <ClCompile Include="ExMemory.cpp" />
     <ClCompile Include="LEvents.cpp" />
     <ClCompile Include="LItems.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_USRDLL;D2WARDEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -305,7 +305,6 @@ EXIT 0</Command>
     <ClInclude Include="D2Structs_113D.h" />
     <ClInclude Include="D2Stubs.h" />
     <ClInclude Include="D2Warden.h" />
-    <ClInclude Include="ExMemory.h" />
     <ClInclude Include="ExPointers_111B.h" />
     <ClInclude Include="ExPointers_113D.h" />
     <ClInclude Include="global.h" />
@@ -320,6 +319,7 @@ EXIT 0</Command>
     <ClInclude Include="LRoster.h" />
     <ClInclude Include="LUberQuest.h" />
     <ClInclude Include="LWorldEvent.h" />
+    <ClInclude Include="MainLoop.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="NodesEx.h" />
     <ClInclude Include="Offset.h" />

@@ -377,7 +377,6 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 			pNewQuest->bActive = 0;
 			pNewQuest->bLastState = 0;
 			pNewQuest->bNotIntro = 1;
-			pNewQuest->bState = 1;
 			pNewQuest->bAct = gQuestInit[n].nAct;
 			pNewQuest->hGUIDs.nGUIDCount = 0;
 			pQuest = pNewQuest;

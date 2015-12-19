@@ -509,16 +509,12 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 
 		LOCK
 			DEBUGMSG("Added (*%s) %s to WardenQueue", pClient->AccountName, pClient->CharName);
-		hWarden.Clients.push_back(NewClientData);
+			hWarden.Clients.push_back(NewClientData);
 		UNLOCK
-			if (hWarden.Clients.size() > 600)
-			{
-#ifdef _ENGLISH_LOGS
-				Log("NEWCLIENT: Number of clients (%d) is bigger than 600, isn't it a memory leak though?", hWarden.Clients.size());
-#else
-				Log("NOWYKLIENT: Liczba klientów w petli %d wieksza niz 600, czy to napewno nie wyciek pamieci?", hWarden.Clients.size());
-#endif
-			}
+		if (hWarden.Clients.size() > 600)
+		{
+			Log("NEWCLIENT: Number of clients (%d) is bigger than 600, isn't it a memory leak though?", hWarden.Clients.size());
+		}
 		DEBUGMSG("Player %s has been added to WardenQueue!", pClient->CharName);
 
 		if (NewClientData.bNeedUpdate)
@@ -541,16 +537,9 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	}
 	else
 	{
-#ifdef _ENGLISH_LOGS
 		Log("NEWCLIENT: No SessionKey in database! Dropping player %s !", pClient->AccountName);
-#else
-		Log("NOWYKLIENT: Brak SessionKey w bazie! Wykopuje gracza %s !", pClient->AccountName);
-#endif
 		KickPlayer(pClient->ClientID);
 	}
-	DEBUGMSG("Triggering the event from OnGameJoin..");
-	SetEvent(hWardenCheckEvent);
-
 
 	return 0;
 }
@@ -1181,34 +1170,6 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				D2Funcs.D2COMMON_SetStat(pUnit, STAT_GOLDBANK, 800 * 1000, 0); //Gold
 				D2ASMFuncs::D2GAME_UpdateBonuses(pUnit);
 
-
-				PresetItem  box;
-				int cubeIdx;
-				D2Funcs.D2COMMON_GetItemIdx(' xob', &cubeIdx);
-				memset(&box, 0, sizeof(box));
-
-				box.pOwner = pUnit;
-				box.wItemFormat = pUnit->pGame->ItemFormat;
-				box.pGame = pUnit->pGame;
-				box.iMode = ITEM_MODE_ON_CURSOR;
-				box.iQuality = ITEM_QUALITY_NORMAL;
-				box.iIdx = cubeIdx;
-				box.dwItemFlags.bIdentified = 1;
-				box.dwItemFlags.bRepaired = 1;
-				box.wCreateFlags = 1;
-				box.iLvl = 99;
-
-
-				UnitAny* ptItem = D2Funcs.D2GAME_CreateItemEx(pUnit->pGame, &box, 0);
-
-				if (ptItem)
-				{
-					D2POINT Pos = { pUnit->pPath->xPos, pUnit->pPath->yPos };
-					D2POINT Out = { 0, 0 };
-					Room1* aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, pUnit->pPath->pRoom1, &Out, 1);
-					if (!aRoom) { SendMsgToClient(pUnit->pPlayerData->pClientData, "FindFreeCoords failed!"); return false; }
-					D2ASMFuncs::D2GAME_DropItem(ptItem, aRoom, pUnit->pGame, pUnit, Out.x, Out.y);
-				}
 				QUESTS_UpdateUnit(pUnit, 2, pUnit);
 				D2Funcs.D2COMMON_SetStartFlags(pUnit, 1);
 

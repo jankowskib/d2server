@@ -22,8 +22,6 @@
 int WardenUpTime;
 Warden hWarden;
 HANDLE DumpHandle = 0;
-HANDLE hEvent = 0;
-HANDLE hWardenCheckEvent = 0;
 
 CRITICAL_SECTION MEM_CRITSECT;
 CRITICAL_SECTION LOG_CS;

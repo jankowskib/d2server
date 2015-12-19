@@ -549,16 +549,14 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 		if (i->pWardenPacket.PacketLen == 0 || i->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
 		{
 			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
-			UNLOCK
-				return MSG_HACK;
+			return MSG_HACK;
 		}
 
 		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
 		if (!ThePacket)
 		{
 			Log("WardenPacket: No memory to allocate packet data!");
-			UNLOCK
-				return MSG_HACK;
+			return MSG_HACK;
 		}
 
 		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
@@ -567,20 +565,13 @@ DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptP
 		rc4_crypt(i->RC4_KEY_0X66, i->pWardenPacket.ThePacket, i->pWardenPacket.PacketLen);
 		//DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
 		i->NextCheckTime = GetTickCount();
-		UNLOCK
-			//DEBUGMSG("WardenPacket: Triggering the check event...");
-			SetEvent(hWardenCheckEvent);
+
 		return MSG_OK; // Wszystko OK!
 	}
 	else
 	{
 		DEBUGMSG("WardenPacket: Client %d, %s (*%s) is not in WardenQueue!!", ClientID, ptPlayer->pPlayerData->pClientData->CharName, ptPlayer->pPlayerData->pClientData->AccountName);
-
-#ifdef _ENGLISH_LOGS
 		Log("WardenPacket: Unexpected packet from player %s (*%s)! Returning an error..", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
-#else
-		Log("WardenPacket: Nieoczekiwany pakiet od gracza %s (*%s)! Zwracam blad...", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
-#endif
 		return MSG_HACK;
 	}
 

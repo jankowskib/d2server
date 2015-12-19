@@ -22,6 +22,8 @@
 #include "StatDumpThread.h"
 
 #include "D2Warden.h"
+/*
+// DO NOT USE
 
 unsigned __stdcall StatThread(void* Params)
 {
@@ -95,10 +97,7 @@ UNLOCK
 LogToFile("RealmStats.txt",1,"Dumping end (%d) ms...",GetTickCount()-Time);
 Sleep(wcfgDumpInterval * 1000);
 }
-#ifdef _ENGLISH_LOGS
 Log("End of dump thread!");
-#else
-Log("Koniec watku zrzutu!");
-#endif
 return 0;
 }
+*/

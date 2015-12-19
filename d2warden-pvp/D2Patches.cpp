@@ -39,6 +39,7 @@
 #include "LParty.h"
 #include "LPackets.h"
 #include "LCube.h"
+#include "MainLoop.h"
 
 void PatchD2()
 {
@@ -74,6 +75,8 @@ void PatchD2()
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
 #ifdef VER_113D
+
+	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_GAME_LOOP), (DWORD)MainLoop_ASM, 5, "Game loop");
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", 0xBFFC0), (DWORD)D2Stubs::UBERQUEST_SpawnMonsters_STUB, 5, "Spawn uber monsters");
 		
@@ -239,6 +242,7 @@ void PatchD2()
 
 	//PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_NODESEX_AI_TEMP_FIX), 0x90909090, 9, "NodesEX: Ai Temp Fix"); // This temp fix is no more needed
 	if (wcfgMaxPlayers > 8) {
+		DEBUGMSG("Patching the nodes system")
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_BAAL_AI), (DWORD)NODES_BaalCheck, 7, "NodesEX: Baal Ai"); // bylo 0x2BB75
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_DIABLO_AI), (DWORD)NODES_NormalCheck, 7, "NodesEX: Diablo Ai");
 

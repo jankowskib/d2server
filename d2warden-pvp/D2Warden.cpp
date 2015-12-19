@@ -323,17 +323,6 @@ void Warden_Init()
 
 	Log("Module '%s' has loaded correctly!",Warden_MOD);
 
-	if(wcfgDumpInterval)
-	{
-		if(!DumpHandle)
-			DumpHandle = (HANDLE)_beginthreadex(0,0,&StatThread,0,0,&StatID);
-		if(DumpHandle)
-			Log("Started stat dump, every %d second(s).",wcfgDumpInterval);
-	}
-	else
-	{
-//		if(DumpHandle) CloseHandle(DumpHandle); // To trzeba jeszcze dorobic
-	}
 	DEBUGMSG("Warden init finished!")
 	return;
 }
@@ -402,7 +391,6 @@ DWORD WardenLoop()
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 						pWardenClient->NextCheckTime = CurrentTick;
 						DEBUGMSG("Triggering check event because of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
-						SetEvent(hWardenCheckEvent);
 						break;
 					}
 					if (pWardenClient->pWardenPacket.ThePacket[0] == 0)
@@ -411,7 +399,6 @@ DWORD WardenLoop()
 						pWardenClient->WardenStatus = WARDEN_DOWNLOAD_MOD;
 						pWardenClient->NextCheckTime = CurrentTick;
 						DEBUGMSG("Triggering check event becasue of WARDEN_DOWNLOAD_MOD in CHECK_CLIENT ");
-						SetEvent(hWardenCheckEvent);
 						break;
 					}
 					else
@@ -428,7 +415,6 @@ DWORD WardenLoop()
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 						pWardenClient->NextCheckTime = CurrentTick;
 						DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
-						SetEvent(hWardenCheckEvent);
 						break;
 					}
 				}
@@ -438,7 +424,6 @@ DWORD WardenLoop()
 					{
 						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE; //Daje ci 20 sekund (Na cbn jest 45) 
 						DEBUGMSG("Triggering check event becasue of GetTickCount() - pWardenClient->ClientLogonTime) > 20000 in CHECK_CLIENT");
-						SetEvent(hWardenCheckEvent);
 					}
 					DEBUGMSG("Still not received hello packet answer for %s (*%s), sleeping 200", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
 					pWardenClient->NextCheckTime = CurrentTick + 200;
@@ -452,7 +437,6 @@ DWORD WardenLoop()
 						pWardenClient->WardenStatus = WARDEN_WAITING_DOWNLOAD_END;
 						pWardenClient->NextCheckTime = CurrentTick;
 						DEBUGMSG("Triggering check event becasue of WARDEN_WAITING_DOWNLOAD_END for  %s (*%s) DL status : [%d/%d]", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), pWardenClient->MOD_Position, MOD_Length);
-						SetEvent(hWardenCheckEvent);
 				}
 				else
 				{
@@ -460,8 +444,7 @@ DWORD WardenLoop()
 					//DEBUGMSG("WARDENLOOP: DOWNLOAD_MOD DL status : [%d/%d]", pWardenClient->MOD_Position, MOD_Length);
 					pWardenClient->MOD_Position = SendPartOfMOD2Client(pWardenClient->ClientID, pWardenClient->RC4_KEY_0XAE, pWardenClient->MOD_Position);
 					pWardenClient->NextCheckTime = CurrentTick; // Speed up upload process, by manipulation of this parameter
-				//	DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD for %s (*%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
-					SetEvent(hWardenCheckEvent);
+				//	DEBUGMSG("WARDENLOOP: Triggering check event becasue of WARDEN_DOWNLOAD_MOD for %s (*%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());				
 				}
 			}
 			break;

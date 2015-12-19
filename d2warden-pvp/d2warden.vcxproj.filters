@@ -89,9 +89,6 @@
     <ClCompile Include="Vars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExMemory.cpp">
-      <Filter>Source Files\Misc</Filter>
-    </ClCompile>
     <ClCompile Include="LSpectator.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
@@ -115,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="LUberQuest.cpp">
       <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
+    <ClCompile Include="MainLoop.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,9 +178,6 @@
     <ClInclude Include="RC4.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="ExMemory.h">
-      <Filter>Header Files\Misc</Filter>
-    </ClInclude>
     <ClInclude Include="LSpectator.h">
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
@@ -228,6 +225,9 @@
     </ClInclude>
     <ClInclude Include="LUberQuest.h">
       <Filter>Header Files\ModuLes</Filter>
+    </ClInclude>
+    <ClInclude Include="MainLoop.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

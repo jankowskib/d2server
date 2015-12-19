@@ -28,34 +28,22 @@
 
 #include "D2Warden.h"
 #include "Misc.h"
-#include "process.h"
 
-static HANDLE WardenThread = 0;
-static unsigned Id = 0;
-static volatile bool gWardenRunning = true;
 
-unsigned __stdcall d2warden_thread(void *lpParameter)
+BOOL __stdcall WardenPreInit()
 {
 	if(!InitializeCriticalSectionAndSpinCount(&hWarden.WardenLock, 4000))
 	{
-#ifdef _ENGLISH_LOGS
 		LogNoLock("No memory to allocate critical section!");
-#else
-		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
-#endif
-		return -1;
+		return FALSE;
 	}
+
 	if(!InitializeCriticalSectionAndSpinCount(&LOG_CS, 4000))
 	{
 		DeleteCriticalSection(&hWarden.WardenLock);
-#ifdef _ENGLISH_LOGS
 		LogNoLock("No memory to allocate critical section!");
-#else
-		LogNoLock("Brak pamieci na alokacje sekcji krytycznej!");
-#endif
-		return -1;
+		return FALSE;
 	}
-
 
 	SetupD2Vars();
 	SetupD2Pointers();
@@ -65,38 +53,17 @@ unsigned __stdcall d2warden_thread(void *lpParameter)
 	Warden_Init();
 	if (Warden_Enable == false)
 	{
+		DeleteCriticalSection(&hWarden.WardenLock);
 		DeleteCriticalSection(&LOG_CS);
-#ifdef _ENGLISH_LOGS
 		LogNoLock("Error during initialization. Warden is turned off");
-#else
-		LogNoLock("Blad podczas inicjalizacji. Warden wylaczony.");
-#endif
-		return -1;
+		return FALSE;
 	}
-#ifdef _ENGLISH_LOGS
+
 	Log("Available memory can handle %d clients.", hWarden.Clients.max_size());
 	Log("Warden initialized successfully.");
-#else
-	Log("Dostepna pamiec wystarczy na %d klientow.", hWarden.Clients.max_size());
-	Log("Warden pomyslnie zainicjowany.");
-#endif
-
-
 	WardenUpTime = GetTickCount();
-	//while (WaitForSingleObject(hEvent, 0) != WAIT_OBJECT_0) 
-	while(gWardenRunning)
-	{
-		if (!isWardenQueueEmpty())
-			WaitForSingleObject(hWardenCheckEvent, WardenLoop());
-		else
-			Sleep(1000);
-	}
-#ifdef _ENGLISH_LOGS
-	LogNoLock("End of main thread!");
-#else
-	LogNoLock("Koniec watku glownego!");
-#endif
-	return 0; 
+
+	return TRUE; 
 }
 
 
@@ -106,52 +73,24 @@ DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 	{
 		case DLL_PROCESS_ATTACH:
 		{
-		//hEvent = CreateEvent(NULL, TRUE, FALSE, "WARDEN_END");
-			hWardenCheckEvent = CreateEvent(NULL, FALSE, FALSE, "WARDEN_CHECK");
 
-			if (!hWardenCheckEvent)
-				{ 
-		#ifdef _ENGLISH_LOGS
-				LogNoLock("Couldn't initialize events. Error id: %d!", errno); 
-		#else
-				LogNoLock("Nie moge zainicjowac eventu. Blad %d!", errno); 
-		#endif
-				return FALSE;
-				}
+			if(!WardenPreInit())
+			{
 
-			if(!WardenThread) WardenThread = (HANDLE)_beginthreadex(0,0,&d2warden_thread,0,0,&Id);
-			if(!WardenThread)
-				{ 
-		#ifdef _ENGLISH_LOGS
-				LogNoLock("Couldn't initialize thread. Error id: %d!", errno);
-		#else
-				LogNoLock("Nie moge zainicjowac thread. Blad %d!", errno);
-		#endif
+				LogNoLock("Failed to init the Warden :(");
 				return FALSE;
-				}
 			}
+
+		}
 		break;
 		case DLL_PROCESS_DETACH:
 			{
-		#ifdef _ENGLISH_LOGS
 			LogNoLock("Closing threads...");
-		#else
-			LogNoLock("Trwa zamykanie watkow...");
-		#endif
-			LOCK
-			gWardenRunning = false;
-			SetEvent(hWardenCheckEvent);
-			UNLOCK
-			//SetEvent(hEvent);
-			WaitForSingleObject(WardenThread,5000);
 			if (DumpHandle)
-				WaitForSingleObject(DumpHandle,5000);
-			if (hEvent)
-				CloseHandle(hEvent);
-			CloseHandle(WardenThread);
-			CloseHandle(hWardenCheckEvent);
-			if (DumpHandle)
+			{
+				WaitForSingleObject(DumpHandle, 5000);
 				CloseHandle(DumpHandle);
+			}
 
 			delete[] MOD_Enrypted; 
 
@@ -159,9 +98,6 @@ DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 	
 			DeleteCriticalSection(&LOG_CS);
 			DeleteCriticalSection(&hWarden.WardenLock);
-			hEvent = 0;
-			hWardenCheckEvent = 0;
-			WardenThread = 0;
 			DumpHandle = 0;
 			LogNoLock("Done!");
 		}

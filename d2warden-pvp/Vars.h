@@ -25,10 +25,7 @@
 extern int WardenUpTime;
 extern Warden hWarden;
 extern HANDLE DumpHandle;
-extern HANDLE hEvent;
-extern HANDLE hWardenCheckEvent;
 
-extern CRITICAL_SECTION MEM_CRITSECT;
 extern CRITICAL_SECTION LOG_CS;
 extern BYTE wcfgMaxPlayers;
 extern int wcfgExpRange;
