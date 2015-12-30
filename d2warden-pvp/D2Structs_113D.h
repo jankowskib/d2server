@@ -874,14 +874,14 @@ struct ClientData //size 0x518
 	DWORD ClientID;                 //0x00 
 	DWORD InitStatus;			   //0x04 Flag 0x4 - player is in game
 	WORD ClassId;                   //0x08 Something with Arena, also could be equivalent of ClassId
-	WORD PlayerStatus;			   //0x0A 0x4 connected, 0x8 death
+	WORD PlayerStatus;			   //0x0A 0x4 connected, 0x8 death, 0x20 expansion char
 	BYTE ClassId2;				   //0x0C
 	char CharName[16];			   //0x0D 
 	char AccountName[16];		   //0x1D 
 	BYTE _3[50];                    //0x2D 
 	DWORD _3b;					   //0x60
 	DWORD _4;		               //0x64
-	void* pGameData;				   //0x68 (seems to be added by d2gs, not by original blizz game) 
+	DebugGameInfo* pGameData;				   //0x68 (seems to be added by d2gs, not by original blizz game) 
 	DWORD _5[64];                   //0x6C 
 	DWORD UnitType;				   //0x16C
 	DWORD UnitId;                   //0x170

@@ -19,9 +19,9 @@
 
 #include "stdafx.h"
 #include "LSpectator.h"
+
 #include "LRoster.h"
 #include "LPackets.h"
-#include "D2Warden.h"
 
 /*
 	Updates position on every player that observes WatchedPlayer
@@ -139,30 +139,30 @@ DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit)
 	if (pWatcher->pPlayerData->isSpecing && pWatcher == pUnit)
 	{
 		SPECTATOR_RemoveFromQueue(pGame, pWatcher->dwUnitId);
-		return 0;
+		return MSG_OK;
 	}
 
 	if (pWatcher->pPlayerData->isSpecing)
 	{
 		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You already are watching someone!");
-		return 0;
+		return MSG_OK;
 	}
 
 	if (pUnit->pPlayerData->isSpecing)
 	{
 		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You cannot watch a spectator!");
-		return 0;
+		return MSG_OK;
 	}
 
 	if (pWatcher->dwUnitId == pUnit->dwUnitId)
 	{
 		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You cannot watch yourself!");
-		return 3;
+		return MSG_ERROR;
 	}
 	if (pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || pWatcher->dwMode == PLAYER_MODE_DEAD || pWatcher->dwMode == PLAYER_MODE_DEATH)
 	{
 		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You cannot watch a dead player or being a dead!");
-		return 0;
+		return MSG_OK;
 	}
 	LSpectator * pSpec = (LSpectator*)D2Funcs.FOG_AllocServerMemory(pGame->pMemPool, sizeof(LSpectator), __FILE__, __LINE__, NULL);
 	pSpec->UnitUID = pUnit->dwUnitId;
@@ -218,6 +218,6 @@ DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit)
 	msg.UnitId = pUnit->dwUnitId;
 	D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorStart));
 
-	return 0;
+	return MSG_OK;
 }
 

@@ -25,7 +25,7 @@
 */
 void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild)  // 0xEDF00
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 
 	if (!ptGame) return;
 	if (!ptUnit) return;
@@ -35,10 +35,10 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 	UnitNode** pNodes = ptGame->pNewNodes;
 
 
-	for (int n = 0; n < wcfgMaxPlayers; ++n)
+	for (int n = 0; n < gWarden->wcfgMaxPlayers; ++n)
 	{
 		if (!pNodes[n]) {
-			if (ptGame->nClients <= wcfgMaxPlayers && n < wcfgMaxPlayers)
+			if (ptGame->nClients <= gWarden->wcfgMaxPlayers && n < gWarden->wcfgMaxPlayers)
 			{
 				UnitNode* ptUNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
 				if (ptUNode)
@@ -57,7 +57,7 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 			}
 			else
 			{
-				Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, wcfgMaxPlayers, n, wcfgMaxPlayers);
+				Log("NodesEX: nClients=%d <= gWarden->wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, gWarden->wcfgMaxPlayers, n, gWarden->wcfgMaxPlayers);
 			}
 			break;
 		}
@@ -68,7 +68,7 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 
 void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 
 	if (!ptGame) return;
 	if (!ptUnit) return;
@@ -80,7 +80,7 @@ void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 	UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
 	if (!pNode) return;
 
-	if (aNodeIdx >= wcfgMaxPlayers)
+	if (aNodeIdx >= gWarden->wcfgMaxPlayers)
 	{
 		while (pNode->ptUnit != ptUnit)
 		{
@@ -131,7 +131,7 @@ void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 
 void __fastcall NODES_FreeUnitNode(Game* ptGame, UnitAny* ptUnit)
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 	if (!ptGame) return;
 	if (!ptUnit) return;
 	if (ptUnit->dwType > UNIT_MONSTER) return;
@@ -150,10 +150,14 @@ void __fastcall NODES_FreeUnitNode(Game* ptGame, UnitAny* ptUnit)
 	ptGame->pNewNodes[aNodeIdx] = 0;
 }
 
+BYTE __stdcall getMaxPlayers()
+{
+	return gWarden->wcfgMaxPlayers;
+}
 
 UnitNode *__fastcall NODES_GetUnitNode(UnitAny *ptUnit, Game *ptGame)  //0x6FD0DC50
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 	if (!ptGame || !ptUnit) return 0;
 	if (ptUnit->dwType > 1) return 0;
 	if (ptUnit->dwNodeIdx == NEU_NODE) return 0;
@@ -167,13 +171,13 @@ UnitNode *__fastcall NODES_GetUnitNode(UnitAny *ptUnit, Game *ptGame)  //0x6FD0D
 
 void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNode, int NodeIdx) ///6FD0DDE0
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 	UnitNode *pParentNode;
 	UnitNode *pCurrentNode;
 	if (!ptGame || !ptUnit || ptUnit->dwNodeIdx != NEU_NODE || ptUnit->dwType > UNIT_MONSTER)
 		return;
 
-	if (NodeIdx != wcfgMaxPlayers && NodeIdx != wcfgMaxPlayers + 1)
+	if (NodeIdx != gWarden->wcfgMaxPlayers && NodeIdx != gWarden->wcfgMaxPlayers + 1)
 		return;
 
 	pCurrentNode = ptGame->pNewNodes[NodeIdx];
@@ -203,10 +207,10 @@ void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNod
 
 void __fastcall NODES_AddAsParentNode(Game *ptGame, UnitAny *ptUnit, UnitNode *ptNode, int NodeIdx) //0x6FD0DE70
 {
-	int NEU_NODE = wcfgMaxPlayers + 3;
+	int NEU_NODE = gWarden->wcfgMaxPlayers + 3;
 	if (!ptGame || !ptUnit) return;
 	if (ptUnit->dwNodeIdx != NEU_NODE) return;
-	if (NodeIdx >= wcfgMaxPlayers) return;
+	if (NodeIdx >= gWarden->wcfgMaxPlayers) return;
 	if (ptUnit->dwType > UNIT_MONSTER) return;
 
 	UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
@@ -242,7 +246,7 @@ void __fastcall NODES_Free(Game *ptGame)
 
 	UnitNode** pNodes = ptGame->pNewNodes;
 
-	for (int i = 0; i < wcfgMaxPlayers + 3; ++i)
+	for (int i = 0; i < gWarden->wcfgMaxPlayers + 3; ++i)
 	{
 		if (pNodes[i])
 		{
@@ -387,7 +391,20 @@ __declspec(naked) UnitAny *__stdcall NODES_NormalCheck(Game *ptGame, UnitAny *pt
 			 MOV DWORD PTR SS : [ESP + 0x2C], EAX
 			 MOV EAX, DWORD PTR SS : [ESP + 0x24]
 			 INC EAX
-			 CMP AL, BYTE PTR DS : [wcfgMaxPlayers]			// Zamiana z 8 do 16
+			 
+			 // ==
+			 push edx
+			 push eax
+
+			 call getMaxPlayers
+			 mov dl, al
+			 pop eax
+
+			 cmp al, dl			// Zamiana z 8 do 16
+			 pop edx
+
+			 // -- 
+
 			 MOV DWORD PTR SS : [ESP + 0x24], EAX
 			 JGE L128
 			 XOR EBX, EBX
@@ -636,7 +653,21 @@ __declspec(naked) UnitAny *__stdcall NODES_BaalCheck(Game *ptGame, UnitAny *ptUn
 			 MOV DWORD PTR SS : [ESP + 0x2C], EAX
 			 MOV EAX, DWORD PTR SS : [ESP + 0x24]
 			 INC EAX
-			 CMP AL, BYTE PTR DS : [wcfgMaxPlayers]			// Zamiana z 8 do 16
+
+
+			 // ==
+			 push edx
+			 push eax
+
+			 call getMaxPlayers
+			 mov dl, al
+			 pop eax
+
+			 cmp al, dl			// Zamiana z 8 do 16
+			 pop edx
+
+			 // -- 
+
 			 MOV DWORD PTR SS : [ESP + 0x24], EAX
 			 JGE L128
 			 XOR EBX, EBX

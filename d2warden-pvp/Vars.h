@@ -20,75 +20,9 @@
 #ifndef __VARS_H__
 #define __VARS_H__
 
-#include "D2Warden.h"
+class Warden;
 
-extern int WardenUpTime;
-extern Warden hWarden;
-extern HANDLE DumpHandle;
-
+extern Warden* gWarden;
 extern CRITICAL_SECTION LOG_CS;
-extern BYTE wcfgMaxPlayers;
-extern int wcfgExpRange;
-extern int DmgRekord;
-extern std::string DmgOwner;
-
-extern BYTE wcfgD2EXVersion;
-extern BYTE wcfgSpectator;
-extern BYTE wcfgAddKillerClass;
-extern BYTE wcfgAutoIdentify;
-extern BYTE wcfgHostileLevel;
-extern BYTE wcfgDisableHostileDelay;
-extern BYTE wcfgMoveToTown;
-extern BYTE wcfgDropEarGold;
-extern BYTE wcfgStrBugFix;
-extern BYTE wcfgFFAMode;
-extern BYTE wcfgAllowVanilla;
-extern BYTE wcfgAllowGU;
-extern BYTE wcfgAllowNLWW;
-extern BYTE wcfgAllowHB;
-extern BYTE wcfgAllowTourMode;
-extern BYTE wcfgAllowLoggin;
-extern BYTE wcfgEnableSeed;
-extern BYTE wcfgAllowD2Ex;
-extern BYTE wcfgDetectTrick;
-extern BYTE wcfgDisableRepairCost;
-extern BYTE wcfgAllowQuests;
-
-extern std::list<std::string> wcfgAdmins;
-
-extern std::string wcfgDatabase;
-extern std::string wcfgDBUser;
-extern std::string wcfgDBPass;
-
-extern std::string wcfgClansURL;
-extern std::string wcfgConfigFile;
-extern std::string wcfgUpdateURL;
-extern std::string wcfgGSName;
-extern bool Warden_Enable;
-extern Vote * sVote;
-extern DWORD MOD_Length;
-extern BYTE TeleChars[7];
-extern int wcfgDumpInterval;
-extern unsigned StatID;
-extern BYTE DesyncFix;
-extern unsigned int AfkDrop;
-extern int PNo;
-extern DWORD wcfgRespawnTimer;
-
-//-----------
-extern int SellCount;
-extern BYTE wcfgEnableWE;
-extern int NextDC;
-extern int MinSell;
-extern int MaxSell;
-extern int InfoDelay;
-extern WEItem WItem;
-
-//----------------
-extern unsigned char *MOD_Enrypted;
-extern unsigned char AE_Packet00[40];
-
-extern UnitAny* ptMonster;
-extern UnitAny* glptItem;
 
 #endif

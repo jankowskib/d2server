@@ -82,7 +82,7 @@ namespace D2Stubs
 		}
 
 		Log("======== Dump of new nodes ======");
-		for (int i = 0; i < wcfgMaxPlayers + 2; ++i)
+		for (int i = 0; i < gWarden->wcfgMaxPlayers + 2; ++i)
 		{
 			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
 		}
@@ -346,17 +346,6 @@ namespace D2Stubs
 		}
 	}
 
-	__declspec(naked) void __fastcall D2GAME_ParseCreatePackets_STUB()
-	{
-		__asm
-		{
-			call d2warden_0X68Handler
-
-				jmp D2Ptrs.D2GAME_CreatePackets_J
-				ret
-		}
-	}
-
 	__declspec(naked) void __fastcall D2GAME_LastHitIntercept_STUB()
 	{
 		__asm
@@ -367,16 +356,6 @@ namespace D2Stubs
 				call OnLastHit
 
 				jmp D2Ptrs.D2GAME_ApplyBurnDmg_J
-		}
-	}
-
-
-	__declspec(naked) void __fastcall D2GAME_GetPlayers_STUB()
-	{
-		__asm
-		{
-			mov eax, [PNo]
-				ret
 		}
 	}
 

@@ -64,7 +64,7 @@ bool isAnAdmin(std::string szAcc)
 {
  boost::to_lower(szAcc);
 
- for (std::list<std::string>::iterator i = wcfgAdmins.begin(); i != wcfgAdmins.end(); ++i) if (szAcc == *i) return true;
+ for (std::list<std::string>::iterator i = gWarden->wcfgAdmins.begin(); i != gWarden->wcfgAdmins.end(); ++i) if (szAcc == *i) return true;
 
  return false;
 }
@@ -540,7 +540,6 @@ void PatchGS(BYTE bInst, DWORD pAddr, DWORD pFunc, DWORD dwLen, char* Type)
 	if(!WriteBytes((void*)pAddr, bCode, dwLen))
 	{
 		Log("Cannot write bytes for patch: %s",Type);
-		Warden_Enable=false;
 	}
 	delete[] bCode;
 }

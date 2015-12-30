@@ -17,9 +17,10 @@
 * limitations under the License.
 * ========================================================== */
 
-#ifndef __LPACKETS__H_
+#ifndef __LPACKETS_H__
 #define __LPACKETS_H__
 
+void  __stdcall OnCreatePacketReceive(PacketData* pPacket);
 int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nPacketLen);
 void  __stdcall OnDebugPacketReceive(PacketData* pPacket);
 
@@ -27,8 +28,6 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket);
 DWORD __fastcall OnRunToLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
 DWORD __fastcall OnClickLocation(Game* ptGame, UnitAny* ptPlayer, SkillPacket *ptPacket, DWORD PacketLen);
 DWORD __fastcall OnClickUnit(Game* ptGame, UnitAny* ptPlayer, SkillTargetPacket *ptPacket, DWORD PacketLen);
-
-DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, DWORD PacketLen);
 
 DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, DWORD PacketSize);
 

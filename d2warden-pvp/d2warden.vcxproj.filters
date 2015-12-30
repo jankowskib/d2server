@@ -44,15 +44,6 @@
     <ClCompile Include="D2Stubs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StatDumpThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WardenThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D2Warden.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LEvents.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
@@ -116,15 +107,24 @@
     <ClCompile Include="MainLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Warden.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WardenInit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WardenClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LegacyFuncs.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D2Stubs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D2Warden.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StatDumpThread.h">
@@ -227,6 +227,15 @@
       <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
     <ClInclude Include="MainLoop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Warden.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WardenClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LegacyFuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

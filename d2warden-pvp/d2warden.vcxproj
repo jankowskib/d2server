@@ -246,13 +246,13 @@ EXIT 0</Command>
     <ClCompile Include="D2Handlers.cpp" />
     <ClCompile Include="D2Patches.cpp" />
     <ClCompile Include="LCube.cpp" />
+    <ClCompile Include="LegacyFuncs.cpp" />
     <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
     <ClCompile Include="LUberQuest.cpp" />
     <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="Offset.cpp" />
     <ClCompile Include="D2Stubs.cpp" />
-    <ClCompile Include="D2Warden.cpp" />
     <ClCompile Include="LEvents.cpp" />
     <ClCompile Include="LItems.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_USRDLL;D2WARDEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -266,7 +266,6 @@ EXIT 0</Command>
     <ClCompile Include="PartyExp.cpp" />
     <ClCompile Include="RC4.cpp" />
     <ClCompile Include="LSpectator.cpp" />
-    <ClCompile Include="StatDumpThread.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -274,7 +273,9 @@ EXIT 0</Command>
     </ClCompile>
     <ClCompile Include="Vars.cpp" />
     <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="WardenThread.cpp" />
+    <ClCompile Include="Warden.cpp" />
+    <ClCompile Include="WardenClient.cpp" />
+    <ClCompile Include="WardenInit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="d2warden.def" />
@@ -304,12 +305,12 @@ EXIT 0</Command>
     <ClInclude Include="D2Structs_111B.h" />
     <ClInclude Include="D2Structs_113D.h" />
     <ClInclude Include="D2Stubs.h" />
-    <ClInclude Include="D2Warden.h" />
     <ClInclude Include="ExPointers_111B.h" />
     <ClInclude Include="ExPointers_113D.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="introtate.h" />
     <ClInclude Include="LCube.h" />
+    <ClInclude Include="LegacyFuncs.h" />
     <ClInclude Include="LEvents.h" />
     <ClInclude Include="LItems.h" />
     <ClInclude Include="LMonsters.h" />
@@ -329,8 +330,10 @@ EXIT 0</Command>
     <ClInclude Include="StatDumpThread.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Vars.h" />
+    <ClInclude Include="Warden.h" />
     <ClInclude Include="WardenChecks.h" />
     <ClInclude Include="Misc.h" />
+    <ClInclude Include="WardenClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

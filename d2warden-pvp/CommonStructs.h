@@ -51,6 +51,61 @@ struct Party;
 struct UnitAny;
 struct Quest;
 struct D2PoolMemory;
+struct ExtendGameInfo;
+
+
+struct WEItem
+{
+	DWORD ItemCode[20];
+	DWORD FileIdx[20];
+	BYTE ItemQuality[7];
+};
+
+//sizeof(8)
+struct GameInfo
+{
+	DWORD dwFlags; // 0x8 - DC spawned
+	ExtendGameInfo *pExtendGameInfo;
+};
+
+//sizeof(0x400)
+struct ExtendGameInfo
+{
+	DWORD rand_l;
+	DWORD rand_h;
+	DWORD PortalOpenedFlag;
+	DWORD BOSS_A_AREA;
+	DWORD BOSS_B_AREA;
+	DWORD BOSS_C_AREA;
+	DWORD BOSS_D0_AREA;
+	DWORD BOSS_D1_AREA;
+	DWORD BOSS_D2_AREA;
+	DWORD Diablo_rand_l;
+	DWORD Diablo_rand_h;
+	DWORD Meph_rand_l;
+	DWORD Meph_rand_h;
+	DWORD LoD_Game;
+};
+
+
+struct DebugGameInfo
+{
+	DebugGameInfo *pSelf;
+	DWORD dwClientId;
+	DWORD dwFlags;
+	char* szClientMsg;
+	DWORD aThousand;
+	DWORD dword14;
+	DWORD dword18;
+	DWORD dwJoinTick;
+	DWORD dword20;
+	DWORD dword24;
+	DWORD dword28;
+	DWORD dword2c;
+	DWORD pAntiCheatData;
+};
+
+
 
 struct EventCallbackTable
 {
@@ -894,6 +949,40 @@ struct ExEventSpecatorStart : ExEvent // (size 0x8)
 
 struct ExEventSpecatorEnd : ExEvent // (size 0x4)
 {
+};
+
+/*
+	Join a game
+*/
+struct px68
+{
+	BYTE Header;			// 0x00
+	DWORD ServerHash;		// 0x01 also SessionKey - used to keep BN connection alive
+	WORD ServerToken;		// 0x05 TicketNo - increase every player join
+	BYTE ClassId;			// 0x07
+	DWORD VerByte;			// 0x08 (11 for 1.11) etc
+	DWORD Unk1;				// 0x0C FOG_isExpansion_10227() != 0 ? 0xED5DCC50u : 0x2185EDD6u; (const)
+	DWORD Unk2;				// 0x10 0x91A519B6 (const)
+	BYTE LocaleId;			// 0x14 
+	char szCharName[16];	// 0x15
+};
+/*
+	Create a game (TCP/IP OBN)
+*/
+struct px67
+{
+	BYTE Header;			// 0x00
+	char szGameName[16];	// 0x01
+	BYTE GameType;			// 0x11
+	BYTE ClassId;			// 0x12
+	BYTE ArenaUnk;			// 0x13
+	BYTE DiffLvl;			// 0x14
+	char szCharName[16];	// 0x15
+	WORD ArenaLvl;			// 0x25
+	DWORD ArenaFlags;		// 0x27
+	BYTE Unk2;				// 0x2B
+	BYTE Unk3;				// 0x2C
+	BYTE LocaleId;			// 0x2D
 };
 
 /*

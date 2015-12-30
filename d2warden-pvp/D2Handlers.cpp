@@ -19,8 +19,8 @@
 
 #include "stdafx.h"
 #include "D2Handlers.h"
+#include "WardenClient.h"
 
-#include "D2Warden.h"
 #include "LSpectator.h"
 #include "LRoster.h"
 #include "LItems.h"
@@ -33,15 +33,6 @@
 #include "LQuests.h"
 
 using namespace std;
-
-struct ServerJoinData
-{
-	DWORD SessionKey;
-	BYTE VerCode;
-	bool bNeedUpdate;
-};
-
-map<string, ServerJoinData> ServerHashMap;
 
 BYTE __fastcall LEVELS_GetActByLevel(Level* pLevel)
 {
@@ -56,7 +47,6 @@ BYTE __fastcall LEVELS_GetActByRoom2(int _1, Room2* pRoom2)
 	return LEVELS_GetActByLevelNo(pRoom2->pLevel->dwLevelNo);
 
 }
-
 
 /*
 Modified beacuse the original function uses town lvl to determine act
@@ -190,9 +180,9 @@ BOOL __stdcall isPermStore(Game* ptGame, UnitAny* ptNPC, UnitAny* ptItem)
 	{
 		DWORD iCode = D2Funcs.D2COMMON_GetItemCode(ptItem);
 		//WORLD EVENT
-		if (wcfgEnableWE && WE_isKey(ptItem))
+		if (gWarden->wcfgEnableWE && WE_isKey(ptItem))
 		{
-			if (SellCount == NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
+			if (gWarden->SellCount == gWarden->NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
 
 			ptItem->pItemData->InvPage = 0xFF;
 			return TRUE;
@@ -295,9 +285,9 @@ DWORD __fastcall OnD2ExPacket(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, D
 	//if(Version==1)
 	//{
 	//WardenClient_i ptCurrentClient = GetClientByID(ptPlayer->pPlayerData->pClientData->ClientID);
-	//if(ptCurrentClient == hWarden.Clients.end()) return 0;
+	//if(ptCurrentClient == gWarden->clients.end()) return 0;
 	//ptCurrentClient->NewPatch=1;
-	//UNLOCK
+	//
 	//return 0;
 	//}
 	//return 3;
@@ -341,11 +331,11 @@ Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGam
 		char * ret = strtok_s(tk, "- ", &nt);
 		while (ret)
 		{
-			if (ret[0] == 'm' && strlen(ret) > 1 && wcfgEnableSeed)
+			if (ret[0] == 'm' && strlen(ret) > 1 && gWarden->wcfgEnableSeed)
 				MySeed = atoi(ret + 1);
-			if (ret[0] == 't' && strlen(ret) == 1 && wcfgAllowTourMode)
+			if (ret[0] == 't' && strlen(ret) == 1 && gWarden->wcfgAllowTourMode)
 				pGame->bFestivalMode = 1;
-			if (_strnicmp(ret, "ffa", 3) == 0 && wcfgFFAMode)
+			if (_strnicmp(ret, "ffa", 3) == 0 && gWarden->wcfgFFAMode)
 				pGame->dwGameState = 1;
 			ret = strtok_s(NULL, "- ", &nt);
 		}
@@ -359,7 +349,9 @@ Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGam
 }
 
 
-
+/*
+ UNUSED: TODO: MIGRATE TO LPACKETS.CPP
+*/
 BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // return is currently ignored
 {
 	if (!pClient) return true;
@@ -367,24 +359,6 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 
 	switch (ThePacket[0])
 	{
-
-	case 0xFF: //CRASH FIX
-	{
-		if (ThePacket[1] == 1) {
-		DWORD Socket = D2Funcs.D2NET_GetClient(ClientID);
-		if (!Socket) break;
-		Game* pGame = D2Funcs.D2GAME_GetGameByNetSocket(Socket);
-		if (!pGame) break;
-		ClientData* ptClientData = FindClientDataById(pGame, ClientID);
-		if (!ptClientData) { D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame); break; }
-		
-			Log("HACK: %s (*%s) tried to crash GS!", ptClientData->CharName, ptClientData->AccountName);
-			*(DWORD*)&ThePacket[1] = 0;
-			BootPlayer(pClient->ClientID, BOOT_CONNECTION_INTERRUPTED);
-			D2ASMFuncs::D2GAME_LeaveCriticalSection(pGame);
-		}
-	}
-	break;
 	case 0x1A: //EQUIP CHECK
 	case 0x1D:
 	case 0x16:
@@ -451,12 +425,13 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 
 	//LRoster::SendKills(Data->ptGame);
 	//LRoster::SendDeaths(Data->ptGame);
+	DEBUGMSG("Entering the game!")
 
 	ExEventDownload pEvent;
 	pEvent.P_A6 = 0xA6;
 	pEvent.bExec = 0;
 	pEvent.MsgType = EXEVENT_DOWNLOAD;
-	strcpy_s(pEvent.szURL, 255, wcfgClansURL.c_str());
+	strcpy_s(pEvent.szURL, 255, gWarden->wcfgClansURL.c_str());
 	if (pEvent.szURL[0])
 		pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 	else
@@ -472,61 +447,27 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 		for (char * ret = strtok_s(tk, " -", &nt); ret; ret = strtok_s(NULL, " -", &nt))
 		{
 			if (_strnicmp(ret, "ffa", 3) == 0) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!"); continue; }
-			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
+			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && gWarden->wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
 			if (_strnicmp(ret, "t", 1) == 0 && strlen(ret) == 1) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue; }
 		}
 	}
 
-	unsigned char RC4_KEY_0X66[16], RC4_KEY_0XAE[16];
-
-	DEBUGMSG("NEWCLIENT: Trying to add  '%s' !", pClient->CharName);
-
-	if (ServerHashMap.count(pClient->CharName))
+	WardenClient_i client = gWarden->findClientById(pClient->ClientID);
+	if (client != gWarden->getInvalidClient())
 	{
-		WardenClient NewClientData = { 0 };
+		DEBUGMSG("NEWCLIENT: Setup for '%s' !", pClient->CharName);
+		client->setup(ptGame, pClient);
 
-		NewClientData.ClientID = pClient->ClientID;
-		memcpy(NewClientData.SessionKey, &ServerHashMap[pClient->CharName].SessionKey, 4);
-		*(DWORD*)&NewClientData.SessionKey = ServerHashMap[pClient->CharName].SessionKey;
-		NewClientData.VerCode = ServerHashMap[pClient->CharName].VerCode;
-		NewClientData.bNeedUpdate = ServerHashMap[pClient->CharName].bNeedUpdate;
-
-		ServerHashMap.erase(pClient->CharName);
-		NewClientData.ClientLogonTime = GetTickCount();
-		NewClientData.NextCheckTime = NewClientData.ClientLogonTime + 500;
-		NewClientData.AccountName = pClient->AccountName;
-		NewClientData.CharName = pClient->CharName;
-		NewClientData.ptClientData = pClient;
-		NewClientData.ptGame = ptGame;
-		NewClientData.ptPlayer = ptPlayer;
-		NewClientData.MyIp = "";
-		NewClientData.MouseXPosition = 400; //neutralne pozycje
-		NewClientData.MouseYPosition = 300; //j.w.
-
-		HashGameSeed(RC4_KEY_0XAE, RC4_KEY_0X66, NewClientData.SessionKey, 4);
-		rc4_setup(NewClientData.RC4_KEY_0XAE, RC4_KEY_0XAE, 16);
-		rc4_setup(NewClientData.RC4_KEY_0X66, RC4_KEY_0X66, 16);
-
-		LOCK
-			DEBUGMSG("Added (*%s) %s to WardenQueue", pClient->AccountName, pClient->CharName);
-			hWarden.Clients.push_back(NewClientData);
-		UNLOCK
-		if (hWarden.Clients.size() > 600)
+		if (client->bNeedUpdate)
 		{
-			Log("NEWCLIENT: Number of clients (%d) is bigger than 600, isn't it a memory leak though?", hWarden.Clients.size());
-		}
-		DEBUGMSG("Player %s has been added to WardenQueue!", pClient->CharName);
-
-		if (NewClientData.bNeedUpdate)
-		{
-			if (wcfgUpdateURL.empty()) return false;
+			if (gWarden->wcfgUpdateURL.empty()) return false;
 			SendMsgToClient(pClient, "Trying to download patch....");
 			ExEventDownload pEvent;
 			::memset(&pEvent, 0, sizeof(ExEventDownload));
 			pEvent.P_A6 = 0xA6;
 			pEvent.MsgType = EXEVENT_DOWNLOAD;
 			pEvent.bExec = 1;
-			strcpy_s(pEvent.szURL, 255, wcfgUpdateURL.c_str());
+			strcpy_s(pEvent.szURL, 255, gWarden->wcfgUpdateURL.c_str());
 			if (pEvent.szURL[0])
 				pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 			else
@@ -537,82 +478,10 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 	}
 	else
 	{
-		Log("NEWCLIENT: No SessionKey in database! Dropping player %s !", pClient->AccountName);
-		KickPlayer(pClient->ClientID);
+		DEBUGMSG("Booting %s", pClient->AccountName)
+		Log("NEWCLIENT: Failed to find a client! Dropping player %s !", pClient->AccountName);
+		BootPlayer(pClient->ClientID, BOOT_UNKNOWN_FAILURE);
 	}
-
-	return 0;
-}
-
-int  __fastcall d2warden_0X68Handler(PacketData *pPacket) // 0x68 pakiet -> Dodaj nowego klienta do petli Wardena
-{
-	// Moje badania :
-#pragma pack(push, 1)
-	struct px68
-	{
-		BYTE Header;			// 0x00
-		DWORD ServerHash;		// 0x01 also SessionKey - used to keep BN connection alive
-		WORD ServerToken;		// 0x05 TicketNo - increase every player join
-		BYTE ClassId;			// 0x07
-		DWORD VerByte;			// 0x08 (11 for 1.11) etc
-		DWORD Unk1;				// 0x0C FOG_isExpansion_10227() != 0 ? 0xED5DCC50u : 0x2185EDD6u; (const)
-		DWORD Unk2;				// 0x10 0x91A519B6 (const)
-		BYTE LocaleId;			// 0x14 
-		char szCharName[16];	// 0x15
-	};
-	struct px67 //Create Game 0x2E
-	{
-		BYTE Header;			// 0x00
-		char szGameName[16];	// 0x01
-		BYTE GameType;			// 0x11
-		BYTE ClassId;			// 0x12
-		BYTE ArenaUnk;			// 0x13
-		BYTE DiffLvl;			// 0x14
-		char szCharName[16];	// 0x15
-		WORD ArenaLvl;			// 0x25
-		DWORD ArenaFlags;		// 0x27
-		BYTE Unk2;				// 0x2B
-		BYTE Unk3;				// 0x2C
-		BYTE LocaleId;			// 0x2D
-	};
-#pragma pack(pop)
-
-
-	//	unsigned char RC4_KEY_0X66[16],RC4_KEY_0XAE[16];
-	px68* pJoinPacket = (px68*)pPacket->aPacket;
-	px67* pCreatePacket = (px67*)pPacket->aPacket;
-
-#ifdef _SINGLEPLAYER
-	if(pJoinPacket->Header !=0x68 || pCreatePacket->Header !=0x67 ) return 0;
-	if(pCreatePacket->Header == 0x67) 
-	{
-		ServerHashMap[pCreatePacket->szCharName] = 0;
-		return 0;
-	}
-#endif
-
-
-	int D2Version = pJoinPacket->VerByte;
-	ServerHashMap[pJoinPacket->szCharName].VerCode = (BYTE)pJoinPacket->VerByte;
-	ServerHashMap[pJoinPacket->szCharName].bNeedUpdate = false;
-
-	if (D2Version < wcfgD2EXVersion && !wcfgAllowVanilla) /// Zmiana na 14 11.04.11 . Zmiana na 15 08.07.11. Zmiana na 16 02.02.12
-	{
-		if (D2Version >= 16)
-		{
-			ServerHashMap[pJoinPacket->szCharName].bNeedUpdate = true;
-		}
-		else
-		{
-			if (D2Version == 13)
-				Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.", pJoinPacket->szCharName);
-			else
-				Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).", pJoinPacket->szCharName, D2Version);
-			BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
-			return MSG_ERROR;
-		}
-	}
-	ServerHashMap[pJoinPacket->szCharName].SessionKey = pJoinPacket->ServerHash;
 
 	return 0;
 }
@@ -628,7 +497,7 @@ int __fastcall ReparseChat(Game* pGame, UnitAny *pUnit, BYTE *ThePacket, int Pac
 	Msg[255] = 0;
 	BYTE * aPacket = 0;
 
-	if (wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
+	if (gWarden->wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
 
 	if (nNameLen > 12)
 	{
@@ -771,20 +640,21 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#we") == 0)
 			{
-				if (!wcfgEnableWE) return true;
-				int z = NextDC - SellCount; // 261 - 217 ( 44)
-				int y = z - MinSell; // 50 -40 =  10
-				if (y < 0) y = MinSell + y;  // 40 - 30 = 10
-				else y = MinSell;
+				if (!gWarden->wcfgEnableWE) return true;
+				int z = gWarden->NextDC - gWarden->SellCount; // 261 - 217 ( 44)
+				int y = z - gWarden->MinSell; // 50 -40 =  10
+				if (y < 0) y = gWarden->MinSell + y;  // 40 - 30 = 10
+				else y = gWarden->MinSell;
 				if (y == 0) y = 1;
-				int x = y + (MaxSell - MinSell);
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", wcfgEnableWE ? "On" : "Off", SellCount, y, x);
+				int x = y + (gWarden->MaxSell - gWarden->MinSell);
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", gWarden->wcfgEnableWE ? "On" : "Off", gWarden->SellCount, y, x);
 				return false;
 			}
 			if (_stricmp(str, "#uptime") == 0)
 			{
-				int time = (GetTickCount() - WardenUpTime) / 1000;
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "GS Uptime %.2d:%.2d:%.2d, WardenClients %d, pGame->nClients %d", time / 3600, (time / 60) % 60, time % 60, hWarden.Clients.size(), pUnit->pGame->nClients);
+				int time = (GetTickCount() - gWarden->getUpTime()) / 1000;
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "GS Uptime %.2d:%.2d:%.2d, WardenClients %d, pGame->nClients %d", time / 3600, (time / 60) % 60, time % 60, 
+					gWarden->getClientCount(), pUnit->pGame->nClients);
 				return false;
 			}
 			if (_stricmp(str, "#build") == 0)
@@ -833,14 +703,14 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#update") == 0)
 			{
-				if (wcfgUpdateURL.empty()) return false;
+				if (gWarden->wcfgUpdateURL.empty()) return false;
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "Trying to download patch....");
 				ExEventDownload pEvent;
 				::memset(&pEvent, 0, sizeof(ExEventDownload));
 				pEvent.P_A6 = 0xA6;
 				pEvent.MsgType = EXEVENT_DOWNLOAD;
 				pEvent.bExec = 1;
-				strcpy_s(pEvent.szURL, 255, wcfgUpdateURL.c_str());
+				strcpy_s(pEvent.szURL, 255, gWarden->wcfgUpdateURL.c_str());
 				if (pEvent.szURL[0])
 					pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 				else
@@ -951,7 +821,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#gu") == 0)
 			{
-				if (wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
+				if (gWarden->wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
 				{
 					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
 					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
@@ -974,16 +844,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#debug") == 0)
 			{
-				WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-				if (ptCurrentClient == hWarden.Clients.end()) return TRUE;
+				WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
+				if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
 				ptCurrentClient->DebugTrick = !ptCurrentClient->DebugTrick;
-				UNLOCK
-					return false;
+				return false;
 			}
 			if (_stricmp(str, "#reload") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
-				Warden_Config();
+				gWarden->loadConfig();
 				SendMsgToClient(pUnit->pPlayerData->pClientData, pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Ustawienia prze³adowane." : "Config reloaded.");
 				return false;
 			}
@@ -993,19 +862,18 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 				str = strtok_s(NULL, " ", &t);
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#kick <*account> or #kick [charname]!"); return false; }
-				WardenClient_i psUnit = hWarden.Clients.end();
+				WardenClient_i psUnit = gWarden->getInvalidClient();
 				if (str[0] == '*') {
 					str++;
-					psUnit = GetClientByAcc(str);
+					psUnit = gWarden->findClientByAcc(str);
 				}
 				else
-					psUnit = GetClientByName(str);
+					psUnit = gWarden->findClientByName(str);
 
-				if (psUnit == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
+				if (psUnit == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
 				BroadcastMsg(pUnit->pPlayerData->pClientData->pGame, "'%s' has been kicked by *%s", psUnit->CharName.c_str(), pUnit->pPlayerData->pClientData->AccountName);
-				KickPlayer(psUnit->ptClientData);
-				UNLOCK
-					return false;
+				BootPlayer(psUnit->ptClientData->ClientID, BOOT_CONNECTION_INTERRUPTED);
+				return false;
 			}
 			if (_stricmp(str, "#stats") == 0)
 			{
@@ -1016,17 +884,16 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				{
 					if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
-					WardenClient_i ptCurrentClient = hWarden.Clients.end();
+					WardenClient_i ptCurrentClient = gWarden->getInvalidClient();
 					if (str[0] == '*') {
 						str++;
-						ptCurrentClient = GetClientByAcc(str);
+						ptCurrentClient = gWarden->findClientByAcc(str);
 					}
 					else
-						ptCurrentClient = GetClientByName(str);
+						ptCurrentClient = gWarden->findClientByName(str);
 
-					if (ptCurrentClient == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					pDestUnit = ptCurrentClient->ptPlayer;
-					UNLOCK
 				}
 
 				if (!pDestUnit) return false;
@@ -1099,12 +966,11 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int LvlId = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (str) {
-					WardenClient_i ptCurrentClient = GetClientByName(str);
-					if (ptCurrentClient == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
-					if (!ptCurrentClient->ptPlayer) { UNLOCK return false; }
-					if (aUnit == ptCurrentClient->ptPlayer){ UNLOCK return false; }
+					WardenClient_i ptCurrentClient = gWarden->findClientByName(str);
+					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (!ptCurrentClient->ptPlayer) { return false; }
+					if (aUnit == ptCurrentClient->ptPlayer){ return false; }
 					aUnit = ptCurrentClient->ptPlayer;
-					UNLOCK
 				}
 				if (!LvlId) return false;
 				if (LvlId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) return false;
@@ -1244,12 +1110,12 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int ObjId = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (str) {
-					WardenClient_i ptCurrentClient = GetClientByName(str);
-					if (ptCurrentClient == hWarden.Clients.end()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
-					if (!ptCurrentClient->ptPlayer) { UNLOCK return false; }
-					if (aUnit == ptCurrentClient->ptPlayer){ UNLOCK return false; }
+					WardenClient_i ptCurrentClient = gWarden->findClientByName(str);
+					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (!ptCurrentClient->ptPlayer) {  return false; }
+					if (aUnit == ptCurrentClient->ptPlayer){  return false; }
 					aUnit = ptCurrentClient->ptPlayer;
-					UNLOCK
+					
 				}
 				if (!ObjId) return false;
 				if (ObjId > (*D2Vars.D2COMMON_ObjectTxtRecs))

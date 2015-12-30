@@ -18,8 +18,8 @@
  * ========================================================== */
 
 #include "stdafx.h"
-#include "D2Warden.h"
 #include "LEvents.h"
+
 #include "LRoster.h"
 #include "LSpectator.h"
 
@@ -57,7 +57,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	}
 
 	ptVictim->pPlayerData->tDeathTime = GetTickCount();
-	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, wcfgRespawnTimer);
+	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, gWarden->wcfgRespawnTimer);
 
 	SPECTATOR_RemoveFromQueue(ptGame, ptVictim->dwUnitId);
 
@@ -207,25 +207,24 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 			}
 	BroadcastPacket(pGame,(BYTE*)pEvent,40);
 	}
+
 	switch(pEvent->MsgType)
 	{
 		case EVENT_TIMEOUT:
 		case EVENT_LEFT: 
 		case EVENT_DROPPED:
 		{
+
 			DEBUGMSG("[REMOVECLIENT] Removing (*%s) %s from WardenQueue", pEvent->Name2, pEvent->Name1);
-			WardenClient_i pWardenClient = GetClientByName(pEvent->Name1);
-			if(pWardenClient == hWarden.Clients.end()) 
+			WardenClient_i pWardenClient = gWarden->findClientByName(pEvent->Name1);
+			if(pWardenClient == gWarden->getInvalidClient()) 
 			{
 				DEBUGMSG("[REMOVECLIENT] Failed to find WardenClient!");
 				return;
 			}
-		
 			SPECTATOR_RemoveFromQueue(pGame, pWardenClient->ptClientData->UnitId);
+			gWarden->onRemoveClient(pWardenClient);
 
-			RemoveWardenPacket(pWardenClient);
-			pWardenClient = hWarden.Clients.erase(pWardenClient);
-			UNLOCK
 		}
 		break;
 	}

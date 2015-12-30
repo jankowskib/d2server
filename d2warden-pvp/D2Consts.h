@@ -1214,6 +1214,19 @@ enum BootReason {
 	//NOTE: you can safely add 3 more of custom msg
 };
 
+enum LoadingError {
+	lOAD_FAILED_SC_TO_HC = 19,
+	LOAD_FAILED_HC_TO_SC = 20,
+	LOAD_FAILED_DEAD_HC = 21,
+	
+	LOAD_FAILED_EXPANSION = 23,
+	LOAD_FAILED_NOT_EXPANSION = 24,
+	LOAD_FAILED_LADDER = 25,
+	LOAD_FAILED_NOT_LADDER,
+
+
+};
+
 enum D2ClientToServerMessages {
 	D2SRVMSG_WALK_TO_LOC = 1,
 	D2SRVMSG_WALK_TO_UNIT,

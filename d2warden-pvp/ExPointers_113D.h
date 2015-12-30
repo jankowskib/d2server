@@ -25,7 +25,7 @@
 #define EXVARPTR(d1,v1,t1,o1)  t1 *d1##_##v1;
 
 #else
-enum { DDLL_D2CLIENT, DDLL_D2COMMON, DDLL_D2GFX, DDLL_D2LANG, DDLL_D2WIN, DDLL_D2NET, DDLL_D2GAME, DDLL_D2LAUNCH, DDLL_FOG, DDLL_BNCLIENT, DDLL_STORM, DDLL_D2CMP, DDLL_D2MULTI, DDLL_D2SOUND, DDLL_D2GDI, DDLL_D2DDRAW, DDLL_D2DIRECT3D, DDLL_D2GLIDE };
+enum { DDLL_D2CLIENT, DDLL_D2COMMON, DDLL_D2GFX, DDLL_D2LANG, DDLL_D2WIN, DDLL_D2NET, DDLL_D2GAME, DDLL_D2LAUNCH, DDLL_FOG, DDLL_BNCLIENT, DDLL_STORM, DDLL_D2CMP, DDLL_D2MULTI, DDLL_D2SOUND, DDLL_D2GDI, DDLL_D2DDRAW, DDLL_D2DIRECT3D, DDLL_D2GLIDE, DDLL_D2SERVER };
 
 #define DLLOFFSET(a1,b1) ((DDLL_##a1)|((b1)<<8))
 
@@ -41,6 +41,8 @@ struct _d2f {
 #else
 _d2f D2Funcs = { 0 }; void SetupD2Funcs() {
 #endif
+	
+EXFUNCPTR(D2GAME, ParseCreatePackets, void, __stdcall, (PacketData* pPacket), 0xD53E0)
 EXFUNCPTR(D2GAME, GetGameByNetSocket, Game*, __stdcall, (DWORD NetSocket), 0xBC700) //1.13d -- Uwaga ! Kazde uzycie zostawia watek w sekcji krytycznej!!!
 EXFUNCPTR(D2GAME, SpawnMonster, UnitAny*, __fastcall, (DWORD MonIdx, int MonCount, Game* ptGame, Room1* ptRoom, int xPos, int yPos, int nSearchRadius, WORD wFlags), 0xC8D70) // 1.13d
 EXFUNCPTR(D2GAME, SpawnSuperUniqueMonster, UnitAny*, __fastcall, (Game *pGame, int pRoom, int nX, int nY, DWORD nTxtIdx), 0xCFB40)
@@ -305,6 +307,7 @@ void SetupD2Vars() {
 	EXVARPTR(D2GAME, QuestInits, QuestArray, 0xFFF20)
 	EXVARPTR(D2GAME, QuestIntros, QuestIntroArray, 0x10029C)
 	EXVARPTR(D2COMMON, ItemsTxt, ItemsTxt*, 0xA4CB4)
+	EXVARPTR(D2SERVER, GameInfo, GameInfo, 0x111B0)
 #ifndef __DEFINE_EXPTRS
 };
 extern _d2v D2Vars;

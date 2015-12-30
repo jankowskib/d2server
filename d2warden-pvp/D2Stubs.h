@@ -36,10 +36,9 @@ namespace D2Stubs
 	void __fastcall D2GAME_OnCreateDamage_STUB();
 	void __fastcall D2GAME_LastHitIntercept_STUB();
 	void __fastcall D2GAME_OnJoinGame_STUB();
-	void __fastcall D2GAME_ParseCreatePackets_STUB();
+
 	void __fastcall D2GAME_OnEventSend_STUB();
 	void __fastcall D2GAME_LogHack_STUB();
-	void __fastcall D2GAME_GetPlayers_STUB();
 	void __fastcall D2GAME_SendKillsNULL_STUB();
 	void __fastcall D2GAME_OnUseItem_STUB();
 	void __fastcall D2GAME_OnMonsterDeath_STUB();

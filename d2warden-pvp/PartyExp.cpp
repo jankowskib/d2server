@@ -114,10 +114,10 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 			int pX = D2Funcs.D2GAME_GetUnitX(pPartyMember);
 			int pY = D2Funcs.D2GAME_GetUnitY(pPartyMember);
 
-			if(GetRange(pX,pY,mX,mY)>wcfgExpRange && wcfgExpRange != -1) return;
+			if (GetRange(pX, pY, mX, mY)> gWarden->wcfgExpRange && gWarden->wcfgExpRange != -1) return;
 
 			int nMembers = pnPartyExp->nMembers;
-			if(nMembers>wcfgMaxPlayers)
+			if (nMembers > gWarden->wcfgMaxPlayers)
 			{
 				D2ERROR("nMember>wcfgMaxPlayers")
 			}
@@ -134,19 +134,19 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 
 void AddExp(Game *pGame, UnitAny* pMember, int ExpGained, int ExpLvl)
 {
-			int CurrentExp = D2Funcs.D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
-			unsigned int NewExp = ExpGained + CurrentExp;
-			int MaxLvl = D2Funcs.D2COMMON_GetMaxCLvl(pMember->dwClassId);
-			unsigned int MaxExp = D2Funcs.D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
+	int CurrentExp = D2Funcs.D2COMMON_GetBaseStatSigned(pMember, STAT_EXP,0);
+	unsigned int NewExp = ExpGained + CurrentExp;
+	int MaxLvl = D2Funcs.D2COMMON_GetMaxCLvl(pMember->dwClassId);
+	unsigned int MaxExp = D2Funcs.D2COMMON_GetExpToAchiveLvl(pMember->dwClassId, MaxLvl - 1);
 
-			if ( NewExp > MaxExp ) NewExp = MaxExp;
-			D2Funcs.D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
-			D2Funcs.D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
-				if ( ExpLvl != D2Funcs.D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
-				{
-				D2ASMFuncs::D2GAME_LevelAwards(pMember, pGame);
-				D2Funcs.D2GAME_ExecuteEvent(pGame, 12, 0, 0);
-				}
+	if ( NewExp > MaxExp ) NewExp = MaxExp;
+	D2Funcs.D2COMMON_SetStat(pMember, 0x1D, ExpGained, 0); // LAST EXP
+	D2Funcs.D2COMMON_SetStat(pMember, STAT_EXP, NewExp, 0);
+		if ( ExpLvl != D2Funcs.D2COMMON_GetNextCLvl(pMember->dwClassId, NewExp) )
+		{
+		D2ASMFuncs::D2GAME_LevelAwards(pMember, pGame);
+		D2Funcs.D2GAME_ExecuteEvent(pGame, 12, 0, 0);
+		}
 }
 
 void __stdcall ExpShare_NEW(UnitAny *pPlayer, Game *pGame, UnitAny *pMonster, int PlayerLvl, int MonsterLvl, int PlayerExp)

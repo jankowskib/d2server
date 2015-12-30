@@ -75,16 +75,17 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		return false;
 	}
 	if(_stricmp(str,"#mspawn")==0)
-		{
-		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-		if(ptCurrentClient == hWarden.Clients.end()) return TRUE;
+	{
+		WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
+		if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
 
-		if(!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE; }
+		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
+
 
 		str = strtok_s(NULL," ",&t);
-		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-733"); UNLOCK return false;}
+		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-733"); return false;}
 		int No = atoi(str);
-		if(No>733)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-733"); UNLOCK return false;}
+		if(No>733)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-733"); return false;}
 
 		int count = 1;
 		WardenClient_i psUnit = ptCurrentClient;
@@ -100,9 +101,8 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		str = strtok_s(NULL," ",&t);
 		if(str)
 		{
-		UNLOCK
-		WardenClient_i psUnit = GetClientByName(str);
-			if(psUnit != hWarden.Clients.end()) 
+			WardenClient_i psUnit = gWarden->findClientByName(str);
+			if (psUnit != gWarden->getInvalidClient())
 			{
 			SendMsgToClient(pUnit->pPlayerData->pClientData,"Spawning monster on %s", psUnit->CharName);
 			aRoom = psUnit->ptPlayer->pPath->pRoom1;
@@ -116,7 +116,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		D2POINT Pos = { xPos, yPos };
 		D2POINT Out = { 0, 0 };
 
-		ptMonster = 0;
+		UnitAny* ptMonster = 0;
 
 		for(int z= 0; z<count; z++)
 		{
@@ -136,36 +136,7 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 
 		SendMsgToClient(pUnit->pPlayerData->pClientData,"#%d Monster spawned, HP = %d",z+1, D2Funcs.D2COMMON_GetUnitMaxLife(ptMonster) >> 8);	
 		}
-		UNLOCK
-		return false;
-		}
-
-		if(_stricmp(str,"#mskill")==0)
-		{
-		if(!ptMonster) {SendMsgToClient(pUnit->pPlayerData->pClientData,"Spawn monster first (#spawn)");  return false;}
-
-		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-		if(ptCurrentClient == hWarden.Clients.end()) return TRUE;
-
-		if(!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE;}
-
-		if(ptMonster->dwMode==NPC_MODE_DEATH || ptMonster->dwMode==NPC_MODE_DEAD) 
-		{
-		SendMsgToClient(pUnit->pPlayerData->pClientData,"Monster is dead!");
-		UNLOCK
-		return false;
-		}
 		
-		str = strtok_s(NULL," ",&t);
-		if(!str) { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-356"); UNLOCK return false;}
-		int SkillNo = atoi(str);
-		if(SkillNo>356)  { SendMsgToClient(pUnit->pPlayerData->pClientData,"Type number 0-356"); UNLOCK return false;}
-		
-
-		D2Funcs.D2COMMON_AddSkillToUnit(ptMonster, SkillNo, 99, 1 , __FILE__, __LINE__);
-		D2Funcs.D2COMMON_RefreshSkills(ptMonster);
-		D2Funcs.D2GAME_SetMonSkill(ptMonster,0,SkillNo,-1);
-		UNLOCK
 		return false;
 		}
 

@@ -5,12 +5,7 @@
 D2Warden_ThreadHandle dd 0
 D2Warden_ThreadReturnVal dd 0
 D2Warden_StartAddress dd 0
-D2Warden_0X66Handler	dd 0
-D2Warden_0X68Handler	dd 0
 aD2Warden db 'd2warden.dll',0
-aD2Warden_ThreadStr db 'd2warden_thread',0
-aD2Warden_0X66Handler	db 'd2warden_0X66Handler',0
-aD2Warden_0X68Handler	db 'd2warden_0X68Handler',0
 D2Warden_Handler dd 0
 
 InitWardenThread proc
@@ -27,12 +22,12 @@ InitWardenThread proc
 	mov D2Warden_Handler,eax
 	test eax,eax
 	jz over
-	push offset aD2Warden_0X68Handler
-	push D2Warden_Handler
-	mov eax,GetProcAddr
-	mov eax,[eax]
-	call eax ; GetProcAddr
-	mov D2Warden_0X68Handler,eax
+	;push offset aD2Warden_0X68Handler
+	;push D2Warden_Handler
+	;mov eax,GetProcAddr
+	;mov eax,[eax]
+	;call eax ; GetProcAddr
+	;mov D2Warden_0X68Handler,eax
 	popad
 	retn
 over:
@@ -94,18 +89,18 @@ MyPacket0X68Handler	endp
 MyPacket0X68Handler_Post proc 
 	;eax=ptClient
 	;ecx=ptPacket
-	push		eax
-	mov			eax,EnableWarden
-	test		eax,eax
-	jnz			SendInfoToWarden
-	pop			eax
+	;push		eax
+	;mov			eax,EnableWarden
+	;test		eax,eax
+	;jnz			SendInfoToWarden
+	;pop			eax
 	ret
 SendInfoToWarden:
-	pop eax	; restore the return val
+	;pop eax	; restore the return val
 	pushad
 	; ecx=ClientID
 	; edx=ptPacket
-	call D2Warden_0X68Handler
+	;call D2Warden_0X68Handler
 	popad
 	xor     eax, eax
 	ret

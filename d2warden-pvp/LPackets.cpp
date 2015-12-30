@@ -22,12 +22,56 @@
 #include "LSpectator.h"
 #include "Build.h"
 #include <atomic>
-#include "RC4.h"
+#include "LegacyFuncs.h"
+
+/*
+	Replacement for D2GAME.0xBFEEE
+	void __stdcall GAME_ParseCreatePackets_6FCF53E0(PacketData *pData)
+*/
+
+void  __stdcall OnCreatePacketReceive(PacketData* pPacket)
+{
+	DWORD result = MSG_OK;
+
+	if (!pPacket || !pPacket->aPacket[0] || !pPacket->ClientID) {
+		DEBUGMSG("Failed to parse pPacket!")
+		return;
+	}
+	if (pPacket->aPacket[0] < 0x67 || pPacket->aPacket[0]>0x70) {
+		DEBUGMSG("Invalid join packet! (0x%x)", pPacket->aPacket[0])
+		return;
+	}
+	DEBUGMSG("Received: 0x%x", pPacket->aPacket[0])
+
+	D2Funcs.D2GAME_ParseCreatePackets(pPacket);
+
+	switch (pPacket->aPacket[0]) {
+	case 0x68: // join packet
+		px68* packet = (px68*)pPacket->aPacket;
+		if (packet->ServerToken < 1 || packet->ServerToken > 1024) {
+			Log("Invalid game id !!! (%d)", packet->ServerToken);
+			return;
+		}
+		GameInfo* pGameInfo = GetGameInfo(packet->ServerToken);
+		if (!pGameInfo) {
+			DEBUGMSG("Failed to get game info!");
+		}
+
+		result = gWarden->onJoinGame(pPacket);
+	break;
+	}
+
+	if (result != MSG_OK)
+	{
+		Log("Failed to join the game for %d", pPacket->ClientID);
+	}
+
+}
 
 /*
 	Replacement for D2GAME.0xBB9F0
 	(PacketData* pPacket<eax>)
-	*/
+*/
 void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 {
 	if (!*D2Vars.D2GAME_gpfnEventCallbacks)
@@ -75,7 +119,7 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 /*
 	Replacement for D2GAME.0x673A0
 	(BYTE *pPacket<ebx>, UnitAny *pUnit<esi>, Game *pGame, int nPacketLen)
-	*/
+*/
 int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nPacketLen)
 {
 	BYTE pType = pPacket[0];
@@ -182,7 +226,7 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 		if (pGame->nSyncTimer > 1)
 			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
 
-		return d2warden_0X66Handler(pGame, pUnit, pPacket, nPacketLen);
+		return gWarden->onWardenPacketReceive(pGame, pUnit, pPacket, nPacketLen);
 	}
 	case D2SRVMSG_USE_WAYPOINT:
 	{
@@ -258,13 +302,13 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 {
 	int InRange = 0;
 	if (PacketLen != 9)
-		return 3;
+		return MSG_HACK;
 	if (!pGame)
-		return 3;
+		return MSG_HACK;
 	if (pPlayer->dwType != UNIT_PLAYER)
-		return 3;
+		return MSG_HACK;
 	if (ptPacket->UnitType > 5)
-		return 3;
+		return MSG_HACK;
 
 	InRange = D2ASMFuncs::D2GAME_isUnitInRange(pGame, ptPacket->UnitId, ptPacket->UnitType, pPlayer, 50);
 	if (InRange == 2)
@@ -281,28 +325,29 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 	if (!ptSkill)
 	{
 		DEBUGMSG("%s: ptSkill not found!. Packet id is = %d", __FUNCTION__, ptPacket->Header);
-		return 3;
+		return MSG_HACK;
 	}
 	int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
 
 	PlayerData* pPlayerData = pPlayer->pPlayerData;
-	if (!pPlayerData) return 2;
+	if (!pPlayerData) 
+		return MSG_ERROR;
 
-	if (TeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
+	if (gWarden->wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
-		return 0;
+		return MSG_OK;
 	}
 
-	if (SkillId == D2S_HOLYBOLT && !wcfgAllowHB)
+	if (SkillId == D2S_HOLYBOLT && !gWarden->wcfgAllowHB)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
-		return 0;
+		return MSG_OK;
 	}
-	if (SkillId == D2S_WHIRLWIND && !wcfgAllowNLWW)
+	if (SkillId == D2S_WHIRLWIND && !gWarden->wcfgAllowNLWW)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" : "NLWW Is Not Allowed On This Server");
-		return 0;
+		return MSG_OK;
 	}
 
 	static int AttackCount;
@@ -315,7 +360,7 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 		}
 		AttackCount++;
 		if (AttackCount > 4) AttackCount = 0;
-		return 0;
+		return MSG_OK;
 	}
 
 
@@ -336,7 +381,7 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 	{
 		DEBUGMSG("WARNING: pDest in %s was not found!", __FUNCTION__)
 	}
-	return 0;
+	return MSG_OK;
 }
 
 
@@ -375,13 +420,13 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 		if (!ptSkill) return MSG_HACK;
 		int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
 
-		if (TeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == D2S_TELEPORT)
+		if (gWarden->wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == D2S_TELEPORT)
 		{
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
 			return MSG_OK;
 		}
 
-		if (SkillId == D2S_HOLYBOLT && !wcfgAllowHB) {
+		if (SkillId == D2S_HOLYBOLT && !gWarden->wcfgAllowHB) {
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
 			return MSG_OK;
 		}
@@ -407,13 +452,13 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 		else
 			SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
 
-		if (!wcfgDetectTrick)
+		if (!gWarden->wcfgDetectTrick)
 			return MSG_OK;
 
-		WardenClient_i ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
-		if (ptWardenClient == hWarden.Clients.end()) return 0;
+		WardenClient_i ptWardenClient = gWarden->findClientById(pPlayerData->pClientData->ClientID);
+		if (ptWardenClient == gWarden->getInvalidClient()) return 0;
 
-		if (GetTickCount() > ptWardenClient->UIModesTime + 500) { UNLOCK return 0; }
+		if (GetTickCount() > ptWardenClient->UIModesTime + 500) {  return 0; }
 
 		if ((ptWardenClient->UIModes[UI_CHARACTER] || ptWardenClient->UIModes[UI_QUEST]) && (ptWardenClient->MouseXPosition >= 0 && ptWardenClient->MouseXPosition <= 200) && (ptWardenClient->MouseYPosition >= 0 && ptWardenClient->MouseYPosition <= 550))
 		{
@@ -428,7 +473,6 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 					SendMsgToClient(ptWardenClient->ptClientData, "Trick (Right window) X=%d Y=%d, LAG = %d ms", ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition, GetTickCount() - ptWardenClient->UIModesTime);
 				Log("HACK: %s (*%s) used Polish GA Trick [%s]!, skill : %s XY=[%d,%d]", ptWardenClient->CharName.c_str(), ptWardenClient->AccountName.c_str(), ptWardenClient->UIModes[UI_INVENTORY] ? "Inventory" : "Skill Tree", ConvertSkill(SkillId).c_str(), ptWardenClient->MouseXPosition, ptWardenClient->MouseYPosition);
 			}
-		UNLOCK
 			return MSG_OK;
 	}
 	else
@@ -478,15 +522,16 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 	}
 	if (pPlayerData->pTrade)
 	{
-		WardenClient_i ptWardenClient = GetClientByID(pPlayerData->pClientData->ClientID);
-		if (ptWardenClient == hWarden.Clients.end()) return MSG_OK;
+		WardenClient_i ptWardenClient = gWarden->findClientById(pPlayerData->pClientData->ClientID);
+		if (ptWardenClient == gWarden->getInvalidClient())
+			return MSG_OK;
 		if (!ptWardenClient->DupeDetected)
 		{
 			Log("HACK: %s (*%s) tryed to move while in trade [Probably *nice* dupe try]", ptWardenClient->CharName.c_str(), ptWardenClient->AccountName.c_str());
 			ptWardenClient->DupeDetected = 1;
 		}
-		UNLOCK
-			return MSG_HACK;
+	
+		return MSG_HACK;
 	}
 	if (InRange)
 	{
@@ -517,65 +562,6 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 	return MSG_HACK;
 }
 
-DWORD __fastcall d2warden_0X66Handler(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, DWORD PacketLen) // packet 0x66 -> response for Warden question
-{
-	if (!ptPlayer)
-	{
-		DEBUGMSG("WardenPacket: ptPlayer == null!");
-		return MSG_HACK;
-	}
-
-	DWORD ClientID = ptPlayer->pPlayerData->pClientData->ClientID;
-
-	if (PacketLen < 3)
-	{
-		DEBUGMSG("WardenPacket: PacketLen < 3 !");
-		return MSG_HACK;
-	}
-
-	if (!ClientID)
-	{
-		DEBUGMSG("WardenPacket: No client id!");
-		return MSG_HACK;
-	}
-
-
-	WardenClient_i i = GetClientByID(ClientID);
-	if (i != hWarden.Clients.end())
-	{
-		i->pWardenPacket.ReceiveTime = GetTickCount();
-		i->pWardenPacket.PacketLen = ptPacket[2] * 256 + ptPacket[1];
-
-		if (i->pWardenPacket.PacketLen == 0 || i->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
-		{
-			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
-			return MSG_HACK;
-		}
-
-		BYTE *ThePacket = new BYTE[i->pWardenPacket.PacketLen];
-		if (!ThePacket)
-		{
-			Log("WardenPacket: No memory to allocate packet data!");
-			return MSG_HACK;
-		}
-
-		memcpy(ThePacket, ptPacket + 3, i->pWardenPacket.PacketLen);
-		i->pWardenPacket.ThePacket = ThePacket;
-
-		rc4_crypt(i->RC4_KEY_0X66, i->pWardenPacket.ThePacket, i->pWardenPacket.PacketLen);
-		//DEBUGMSG("WardenPacket: Received answer in %d ms", i->pWardenPacket.SendTime ? (i->pWardenPacket.ReceiveTime - i->pWardenPacket.SendTime) : 0);
-		i->NextCheckTime = GetTickCount();
-
-		return MSG_OK; // Wszystko OK!
-	}
-	else
-	{
-		DEBUGMSG("WardenPacket: Client %d, %s (*%s) is not in WardenQueue!!", ClientID, ptPlayer->pPlayerData->pClientData->CharName, ptPlayer->pPlayerData->pClientData->AccountName);
-		Log("WardenPacket: Unexpected packet from player %s (*%s)! Returning an error..", ptPlayer->pPlayerData->szName, ptPlayer->pPlayerData->pClientData->AccountName);
-		return MSG_HACK;
-	}
-
-}
 
 // Replacement for 0x41 parse (1.11b: D2Game.6FC51F60)
 DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, DWORD PacketSize)
@@ -600,7 +586,7 @@ DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, DWORD
 		return MSG_OK;
 	}
 
-	if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (wcfgRespawnTimer * 1000))
+	if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (gWarden->wcfgRespawnTimer * 1000))
 		return MSG_OK;
 
 	if (pPlayer->pSkills)

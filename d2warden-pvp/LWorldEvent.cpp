@@ -20,11 +20,9 @@
 #include "stdafx.h"
 
 #include "LWorldEvent.h"
+#include "Warden.h"
 #include "LQuests.h"
 
-#ifdef VER_113D
-
-#endif
 
 bool WE_isKey(UnitAny* ptItem)
 {
@@ -33,39 +31,45 @@ bool WE_isKey(UnitAny* ptItem)
 
 	for(int i = 0; i<20; i++)
 	{
-		if(WItem.ItemCode[i] == 0) return false;
+		if(gWarden->WItem.ItemCode[i] == 0) return false;
 
 		//Log("ICode %s",TransCode(WItem.ItemCode[i]));
-			if(iCode == WItem.ItemCode[i])
+		if (iCode == gWarden->WItem.ItemCode[i])
 			{
 				for(int q = 0; q<7; q++)
 				{
-					if(WItem.ItemQuality[q]==-1) break;
+					if (gWarden->WItem.ItemQuality[q] == -1) break;
 			//		Log("IQuality %d",WItem.ItemQuality[q]);
-					if(WItem.ItemQuality[q] == 0)
+					if (gWarden->WItem.ItemQuality[q] == 0)
 					{
-						SellCount++;
-						WE_UpdateCounter(SellCount);
-						if(SellCount % InfoDelay == 0) WE_Inform(ptItem->pGame);
-							return true;
+						gWarden->SellCount++;
+						WE_UpdateCounter(gWarden->SellCount);
+						if (gWarden->SellCount % gWarden->InfoDelay == 0)
+							WE_Inform(ptItem->pGame);
+
+						return true;
 					}
 					for(int x = 0; x<20 ; x++)
 					{
 				//		Log("Idx %d",WItem.FileIdx[x]);
-						if(ptItem->pItemData->QualityNo == WItem.ItemQuality[q] && WItem.FileIdx[x] == -1)
+						if (ptItem->pItemData->QualityNo == gWarden->WItem.ItemQuality[q] && gWarden->WItem.FileIdx[x] == -1)
 						{
-							SellCount++;
-							WE_UpdateCounter(SellCount);
-							if(SellCount % InfoDelay == 0) WE_Inform(ptItem->pGame);
+							gWarden->SellCount++;
+							WE_UpdateCounter(gWarden->SellCount);
+							if (gWarden->SellCount % gWarden->InfoDelay == 0) 
+								WE_Inform(ptItem->pGame);
+
 							return true;
 						}
-					if(WItem.FileIdx[x] == -1) 
+					if (gWarden->WItem.FileIdx[x] == -1)
 						break;
-					if(ptItem->pItemData->QualityNo == WItem.ItemQuality[q] && WItem.FileIdx[x] == ptItem->pItemData->FileIndex)
+					if (ptItem->pItemData->QualityNo == gWarden->WItem.ItemQuality[q] && gWarden->WItem.FileIdx[x] == ptItem->pItemData->FileIndex)
 					{
-						SellCount++;
-						WE_UpdateCounter(SellCount);
-						if(SellCount % InfoDelay == 0) WE_Inform(ptItem->pGame);
+						gWarden->SellCount++;
+						WE_UpdateCounter(gWarden->SellCount);
+						if (gWarden->SellCount % gWarden->InfoDelay == 0) 
+							WE_Inform(ptItem->pGame);
+
 						return true;
 					}
 				}
@@ -81,15 +85,15 @@ void WE_GenerateNextDC()
 {
 	static boost::mt19937 rng;
 	rng.seed(static_cast<unsigned> (std::time(0)));
-	boost::uniform_int<int> dist(MinSell, MaxSell);
+	boost::uniform_int<int> dist(gWarden->MinSell, gWarden->MaxSell);
 	boost::variate_generator<boost::mt19937&, boost::uniform_int<int>>random(rng, dist);
 
-	int NxtDC = NextDC + random();
+	int NxtDC = gWarden->NextDC + random();
 
 	std::ostringstream str;
 	str << NxtDC;
-	NextDC = NxtDC;
-	WritePrivateProfileString("World Event","NextDC",str.str().c_str(),wcfgConfigFile.c_str());
+	gWarden->NextDC = NxtDC;
+	WritePrivateProfileString("World Event", "NextDC", str.str().c_str(), gWarden->wcfgConfigFile.c_str());
 }
 
 void WE_CreateDCKey(UnitAny* pUnit)
@@ -143,7 +147,7 @@ int __fastcall WE_Spawn(Game *pGame, UnitAny *pUnit, UnitAny *pScroll, UnitAny *
 
 			if(aRoom)
 			{
-				ptMonster = D2Funcs.D2GAME_SpawnMonster(333,1,pGame,aRoom,Out.x,Out.y,-1,0);
+				UnitAny* ptMonster = D2Funcs.D2GAME_SpawnMonster(333,1,pGame,aRoom,Out.x,Out.y,-1,0);
 				if(ptMonster)
 				{
 
@@ -163,9 +167,7 @@ void WE_UpdateCounter(int Value)
 {
 	std::ostringstream str;
 	str << Value;
-	LOCK
-	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(),wcfgConfigFile.c_str());
-	UNLOCK
+	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(), gWarden->wcfgConfigFile.c_str());
 }
 
 
@@ -177,7 +179,7 @@ void WE_Inform(Game* ptGame)
 		aPacket.P_5A=0x5A;
 		aPacket.Color=9;
 		aPacket.MsgType=17;
-		*(DWORD*)&aPacket.Param1 = SellCount;
+		*(DWORD*)&aPacket.Param1 = gWarden->SellCount;
 
 		BroadcastPacket(ptGame,(BYTE*)&aPacket, 40);
 }

@@ -43,7 +43,7 @@ bool FG_WaitForMySQLServer(unsigned int msTimeout)
 
 	do {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", gWarden->wcfgDBUser, gWarden->wcfgDBPass, gWarden->wcfgDatabase);
 			return true;
 		}
 		catch (SQLException& e) {
@@ -86,7 +86,7 @@ int FG_GetGoldByAccount(string szAccount)
 
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", gWarden->wcfgDBUser, gWarden->wcfgDBPass, gWarden->wcfgDatabase);
 		} catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
 			return 0;
@@ -120,7 +120,7 @@ bool FG_BuyItem(string szAccount, int nValue)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", gWarden->wcfgDBUser, gWarden->wcfgDBPass, gWarden->wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -164,7 +164,7 @@ bool FG_RollbackCost(string szAccount, int nCost)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", gWarden->wcfgDBUser, gWarden->wcfgDBPass, gWarden->wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -193,7 +193,7 @@ bool FG_SetValue(string szAccount, int nValue)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", wcfgDBUser, wcfgDBPass, wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", gWarden->wcfgDBUser, gWarden->wcfgDBPass, gWarden->wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -489,17 +489,17 @@ __fastcall
 #endif
 ITEMS_AddKillerId(Game *pGame, PresetItem *srCreateItem, int a5)
 {
-	if (wcfgAutoIdentify)
+	if (gWarden->wcfgAutoIdentify)
 	{
 		srCreateItem->dwItemFlags.bIdentified = 1;
 		srCreateItem->dwItemFlags.bRepaired = 1;
 	}
 
 	UnitAny* ptItem = D2Funcs.D2GAME_CreateItemEx(pGame, srCreateItem, 0);
-	if (wcfgAutoIdentify)
+	if (gWarden->wcfgAutoIdentify)
 		D2Funcs.D2COMMON_SetItemFlag(ptItem, ITEMFLAG_IDENTIFIED, 1);
 
-	if (wcfgAddKillerClass)
+	if (gWarden->wcfgAddKillerClass)
 	{
 		if (ptItem)
 		{
@@ -600,10 +600,10 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 		UnitAny* ptItem = D2Funcs.D2COMMON_GetCursorItem(pUnit->pInventory);
 		if (!ptItem) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Put Item On The Cursor!");  return false; }
 
-		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-		if (ptCurrentClient == hWarden.Clients.end()) return TRUE;
+		WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
+		if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
 
-		if (!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE; }
+		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
 		str = strtok_s(NULL, " ", &t);
 		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#iperson <charname>"); return false; }
@@ -613,26 +613,27 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 		ptItem->pItemData->dwItemFlags.bNamed = 1;
 		D2Funcs.D2COMMON_SetItemFlag(ptItem, ITEMFLAG_NEWITEM, 1);
 		SendMsgToClient(pUnit->pPlayerData->pClientData, "Ok.");
-		UNLOCK
-			return false;
+		
+		return false;
 	}
 	if (_stricmp(str, "#iunperson") == 0)
 	{
 		UnitAny* ptItem = D2Funcs.D2COMMON_GetCursorItem(pUnit->pInventory);
 		if (!ptItem) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Put Item On The Cursor!");  return false; }
 
-		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-		if (ptCurrentClient == hWarden.Clients.end()) return TRUE;
+		WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
+		if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
 
-		if (!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE; }
+		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
+
 
 		strcpy_s(ptItem->pItemData->szPlayerName, 16, "");
 		ptItem->pItemData->dwItemFlags.bPersonalized = 0;
 		ptItem->pItemData->dwItemFlags.bNamed = 0;
 		D2Funcs.D2COMMON_SetItemFlag(ptItem, ITEMFLAG_NEWITEM, 1);
 		SendMsgToClient(pUnit->pPlayerData->pClientData, "Ok.");
-		UNLOCK
-			return false;
+		
+		return false;
 	}
 	if (_stricmp(str, "#iq") == 0)
 	{
@@ -651,36 +652,35 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 	}
 	if (_stricmp(str, "#irem") == 0)
 	{
-		WardenClient_i ptCurrentClient = GetClientByID(ClientID);
-		if (ptCurrentClient == hWarden.Clients.end()) return TRUE;
+		WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
+		if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
 
-		if (!isAnAdmin(ptCurrentClient->AccountName)) { UNLOCK return TRUE; }
+		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
 		str = strtok_s(NULL, " ", &t);
 
-		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#irem <charname> <itemcode> <itemquality>"); UNLOCK return false; }
+		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#irem <charname> <itemcode> <itemquality>"); return false; }
 
-		UNLOCK
-			WardenClient_i ptFound = GetClientByName(str);
+		WardenClient_i ptFound = gWarden->findClientByName(str);
 
-		if (ptFound == hWarden.Clients.end())  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't in game"); return false; }
-		if (!ptFound->ptPlayer) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't inited"); UNLOCK return false; }
+		if (ptFound == gWarden->getInvalidClient())  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't in game"); return false; }
+		if (!ptFound->ptPlayer) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't inited"); return false; }
 
 		char * code = strtok_s(NULL, " ", &t);
-		if (!code) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#irem <charname> <itemcode>"); UNLOCK return false; }
+		if (!code) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#irem <charname> <itemcode>"); return false; }
 		char StrCode[5] = { 0 };
 		strncpy_s(StrCode, 5, str, 4);
 		int ICode = TransCode(StrCode);
 		int Idx = 0;
-		if (!D2Funcs.D2COMMON_GetItemIdx(ICode, &Idx))  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Cannot get item idx"); UNLOCK return false; }
+		if (!D2Funcs.D2COMMON_GetItemIdx(ICode, &Idx))  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Cannot get item idx"); return false; }
 		char* szq = strtok_s(NULL, " ", &t);
 		int iQual = ITEM_QUALITY_INVALID;
 		if (szq) iQual = atoi(szq);
-		if (iQual > 9 || iQual < 0)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "1 = cracked 2 = normal 3 = superior 4 = magic 5 = set 6 = rare 7 = unique 8 = crafted"); UNLOCK return false; }
+		if (iQual > 9 || iQual < 0)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "1 = cracked 2 = normal 3 = superior 4 = magic 5 = set 6 = rare 7 = unique 8 = crafted"); return false; }
 
 		Inventory * ptInv = ptFound->ptPlayer->pInventory;
 
-		if (!ptInv)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Cannot find inventory!"); UNLOCK return false; }
+		if (!ptInv)  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Cannot find inventory!"); return false; }
 		for (UnitAny* i = D2Funcs.D2COMMON_GetFirstItem(ptInv); i; i = D2Funcs.D2COMMON_GetNextItem(i))
 		{
 			if (!D2Funcs.D2COMMON_UnitIsItem(i)) continue;
@@ -699,8 +699,8 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 			if (!i) break;
 		}
 		SendMsgToClient(pUnit->pPlayerData->pClientData, "Ok.");
-		UNLOCK
-			return false;
+	
+		return false;
 	}
 	if (_stricmp(str, "#ic") == 0)
 	{

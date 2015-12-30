@@ -1,5 +1,2 @@
 LIBRARY	d2warden
 EXPORTS
-  d2warden_0X66Handler @2
-  d2warden_0X68Handler @3
-

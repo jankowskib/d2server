@@ -1,9 +1,8 @@
 /* ==========================================================
 * d2warden
-* https://bitbucket.org/lolet/d2warden
+* https://github.com/lolet/d2warden
 * ==========================================================
-*			Copyright 2008 marsgod
-*			 2011-2015 Bartosz Jankowski
+* Copyright 2011-2013 Bartosz Jankowski
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,32 +17,15 @@
 * limitations under the License.
 * ========================================================== */
 
-
 #include "stdafx.h"
+#include "LegacyFuncs.h"
 
-
-/**
-	Executed after all standard events are parsed
-	Warning: The server is now inside the critical section (pGame->pLock) !
-*/
-void __stdcall MainLoop(Game *pGame)
+GameInfo* GetGameInfo(short serverToken)
 {
-	if (pGame->GameFrame % 25 && !gWarden->empty())
-		gWarden->loop();
-}
-
-void __declspec(naked) MainLoop_ASM()
-{
-	__asm
-	{
-
-		push esi // pGame
-
-		call MainLoop
-
-		pop edi
-		pop ebx
-		pop esi
-		retn
+	if (serverToken >= 1026) {
+		Log("Invalid game id: %d", serverToken);
+		return NULL;
 	}
+
+	return &D2Vars.D2SERVER_GameInfo[serverToken];
 }

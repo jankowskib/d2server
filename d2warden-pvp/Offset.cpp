@@ -22,7 +22,8 @@
 
 const static char *dlls[] = { "D2Client.DLL", "D2Common.DLL", "D2Gfx.DLL", "D2Lang.DLL",
 "D2Win.DLL", "D2Net.DLL", "D2Game.DLL", "D2Launch.DLL", "Fog.DLL", "BNClient.DLL",
-"Storm.DLL", "D2Cmp.DLL", "D2Multi.DLL", "D2Sound.DLL", "D2Gdi.dll", "D2DDraw.dll", "D2Direct3D.dll", "D2Glide.dll" };
+"Storm.DLL", "D2Cmp.DLL", "D2Multi.DLL", "D2Sound.DLL", "D2Gdi.dll", "D2DDraw.dll", "D2Direct3D.dll", 
+"D2Glide.dll", "d2server.dll" };
 
 DWORD GetDllOffset(const char *dll, int offset)
 {
