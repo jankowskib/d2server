@@ -201,65 +201,65 @@ DisableDCSpawnInSomeArea dd 0
 D2GamePatched dd 0
 aD2GamePatchedMsg db 'D2Game is already patched.',0
 
-cb_func00 dd 6800D9B8h ; d2game.dll 6FC903B6
-cb_func01 dd 6800D9BCh ; d2game.dll 6FD0832F
-cb_func02 dd 6800F9A4h ; d2game.dll 6FC4557F
-cb_func03 dd 6800F9A8h ; d2game.dll 6FD0818C
-cb_func04 dd 6800F9ACh ; d2game.dll 6FD0744A
-cb_func05 dd 6800F980h ; d2game.dll 6FCB2859
-cb_func06 dd 6800F984h ; d2game.dll 6FD0CF10
-cb_save_func00	dd 0
-cb_save_func01	dd 0
-cb_save_func02	dd 0
-cb_save_func03	dd 0
-cb_save_func04	dd 0
-cb_save_func05	dd 0
-cb_save_func06	dd 0
+D2GS_OnPacketRecv_OFF   dd 6800D9B8h ; d2game.dll 6FC903B6
+D2GS_OnCreatePacket_OFF dd 6800D9BCh ; d2game.dll 6FD0832F
+D2GS_SaveChar_OFF       dd 6800F9A4h ; d2game.dll 6FC4557F
+D2GS_OnGameAdd_OFF      dd 6800F9A8h ; d2game.dll 6FD0818C
+D2GS_OnEachClient_OFF   dd 6800F9ACh ; d2game.dll 6FD0744A
+D2GS_OnItemSell_OFF     dd 6800F980h ; d2game.dll 6FCB2859 used for DC <- probably wil be removed
+D2GS_OnUniqMonSpawn_OFF dd 6800F984h ; d2game.dll 6FD0CF10 used for DC
+D2GS_OnPacketRecv_OLD	dd 0
+D2GS_OnCreatePacket_ORG	dd 0
+D2GS_SaveChar_ORG	    dd 0
+D2GS_OnGameAdd_ORG	    dd 0
+D2GS_OnEachClient_ORG	dd 0
+D2GS_OnItemSell_ORG 	dd 0
+D2GS_OnUniqMonSpawn_ORG	dd 0
 
 
-dword_func00 	dd 6801467Ch	;d2client.dll	6FB7D5C1
-dword_func01 	dd 68014658h	;d2game.dll		6FC903B6
-dword_func02 	dd 68014618h	;d2game.dll		6FD0832F
-dword_func03 	dd 68014638h	;d2game.dll		6FD04A30
-dword_func04 	dd 68014610h	;d2game.dll		6FCE4C40
-dword_func05 	dd 68014644h	;d2game.dll		6FD03AD0
-dword_func06 	dd 68014604h	;d2game.dll		6FC3C710
-dword_func07 	dd 6801460Ch	;d2game.dll		6FCBC2E0
-dword_func08 	dd 68014668h	;d2game.dll		6FCBD820
-dword_func09 	dd 68014640h	;d2game.dll		6FCBBB00
-dword_func10 	dd 68014650h	;d2game.dll		6FC4557F
-dword_func11 	dd 68014678h	;d2game.dll		6FD0818C
-dword_func12 	dd 6801462Ch	;d2game.dll		6FD0744A
-dword_func13 	dd 6801463Ch	;d2game.dll		6FC8A500
-dword_func14 	dd 68014654h	;d2game.dll		6FC31E20
-dword_func15 	dd 6801465Ch	;d2game.dll		6FC3B0E0
-dword_func16 	dd 68014684h	;d2game.dll		6FC35840
-dword_func17 	dd 68014670h	;d2game.dll		6FD049A0
-dword_func18 	dd 6801468Ch	;d2game.dll		6FC51070
-dword_func19 	dd 6801461Ch	;d2game.dll		6FCB2858
-dword_func20 	dd 68014660h	;d2game.dll		6FD0CF10
+D2CLIENT_pGameList 	            dd 6801467Ch	;d2client.dll	6FB7D5C1
+D2GAME_ParseIncomingPackets 	dd 68014658h	;d2game.dll		6FC903B6
+D2GAME_ParseCreatePackets 	    dd 68014618h	;d2game.dll		6FD0832F
+D2GAME_GetClientById 	        dd 68014638h	;d2game.dll		6FD04A30
+D2GAME_GetClientDataByClientID 	dd 68014610h	;d2game.dll		6FCE4C40
+D2GAME_LeaveCriticalSection 	dd 68014644h	;d2game.dll		6FD03AD0
+D2GAME_SendPacket 	            dd 68014604h	;d2game.dll		6FC3C710
+D2GAME_UNIT_GetClientData 	    dd 6801460Ch	;d2game.dll		6FCBC2E0
+D2GAME_GetUnitInteractionStatus dd 68014668h	;d2game.dll		6FCBD820
+D2GAME_FindUnit 	            dd 68014640h	;d2game.dll		6FCBBB00
+D2GAME_D2S_Save 	            dd 68014650h	;d2game.dll		6FC4557F
+D2GAME_ParseEvents          	dd 68014678h	;d2game.dll		6FD0818C
+D2GAME_DispatchPacketsToClient 	dd 6801462Ch	;d2game.dll		6FD0744A
+D2GAME_SavePlayer 	            dd 6801463Ch	;d2game.dll		6FC8A500
+D2GAME_FindUnitByClientData 	dd 68014654h	;d2game.dll		6FC31E20
+D2GAME_ForEach               	dd 6801465Ch	;d2game.dll		6FC3B0E0
+D2GAME_GetGameSocketListByToken dd 68014684h	;d2game.dll		6FC35840
+D2GAME_GetGameBySocket          dd 68014670h	;d2game.dll		6FD049A0
+D2GAME_DupeItem              	dd 6801468Ch	;d2game.dll		6FC51070
+D2COMMON_TestItemFlag       	dd 6801461Ch	;d2game.dll		6FCB2858
+D2GAME_SpawnMonster 	        dd 68014660h	;d2game.dll		6FD0CF10
 
 dword_save_func00	dd 0	;d2client.dll	6FB7D5C1
-ParseIncomingPackets dd 0	;d2game.dll		6FC903B6
-ParseCreatePackets	dd 0	;d2game.dll		6FD0832F
-GetGameByClientID	dd 0	;d2game.dll		6FD04A30
-GetClientDataByClientID	dd 0;d2game.dll		6FCE4C40
-dword_save_func05	dd 0	;d2game.dll		6FD03AD0
-dword_save_func06	dd 0	;d2game.dll		6FC3C710
-dword_save_func07	dd 0	;d2game.dll		6FCBC2E0	; nocall 0
-dword_save_func08	dd 0	;d2game.dll		6FCBD820
-dword_save_func09	dd 0	;d2game.dll		6FCBBB00
-dword_save_func10	dd 0	;d2game.dll		6FC4557F
-dword_save_func11	dd 0	;d2game.dll		6FD0818C
-dword_save_func12	dd 0	;d2game.dll		6FD0744A
-dword_save_func13	dd 0	;d2game.dll		6FC8A500
-dword_save_func14	dd 0	;d2game.dll		6FC31E20
-dword_save_func15	dd 0	;d2game.dll		6FC3B0E0
-dword_save_func16	dd 0	;d2game.dll		6FC35840
-dword_save_func17	dd 0	;d2game.dll		6FD049A0
-dword_save_func18	dd 0	;d2game.dll		6FC51070
-dword_save_func19	dd 0	;d2game.dll		6FCB2858
-dword_save_func20	dd 0	;d2game.dll		6FD0CF10
+D2GAME_ParseIncomingPackets_OLD dd 0	;d2game.dll		6FC903B6
+D2GAME_ParseCreatePackets_OLD	dd 0	;d2game.dll		6FD0832F
+D2GAME_GetGameByClientID_OLD	dd 0	;d2game.dll		6FD04A30
+D2GAME_GetClientDataByClientID_OLD	dd 0;d2game.dll		6FCE4C40
+D2GAME_LeaveCriticalSection_OLD	dd 0	;d2game.dll		6FD03AD0
+D2GAME_SendPacket_OLD	dd 0	;d2game.dll		6FC3C710
+D2GAME_UNIT_GetClientData_OLD	dd 0	;d2game.dll		6FCBC2E0	; nocall 0
+D2GAME_GetUnitInteractionStatus_OLD	dd 0	;d2game.dll		6FCBD820
+D2GAME_FindUnit_OLD	dd 0	;d2game.dll		6FCBBB00
+D2GAME_D2S_Save_OLD	dd 0	;d2game.dll		6FC4557F
+D2GAME_ParseEvents_OLD	dd 0	;d2game.dll		6FD0818C
+D2GAME_DispatchPacketsToClient_OLD	dd 0	;d2game.dll		6FD0744A
+D2GAME_SavePlayer_OLD	dd 0	;d2game.dll		6FC8A500
+D2GAME_FindUnitByClientData_OLD	dd 0	;d2game.dll		6FC31E20
+D2GAME_ForEach_OLD	dd 0	;d2game.dll		6FC3B0E0
+D2GAME_GetGameSocketListByToken_OLD	dd 0	;d2game.dll		6FC35840
+D2GAME_GetGameBySocket_OLD	dd 0	;d2game.dll		6FD049A0
+D2GAME_DupeItem_OLD	dd 0	;d2game.dll		6FC51070
+D2COMMON_TestItemFlag_OLD	dd 0	;d2game.dll		6FCB2858
+D2GAME_SpawnMonster_OLD	dd 0	;d2game.dll		6FD0CF10
 
 dword_fog_patch00	dd 6800DCC4h; patch length to 6
 dword_fog_patch01	dd 6800DCC8h; patch offset
@@ -315,47 +315,47 @@ MyPatchInit proc
 	mov [eax],ecx
 	
 ; setup D2GAME CallBack Hook before D2GSPreInit!
-	mov ecx, cb_func00
+	mov ecx, D2GS_OnPacketRecv_OFF
 	mov eax,[ecx]
-	mov cb_save_func00,eax
-	mov eax,offset cb_stub_func00
+	mov D2GS_OnPacketRecv_OLD,eax
+	mov eax,offset D2GS_OnPacketRecv_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func01
+	mov ecx, D2GS_OnCreatePacket_OFF
 	mov eax,[ecx]
-	mov cb_save_func01,eax
-	mov eax,offset cb_stub_func01
+	mov D2GS_OnCreatePacket_ORG,eax
+	mov eax,offset D2GS_OnCreatePacket_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func02
+	mov ecx, D2GS_SaveChar_OFF
 	mov eax,[ecx]
-	mov cb_save_func02,eax
-	mov eax,offset cb_stub_func02
+	mov D2GS_SaveChar_ORG,eax
+	mov eax,offset D2GS_CharSave_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func03
+	mov ecx, D2GS_OnGameAdd_OFF
 	mov eax,[ecx]
-	mov cb_save_func03,eax
-	mov eax,offset cb_stub_func03
+	mov D2GS_OnGameAdd_ORG,eax
+	mov eax,offset D2GS_OnGameAdd_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func04
+	mov ecx, D2GS_OnEachClient_OFF
 	mov eax,[ecx]
-	mov cb_save_func04,eax
-	mov eax,offset cb_stub_func04
+	mov D2GS_OnEachClient_ORG,eax
+	mov eax,offset D2GS_OnEachClient_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func05
+	mov ecx, D2GS_OnItemSell_OFF
 	mov eax,[ecx]
-	mov cb_save_func05,eax
-	mov eax,offset cb_stub_func05
+	mov D2GS_OnItemSell_ORG,eax
+	mov eax,offset D2GS_OnItemSell_STUB
 	mov [ecx],eax
 	
-	mov ecx, cb_func06
+	mov ecx, D2GS_OnUniqMonSpawn_OFF
 	;mov eax,[ecx]
 	mov eax,MyCheckSpawnDiabloClone
-	mov cb_save_func06,eax
-	mov eax,offset cb_stub_func06
+	mov D2GS_OnUniqMonSpawn_ORG,eax
+	mov eax,offset D2GS_OnUniqMonSpawn_STUB
 	mov [ecx],eax
 
 
@@ -429,138 +429,140 @@ MyPatchInit proc
 	mov D2COMMON_10632_GetRoom1,eax
 
 ; Call D2Game
-;	mov ecx, dword_func00
+;	mov ecx, D2CLIENT_pGameList
 ; mov eax,[ecx]
 ;	mov dword_save_func00,eax
 ; mov eax,offset stub_func00
 ;	mov [ecx],eax
 
-	mov ecx, dword_func01
+	mov ecx, D2GAME_ParseIncomingPackets
 	mov eax,[ecx]
-	mov ParseIncomingPackets,eax
-	mov eax,offset stub_func01
+	mov D2GAME_ParseIncomingPackets_OLD,eax
+	mov eax,offset D2GAME_ParseIncomingPackets_STUB
 	mov [ecx],eax
 
-	 mov ecx, dword_func02
+	 mov ecx, D2GAME_ParseCreatePackets
 	 mov eax,[ecx]
-	 mov ParseCreatePackets,eax
-	 mov eax,offset stub_func02
+	 mov D2GAME_ParseCreatePackets_OLD,eax
+	 mov eax,offset D2GAME_ParseCreatePackets_STUB
 	 mov [ecx],eax
 
-	mov ecx, dword_func03
+	mov ecx, D2GAME_GetClientById
 	mov eax,[ecx]
-	mov GetGameByClientID,eax
-	mov eax,offset stub_func03
+	mov D2GAME_GetGameByClientID_OLD,eax
+	mov eax,offset D2GAME_GetGameByClientID_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func04
+	mov ecx, D2GAME_GetClientDataByClientID
 	mov eax,[ecx]
-	mov GetClientDataByClientID,eax
-	mov eax,offset stub_func04
+	mov D2GAME_GetClientDataByClientID_OLD,eax
+	mov eax,offset D2GAME_GetClientDataByClientID_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func05
+	mov ecx, D2GAME_LeaveCriticalSection
 	mov eax,[ecx]
-	mov dword_save_func05,eax
-	mov eax,offset stub_func05
+	mov D2GAME_LeaveCriticalSection_OLD,eax
+	mov eax,offset D2GAME_LeaveCriticalSection_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func06
+	mov ecx, D2GAME_SendPacket
 	mov eax,[ecx]
-	mov dword_save_func06,eax
-	mov eax,offset stub_func06
+	mov D2GAME_SendPacket_OLD,eax
+	mov eax,offset D2GAME_SendPacket_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func07
+	mov ecx, D2GAME_UNIT_GetClientData
 	mov eax,[ecx]
-	mov dword_save_func07,eax
-	mov eax,offset stub_func07
+	mov D2GAME_UNIT_GetClientData_OLD,eax
+	mov eax,offset D2GAME_UNIT_GetClientData_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func08
+	mov ecx, D2GAME_GetUnitInteractionStatus
 	mov eax,[ecx]
-	mov dword_save_func08,eax
-	mov eax,offset stub_func08
+	mov D2GAME_GetUnitInteractionStatus_OLD,eax
+	mov eax,offset D2GAME_GetUnitInteractionStatus_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func09
+	mov ecx, D2GAME_FindUnit
 	mov eax,[ecx]
-	mov dword_save_func09,eax
-	mov eax,offset stub_func09
+	mov D2GAME_FindUnit_OLD,eax
+	mov eax,offset D2GAME_FindUnit_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func10
+	mov ecx, D2GAME_D2S_Save
 	mov eax,[ecx]
-	mov dword_save_func10,eax
-	mov eax,offset stub_func10
+	mov D2GAME_D2S_Save_OLD,eax
+	mov eax,offset D2GAME_D2S_Save_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func11
+	mov ecx, D2GAME_ParseEvents
 	mov eax,[ecx]
-	mov dword_save_func11,eax
-	mov eax,offset stub_func11
+	mov D2GAME_ParseEvents_OLD,eax
+	mov eax,offset D2GAME_ParseEvents_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func12
+	mov ecx, D2GAME_DispatchPacketsToClient
 	mov eax,[ecx]
-	mov dword_save_func12,eax
-	mov eax,offset stub_func12
+	mov D2GAME_DispatchPacketsToClient_OLD,eax
+	mov eax,offset D2GAME_DispatchPacketsToClient_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func13
+	mov ecx, D2GAME_SavePlayer
 	mov eax,[ecx]
-	mov dword_save_func13,eax
-	mov eax,offset stub_func13
+	mov D2GAME_SavePlayer_OLD,eax
+	mov eax,offset D2GAME_SavePlayer_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func14
+	mov ecx, D2GAME_FindUnitByClientData
 	mov eax,[ecx]
-	mov dword_save_func14,eax
-	mov eax,offset stub_func14
+	mov D2GAME_FindUnitByClientData_OLD,eax
+	mov eax,offset D2GAME_FindUnitByClientData_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func15
+	mov ecx, D2GAME_ForEach
 	mov eax,[ecx]
-	mov dword_save_func15,eax
-	mov eax,offset stub_func15
+	mov D2GAME_ForEach_OLD,eax
+	mov eax,offset D2GAME_ForEach_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func16
+	mov ecx, D2GAME_GetGameSocketListByToken
 	mov eax,[ecx]
-	mov dword_save_func16,eax
-	mov eax,offset stub_func16
+	mov D2GAME_GetGameSocketListByToken_OLD,eax
+	mov eax,offset D2GAME_GetGameSocketListByToken_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func17
+	mov ecx, D2GAME_GetGameBySocket
 	mov eax,[ecx]
-	mov dword_save_func17,eax
-	mov eax,offset stub_func17
+	mov D2GAME_GetGameBySocket_OLD,eax
+	mov eax,offset D2GAME_GetGameBySocket_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func18
+	mov ecx, D2GAME_DupeItem
 	mov eax,[ecx]
-	mov dword_save_func18,eax
-	mov eax,offset stub_func18
+	mov D2GAME_DupeItem_OLD,eax
+	mov eax,offset D2GAME_DupeItem_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func19
+	mov ecx, D2COMMON_TestItemFlag
 	mov eax,[ecx]
-	mov dword_save_func19,eax
-	mov eax,offset stub_func19
+	mov D2COMMON_TestItemFlag_OLD,eax
+	mov eax,offset D2COMMON_TestItemFlag_STUB
 	mov [ecx],eax
 
-	mov ecx, dword_func20
+	mov ecx, D2GAME_SpawnMonster
 	mov eax,[ecx]
-	mov dword_save_func20,eax
-	mov eax,offset stub_func20
+	mov D2GAME_SpawnMonster_OLD,eax
+	mov eax,offset D2GAME_SpawnMonster_STUB
 	mov [ecx],eax
 	
 	; for warden patch 0x68,0x66 packet handler
 ;	mov ecx,68003815h	; system packet handler
 ;	mov eax,offset MyPacket0X68Handler
-	mov ecx,6800F31Ch	; packet 0x68 handler 68003AC0
-	mov eax,offset MyPacket0X68Handler
-	mov [ecx],eax
+
+; @bj: not needed anymore (handled in d2warden)
+;	mov ecx,6800F31Ch	; packet 0x68 handler 68003AC0
+;	mov eax,offset MyPacket0X68Handler
+;	mov [ecx],eax
 
 	call UberQuestPatchInit
 
@@ -1449,7 +1451,7 @@ stub_func00 endp
 ;ret       esi
 ;arg_0     ebx
 ;arg_4     ret
-stub_func01 proc
+D2GAME_ParseIncomingPackets_STUB proc
 	; stack fix...
 	mov [esp-8],ecx
 	mov eax,[esp+8] ; arg_4
@@ -1463,11 +1465,11 @@ stub_func01 proc
 	mov esi,edx
 	sub esp,8
 	
-	call ParseIncomingPackets
+	call D2GAME_ParseIncomingPackets_OLD
 	pop esi
 	pop ebx
 	ret
-stub_func01 endp
+D2GAME_ParseIncomingPackets_STUB endp
 
 ;6FC38551 4 FFFF93BB(ecx,edx)			6FD0832F 4 FFF8809D(arg_0,eax) packet handler!!(void)
 ;堆栈完整
@@ -1479,7 +1481,7 @@ stub_func01 endp
 ;	mov eax,offset MyPacket0X68Handler
 ;	mov [ecx],eax
 
-stub_func02 proc
+D2GAME_ParseCreatePackets_STUB proc
 ;ecx=ClientID+ptPacket
 ;edx=packet_len
 	sub esp,4
@@ -1489,7 +1491,7 @@ stub_func02 proc
 not_0x68:
 	push ecx
 	mov eax,edx
-	call ParseCreatePackets
+	call D2GAME_ParseCreatePackets_OLD
 	add esp,4
 	ret
 	
@@ -1498,7 +1500,7 @@ check_0x68:
 	jnz not_0x68
 	push ecx
 	mov eax,edx
-	call ParseCreatePackets
+	call D2GAME_ParseCreatePackets_OLD
 	cmp eax,3
 	jz over
 	test eax,eax
@@ -1518,38 +1520,38 @@ check_0x68:
 over:
 	add esp,4
 	retn
-stub_func02 endp
+D2GAME_ParseCreatePackets_STUB endp
 
 ;6FC394E0 6 57E98B565553(ecx)							6FD04A30 6 FFF25912E856(esi)	;需进一步检查(=eax)
 ;GetClient
 ;已经OK
 ;堆栈完整
 ; EAX、ECX、EDX可以改变，其他不能变
-stub_func03 proc
+D2GAME_GetGameByClientID_STUB proc
 	push esi
 	mov esi,ecx
-	call GetGameByClientID
+	call D2GAME_GetGameByClientID_OLD
 	pop esi
 	ret
-stub_func03 endp
+D2GAME_GetGameByClientID_STUB endp
 
 ;6FC31DE0 5 681E75C985(ecx,edx)		6FCE4C40 5 681F75C085(eax,ecx)(=eax)
 ;堆栈完整
 ; EAX、ECX、EDX可以改变，其他不能变
-stub_func04 proc
+D2GAME_GetClientDataByClientID_STUB proc
 	mov eax,ecx
 	mov ecx,edx
-	call GetClientDataByClientID
+	call D2GAME_GetClientDataByClientID_OLD
 	ret
-stub_func04 endp
+D2GAME_GetClientDataByClientID_STUB endp
 
 ;6FC395B0 4 1E75C985(ecx)				6FD03AD0 4 0775C085(eax)(=void)
 ;堆栈完整
-stub_func05 proc
+D2GAME_LeaveCriticalSection_STUB proc
 	mov eax,ecx
-	call dword_save_func05
+	call D2GAME_LeaveCriticalSection_OLD
 	ret
-stub_func05 endp
+D2GAME_LeaveCriticalSection_STUB endp
 
 ;6FC3C710 5 F18B565551(ecx, edx(no use), arg_0) 6FCC0D50 5 246C8B5553(eax,arg_0(no use),arg_4)(=void)
 ; eax=ptPlayer arg_0=ptPacket arg_4=PacketLen
@@ -1564,7 +1566,7 @@ stub_func05 endp
 ;            edx
 ;ret         arg_0
 ;arg_0       ret
-stub_func06 proc
+D2GAME_SendPacket_STUB proc
 	; stack fix
 	mov [esp-4],edx
 	mov edx,[esp] ; retaddr
@@ -1574,15 +1576,15 @@ stub_func06 proc
 	mov eax,ecx
 	sub esp,4
 	
-	call dword_save_func06
+	call D2GAME_SendPacket_OLD
 	ret
-stub_func06 endp
+D2GAME_SendPacket_STUB endp
 
 ;6FCBC2E0 7 39831474C985(fastcall, ecx)已经被内嵌了，需要disable这个Patch，然后改为调用如下代码
 ;typedef LPCLIENT ( __fastcall * D2Game_UnitGetClientFunc)(LPUNIT lpUnitPlayer,
 ; 	LPCSTR szFile, DWORD dwLine);
 ;堆栈完整
-stub_func07 proc
+D2GAME_UNIT_GetClientData_STUB proc
 	test    ecx, ecx
 	jz      short loc_6FCBC2F8
 	cmp     dword ptr [ecx], 0
@@ -1594,7 +1596,7 @@ stub_func07 proc
 loc_6FCBC2F8:
 	xor     eax, eax
 	retn    4
-stub_func07 endp
+D2GAME_UNIT_GetClientData_STUB endp
 
 ;6FCBD820 8 0C24548B0424448B(arg_0,arg_4,arg_8)				6FCDE460 8 68488B0A8964488B(eax,arg_0,edx)(=eax)
 ;堆栈完整(使用Waypoint)
@@ -1605,7 +1607,7 @@ stub_func07 endp
 ; arg_0
 ; arg_4     arg_4
 ; arg_8     ret
-stub_func08 proc
+D2GAME_GetUnitInteractionStatus_STUB proc
 	; stack fix
 	mov edx,[esp+12] ; arg_8
 	mov eax,[esp] ; retaddr
@@ -1613,9 +1615,9 @@ stub_func08 proc
 	mov eax,[esp+4] ; arg_0
 	add esp,8
 	
-	call dword_save_func08
+	call D2GAME_GetUnitInteractionStatus_OLD
 	ret
-stub_func08 endp
+D2GAME_GetUnitInteractionStatus_STUB endp
 
 ;6FCBBB00 4 7556C985(ecx,edx,arg_0)	6FCDEF80 4 1F75C985(ecx,eax,edx)(=eax)
 ;typedef LPUNIT 	( __fastcall * D2Game_GameFindUnitFunc)(LPGAME ptGame, DWORD dwUnitType, DWORD dwUnitId);
@@ -1625,7 +1627,7 @@ stub_func08 endp
 ;
 ; ret
 ; arg_0   ret
-stub_func09 proc
+D2GAME_FindUnit_STUB proc
 	; stack fix
 	mov [esp-4],edx ; save edx
 	mov edx,[esp+4] ; arg_0
@@ -1634,9 +1636,9 @@ stub_func09 proc
 	mov eax,[esp-4] ; restore edx
 	add esp,4
 	
-	call dword_save_func09
+	call D2GAME_FindUnit_OLD
 	ret
-stub_func09 endp
+D2GAME_FindUnit_STUB endp
 
 ;d2game.dll		6FC8A200(6FC8D940) 4 0000373C(ecx,edx,arg_0,arg_4,arg_8,arg_12,arg_16)  6FC4557F 4 000037BD (edx,ecx,...)
 ;交换ecx和edx，然后直接跳转，不是call！！
@@ -1644,21 +1646,21 @@ stub_func09 endp
 ;		LPSTR lpBuf, DWORD * pSize, DWORD dwBufSize, BOOL bInTrade, BOOL bQuit);
 ; ecx=ptPlayer edx=ptGame arg0=var_2000? arg_4=var_25F8filename? arg_8=2000h arg_12=0 arg_16=0
 ; ecx=ptGame edx=ptPlayer arg0=unk_12D884 arg_4=unk_12D244 arg_8=2000h arg_12=0 arg_16=0
-stub_func10 proc
+D2GAME_D2S_Save_STUB proc
 	mov eax,edx
 	mov edx,ecx
 	mov ecx,eax
-	jmp dword_save_func10
-stub_func10 endp
+	jmp D2GAME_D2S_Save_OLD
+D2GAME_D2S_Save_STUB endp
 
 ;6FC38F7A 4 FFFFF752(ecx)		6FD0818C 4 FFFFFDF0(eax)
 ;堆栈完整
 ;UpdateGameEvent
-stub_func11 proc
+D2GAME_ParseEvents_STUB proc
 	mov eax,ecx
-	call dword_save_func11
+	call D2GAME_ParseEvents_OLD
 	ret
-stub_func11 endp
+D2GAME_ParseEvents_STUB endp
 
 ;6FC39391 4 FFFFFC9B(ecx,edx,arg_0,arg_4)			6FD0744A 4 FFFFFCC2(arg_0,eax,arg_4,edx)
 ;typedef VOID	( __fastcall * D2Game_GameSendAllMsgsFunc)(LPGAME ptGame, LPCLIENT ptClient, BOOL u1, BOOL u2);
@@ -1670,7 +1672,7 @@ stub_func11 endp
 ; ret      ecx
 ; arg_0    arg_0
 ; arg_4    ret
-stub_func12 proc
+D2GAME_DispatchPacketsToClient_STUB proc
 	; stack fix
 	mov [esp-4],edx ; save edx
 	mov edx,[esp] ; retaddr
@@ -1680,9 +1682,9 @@ stub_func12 proc
 	mov edx,eax			; arg_4->edx
 	mov eax,[esp-4] ; restore edx
 	
-	call dword_save_func12
+	call D2GAME_DispatchPacketsToClient_OLD
 	ret
-stub_func12 endp
+D2GAME_DispatchPacketsToClient_STUB endp
 
 ;6FC8A500 4 002640B8(ecx,edx,arg_0,arg_4)（保存玩家档案） 6FC45860 4 8538EC83(ebx,esi,arg_0,arg_4)
 ;GameSavePlayer
@@ -1695,7 +1697,7 @@ stub_func12 endp
 ; ret     esi
 ; arg_0   ebx
 ; arg_4   ret
-stub_func13 proc
+D2GAME_SavePlayer_STUB proc
 	; stack fix
 	mov eax,[esp+8]		; arg_4
 	mov [esp-4],eax
@@ -1709,11 +1711,11 @@ stub_func13 proc
 	mov ebx,ecx
 	mov esi,edx
 
-	call dword_save_func13
+	call D2GAME_SavePlayer_OLD
 	pop esi
 	pop ebx
 	ret
-stub_func13 endp
+D2GAME_SavePlayer_STUB endp
 
 ;6FC31E20 4 24748B56 0 0(arg_0,arg_4)  		6FCE5600 4 1F75F685(esi,arg_0)
 ; 从Client获得ptUnit
@@ -1724,7 +1726,7 @@ stub_func13 endp
 ; ret    arg_4
 ; arg_0  esi
 ; arg_4  ret
-stub_func14 proc
+D2GAME_FindUnitByClientData_STUB proc
 	; stack fix
 	mov eax,[esp+8]	; arg_4
 	mov [esp-4],eax	; save arg_4
@@ -1736,10 +1738,10 @@ stub_func14 proc
 	mov [esp+4],esi	; save esi
 	mov esi,eax
 	
-	call dword_save_func14
+	call D2GAME_FindUnitByClientData_OLD
 	pop esi
 	ret
-stub_func14 endp
+D2GAME_FindUnitByClientData_STUB endp
 
 ;6FC3B0E0 6 FA8B57F18B56(ecx,edx,arg_0)				6FD036D0 6 75F685F08B56(eax,edi,ebx)
 ;typedef VOID	( __fastcall * D2Game_GameTraverseClientCBFunc)(LPCLIENT lpClient,LPVOID lpData);
@@ -1751,7 +1753,7 @@ stub_func14 endp
 ;         ebx
 ; ret     edi
 ; arg_0   ret
-stub_func15 proc
+D2GAME_ForEach_STUB proc
 	; stack fix
 	mov [esp-4],ebx
 	mov ebx,[esp+4] ; arg_0
@@ -1762,29 +1764,29 @@ stub_func15 proc
 	mov eax,ecx
 	mov edi,edx
 	
-	call dword_save_func15
+	call D2GAME_ForEach_OLD
 	pop ebx
 	pop edi
 	ret
-stub_func15 endp
+D2GAME_ForEach_STUB endp
 
 ;6FC35840 4 57F18B56(ecx)	6FD04400 4 0125BA56(arg_0)
 ;typedef DWORD	( __fastcall * D2Game_GameHashFromIdFunc)(WORD wGameId);
 ;没找到调用
-stub_func16 proc
+D2GAME_GetGameSocketListByToken_STUB proc
 	push ecx
-	call dword_save_func16
+	call D2GAME_GetGameSocketListByToken_OLD
 	ret
-stub_func16 endp
+D2GAME_GetGameSocketListByToken_STUB endp
 
 ;6FC397A0 4 358B5653(ecx)									6FD049A0 4 D31BE0A1(arg_0)
 ;typedef LPGAME 	( __fastcall * D2Game_GameFromHashFunc)(DWORD dwHashId);
 ;没找到调用
-stub_func17 proc
+D2GAME_GetGameBySocket_STUB proc
 	push ecx
-	call dword_save_func17
+	call D2GAME_GetGameBySocket_OLD
 	ret
-stub_func17 endp
+D2GAME_GetGameBySocket_STUB endp
 
 ;6FC51070 8 555300000430EC81(ecx=ptGame,edx,arg_0,arg_4=1)		6FCF0410 8 8B530000042CEC81(eax=ptGame,arg_0=item,NULL,arg_4=1)
 ; typedef LPUNIT  ( __fastcall * D2Game_ItemDuplicateFunc)(LPGAME lpGame,
@@ -1798,7 +1800,7 @@ stub_func17 endp
 ; ret      edx
 ; arg_0    arg_4
 ; arg_4    ret
-stub_func18 proc
+D2GAME_DupeItem_STUB proc
 	; stack fix
 	mov eax,[esp] ; retaddr
 	mov [esp],edx
@@ -1808,18 +1810,18 @@ stub_func18 proc
 	mov [esp+4],edx ; arg_4
 	
 	mov eax,ecx
-	call dword_save_func18
+	call D2GAME_DupeItem_OLD
 	ret
-stub_func18 endp
+D2GAME_DupeItem_STUB endp
 
 ;d2game.dll		6FCC77D0 4 00054032(arg_0,arg_4,arg_8,arg_12) 6FCB2859 4 FFF77DE5(arg_0,arg_4,arg_8,arg_12)
 ;typedef BOOL (__stdcall * D2Common_ItemTestFlagFunc)(LPUNIT ptItem, DWORD dwFlag, DWORD dwLine, LPCSTR lpLine); 
 ;static BOOL __stdcall D2GameSellItemCheck(LPUNIT ptItem, DWORD dwFlag, DWORD dwLine, LPCSTR lpFile) 
 ;没找到调用
-stub_func19 proc
+D2COMMON_TestItemFlag_STUB proc
 	;call Send0XAEPacket
-	jmp dword_save_func19
-stub_func19 endp
+	jmp D2COMMON_TestItemFlag_OLD
+D2COMMON_TestItemFlag_STUB endp
 
 ;d2game.dll		6FC6F720 4 FFFFFAFC(ecx,edx,arg_0,arg_4,arg_8,arg_12,arg_16,arg_20) 6FD0CF10 4 FFFFF8CC(arg_0,arg_4,edx,arg_8,arg_12,arg_16,ecx,eax)
 ;SpawnDiabloClone
@@ -1842,7 +1844,7 @@ stub_func19 endp
 ;
 ;0=143b 4=FFFFFF 8=14 12=0 16=14d 20=0 x=3 ecx=ptgameE0CC4200A0... edx=CC60235B...
 ;0=ptgame 4=edx 8=FFFFFF 12=14 16=0 ecx=14D edx=143b eax=0
-stub_func20 proc
+D2GAME_SpawnMonster_STUB proc
 	; stack fix
 	mov eax,[esp+24]	; arg_20
 	mov [esp-4],eax		; save arg_20
@@ -1864,9 +1866,9 @@ stub_func20 proc
 	mov ecx,[esp-8]		; restore arg_16
 	add esp,4
 
-	call dword_save_func20
+	call D2GAME_SpawnMonster_OLD
 	ret
-stub_func20 endp
+D2GAME_SpawnMonster_STUB endp
 
 ;6FC31C74 4 000576A8(ecx,edx,arg_0,arg_4)			6FC903B6 4 FFFBD3F6(arg_0,esi,ebx,arg_4)
 ;堆栈完整
@@ -1878,7 +1880,7 @@ stub_func20 endp
 ; ret     ebx
 ; arg_0   arg_4
 ; arg_4   ret
-cb_stub_func00 proc
+D2GS_OnPacketRecv_STUB proc
 	; stack fix
 	mov eax,[esp]		; retaddr
 	mov edx,[esp+8]	; arg_4
@@ -1888,9 +1890,9 @@ cb_stub_func00 proc
 	mov [esp],ebx
 	mov edx,esi
 	
-	call cb_save_func00
+	call D2GS_OnPacketRecv_OLD
 	ret
-cb_stub_func00 endp
+D2GS_OnPacketRecv_STUB endp
 
 ;6FC38551 4 FFFF93BB(ecx,edx)			6FD0832F 4 FFF8809D(arg_0,eax)
 ;堆栈完整
@@ -1899,33 +1901,33 @@ cb_stub_func00 endp
 ;
 ; ret
 ; arg_0 ret
-cb_stub_func01 proc
+D2GS_OnCreatePacket_STUB proc
 	; stack fix
 	pop edx	; retaddr
 	pop ecx	; arg_0
 	push edx	; retaddr
 	mov edx,eax
 
-	call cb_save_func01
+	call D2GS_OnCreatePacket_ORG
 	ret
-cb_stub_func01 endp
+D2GS_OnCreatePacket_STUB endp
 
 ;d2game.dll		6FC8A200(6FC8D940) 4 0000373C(ecx,edx,arg_0,arg_4,arg_8,arg_12,arg_16)  6FC4557F 4 000037BD (edx,ecx,...)
 ;没找到调用
-cb_stub_func02 proc
+D2GS_CharSave_STUB proc
 	mov eax,ecx
 	mov ecx,edx
 	mov edx,eax
-	jmp cb_save_func02
-cb_stub_func02 endp
+	jmp D2GS_SaveChar_ORG
+D2GS_CharSave_STUB endp
 
 ;6FC38F7A 4 FFFFF752(ecx)			6FD0818C 4 FFFFFDF0(eax)
 ;堆栈完整（推测）
-cb_stub_func03 proc
+D2GS_OnGameAdd_STUB proc
 	mov ecx,eax
-	call cb_save_func03
+	call D2GS_OnGameAdd_ORG
 	ret
-cb_stub_func03 endp
+D2GS_OnGameAdd_STUB endp
 
 ;6FC39391 4 FFFFFC9B(ecx,edx,arg_0,arg_4)			6FD0744A 4 FFFFFCC2(arg_0,eax,arg_4,edx)
 ;堆栈完整（推测）
@@ -1937,7 +1939,7 @@ cb_stub_func03 endp
 ; ret     arg_4
 ; arg_0   edx
 ; arg_4   ret
-cb_stub_func04 proc
+D2GS_OnEachClient_STUB proc
 	; stack fix
 	mov [esp-4],eax	; save eax
 	mov ecx,[esp+4]	; arg_0
@@ -1949,15 +1951,15 @@ cb_stub_func04 proc
 	
 	mov edx,[esp-4]	; restore eax
 
-	call cb_save_func04
+	call D2GS_OnEachClient_ORG
 	ret
-cb_stub_func04 endp
+D2GS_OnEachClient_STUB endp
 
 ;d2game.dll		6FCC77D0 4 00054032(arg_0,arg_4,arg_8,arg_12) 6FCB2859 4 FFF77DE5(arg_0,arg_4,arg_8,arg_12)
 ;没找到调用
-cb_stub_func05 proc
-	jmp cb_save_func05
-cb_stub_func05 endp
+D2GS_OnItemSell_STUB proc
+	jmp D2GS_OnItemSell_ORG
+D2GS_OnItemSell_STUB endp
 
 ;d2game.dll		6FC6F720 4 FFFFFAFC(ecx,edx,arg_0,arg_4,arg_8,arg_12,arg_16,arg_20) 6FD0CF10 4 FFFFF8CC(arg_0,arg_4,edx,arg_8,arg_12,arg_16,ecx,eax)
 ;SpawnDiabloClone
@@ -1973,7 +1975,7 @@ cb_stub_func05 endp
 ; arg_8    ecx
 ; arg_12   eax
 ; arg_16   ret
-cb_stub_func06 proc
+D2GS_OnUniqMonSpawn_STUB proc
 	; stack fix
 	mov [esp-4],edx
 	mov [esp-8],eax		; save eax
@@ -1996,9 +1998,9 @@ cb_stub_func06 proc
 	sub esp,4
 	
 	
-	call cb_save_func06
+	call D2GS_OnUniqMonSpawn_ORG
 	ret
-cb_stub_func06 endp
+D2GS_OnUniqMonSpawn_STUB endp
 
 	INCLUDE UberQuest.asm
 
@@ -2154,7 +2156,7 @@ TradePlayerAuraBugPatch proc
 	mov edx,[ebp+64h]	; 获取交易对方的UnitID
 	mov ecx,[ebp+80h]	; ptGame
 	xor eax,eax				; Player Type
-	call dword_save_func09	; 获取交易对方的Unit
+	call D2GAME_FindUnit_OLD	; 获取交易对方的Unit
 	test eax,eax
 	jz over1
 	mov ebp,eax
@@ -3148,7 +3150,7 @@ not_check_level:
                  push    edx
                  mov     edx, edi
                  mov     ecx, esi
-                 mov eax,dword_func20; D2Game_SpawnMonsterInCurrentRoom
+                 mov eax,D2GAME_SpawnMonster; D2Game_SpawnMonsterInCurrentRoom
                  call    dword ptr [eax]
                  xor     eax, eax
                  pop     edi
@@ -3181,7 +3183,7 @@ not_check_level:
                  push    ecx
                  mov     edx, edi
                  mov     ecx, esi
-                 mov eax,dword_func20; D2Game_SpawnMonsterInCurrentRoom
+                 mov eax,D2GAME_SpawnMonster; D2Game_SpawnMonsterInCurrentRoom
                  call    dword ptr [eax]
                  pop     edi
                  pop     esi
