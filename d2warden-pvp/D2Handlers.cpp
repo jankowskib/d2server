@@ -634,8 +634,9 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			if (_stricmp(str, "#roster") == 0)
 			{
 				LRosterData * LR = LRoster::Find(pUnit->pGame, pUnit->pPlayerData->szName);
-				if (LR)	SendMsgToClient(pUnit->pPlayerData->pClientData, "Kills : %d | Deaths : %d", LR->Kills, LR->Deaths);
-				else SendMsgToClient(pUnit->pPlayerData->pClientData, "Kills : 0 | Deaths : 0");
+				if (LR)	SendMsgToClient(pUnit->pPlayerData->pClientData, "Kills : %d | Deaths : %d | Assists : %d | Runaways : %d", 
+					LR->Kills, LR->Deaths, LR->Assists, LR->Giveups);
+				else SendMsgToClient(pUnit->pPlayerData->pClientData, "No roster data available!");
 				return false;
 			}
 			if (_stricmp(str, "#we") == 0)

@@ -21,5 +21,4 @@
 #define __LEGACY_FUNCS_H__
 
 GameInfo* GetGameInfo(short serverToken);
-
 #endif

@@ -135,7 +135,10 @@ void __fastcall OnGameDestroy(Game* ptGame)
 	ptGame->pLSpectator = 0;
 }
 
-void LRoster::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster wszystkich klientow do ServerHashMapgo gracza
+/*
+	Sends a roster of all players to given client [ptClient]
+*/
+void LRoster::SyncClient(Game *ptGame, ClientData* ptClient) 
 {
 	if(!ptGame || !ptClient)
 		return;
@@ -144,27 +147,33 @@ void LRoster::SyncClient(Game *ptGame, ClientData* ptClient) // Wysyla roster ws
 
 	for(ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
 	{
-	if(pClientList->InitStatus) {
-		LRosterData * pRoster = LRoster::Find(ptGame,pClientList->CharName);
-		if(!pRoster) continue;
+		if(pClientList->InitStatus & 4) {
+			LRosterData * pRoster = LRoster::Find(ptGame,pClientList->CharName);
+			if(!pRoster) continue;
 
-		RosterPacket pVKInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)1,(BYTE)pRoster->Kills};
-		RosterPacket pVDInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)2,(BYTE)pRoster->Deaths};
-		RosterPacket pVAInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)3,(BYTE)pRoster->Assists};
+			RosterPacket pVKInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)1,(BYTE)pRoster->Kills};
+			RosterPacket pVDInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)2,(BYTE)pRoster->Deaths};
+			RosterPacket pVAInfo = {0x66,pClientList->pPlayerUnit->dwUnitId,(BYTE)3,(BYTE)pRoster->Assists};
+			RosterPacket pVGInfo = { 0x66, pClientList->pPlayerUnit->dwUnitId, (BYTE)4, (BYTE)pRoster->Giveups };
 
-		D2ASMFuncs::D2GAME_SendPacket(ptClient,(BYTE*)&pVKInfo,7);
-		D2ASMFuncs::D2GAME_SendPacket(ptClient,(BYTE*)&pVDInfo,7);
-		D2ASMFuncs::D2GAME_SendPacket(ptClient,(BYTE*)&pVAInfo,7);
+			D2ASMFuncs::D2GAME_SendPacket(ptClient, (BYTE*)&pVKInfo,7);
+			D2ASMFuncs::D2GAME_SendPacket(ptClient, (BYTE*)&pVDInfo,7);
+			D2ASMFuncs::D2GAME_SendPacket(ptClient, (BYTE*)&pVAInfo, 7);
+			D2ASMFuncs::D2GAME_SendPacket(ptClient, (BYTE*)&pVGInfo, 7);
 		}
 	}
 }
 
-void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster) // Wysyla roster ServerHashMapgo gracza do wszystkich klientow
+/*
+	Sends a roster of a player with [UnitId] to all clients
+*/
+void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster)
 {
 	if(!ptGame || !pRoster) return;
 		RosterPacket pVKInfo = {0x66,UnitId,(BYTE)1,(BYTE)pRoster->Kills};
 		RosterPacket pVDInfo = {0x66,UnitId,(BYTE)2,(BYTE)pRoster->Deaths};
-		RosterPacket pVAInfo = {0x66,UnitId,(BYTE)3,(BYTE)pRoster->Assists};
+		RosterPacket pVAInfo = { 0x66, UnitId, (BYTE)3, (BYTE)pRoster->Assists };
+		RosterPacket pVGInfo = { 0x66, UnitId, (BYTE)4, (BYTE)pRoster->Giveups };
 		//TODO:Assysty
 
 	for(ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
@@ -172,7 +181,8 @@ void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster) // Wy
 	if(pClientList->InitStatus == 4) {
 		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&pVKInfo,7);
 		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&pVDInfo,7);
-		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&pVAInfo,7);
+		D2ASMFuncs::D2GAME_SendPacket(pClientList, (BYTE*)&pVAInfo, 7);
+		D2ASMFuncs::D2GAME_SendPacket(pClientList, (BYTE*)&pVGInfo, 7);
 		}
 	}
 }
@@ -202,6 +212,7 @@ void LRoster::UpdateRoster(Game* ptGame, char * szName, BYTE Type)
 	}
 	switch(Type)
 	{
+		case 4: {++Player->Giveups; break; }
 		case 3: {++Player->Assists; break;}
 		case 2: {++Player->Deaths; break;}
 		case 1:	{++Player->Kills;break;}

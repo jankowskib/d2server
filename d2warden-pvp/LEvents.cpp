@@ -177,36 +177,34 @@ void __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, R
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 {
 	DEBUGMSG("OnBroadcastEvent %d",pEvent->MsgType);
-	if(pGame) 
+	if ((pGame->bFestivalMode == 1) && (pEvent->MsgType == 0 || pEvent->MsgType == 1 || pEvent->MsgType == 3)) // Leave msgs 
 	{
-		if(pGame->bFestivalMode == 1)
-			if(pEvent->MsgType == 0 || pEvent->MsgType == 1 || pEvent->MsgType == 3) // Leave msgs 
-			{
-				DEBUGMSG("Szukam struktury ClientData z nazwa %s",pEvent->Name1);
+		DEBUGMSG("Szukam struktury ClientData z nazwa %s",pEvent->Name1);
 
-				ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
-				if(pClient)
-				{
-					if(pClient->pPlayerUnit->pPlayerData->isPlaying == 0)  return;
-					DoRoundEndStuff(pGame, pClient->pPlayerUnit);
-				}
-				else 
-					DEBUGMSG("Nie znalazlem struktury WardenClient w %s",__FUNCTION__);
-			}
-			if(pEvent->MsgType == EVENT_JOINED) // Join packet
-			{
-				ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
-				if(pClient) 
-				{
-					LRoster::SyncClient(pGame,pClient);
-					LRosterData* pRoster = LRoster::Find(pGame,pEvent->Name1);
-					if(pRoster && pClient->pPlayerUnit) {
-						LRoster::SyncClient(pGame,pClient->pPlayerUnit->dwUnitId,pRoster);
-					}
-				}
-			}
-	BroadcastPacket(pGame,(BYTE*)pEvent,40);
+		ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
+		if(pClient)
+		{
+			if(pClient->pPlayerUnit->pPlayerData->isPlaying == 0)  
+				return;
+			DoRoundEndStuff(pGame, pClient->pPlayerUnit);
+		} else {
+			DEBUGMSG("Nie znalazlem struktury WardenClient w %s", __FUNCTION__);
+		}
 	}
+
+	if(pEvent->MsgType == EVENT_JOINED) // Join packet
+	{
+		ClientData* pClient = FindClientDataByName(pGame,pEvent->Name1);
+		if(pClient) 
+		{
+			LRoster::SyncClient(pGame,pClient);
+			LRosterData* pRoster = LRoster::Find(pGame,pEvent->Name1);
+			if(pRoster && pClient->pPlayerUnit) {
+				LRoster::SyncClient(pGame,pClient->pPlayerUnit->dwUnitId,pRoster);
+			}
+		}
+	}
+	BroadcastPacket(pGame,(BYTE*)pEvent,40);
 
 	switch(pEvent->MsgType)
 	{
