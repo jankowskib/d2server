@@ -776,6 +776,30 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
 					if (aCurrLevel != aLevel)
 					{
+						//Runaways feature
+						Room1* mRoom = pUnit->pPath->pRoom1;
+						int i = 0;
+						if (mRoom->nNumClients > 1) {
+							WORD unitParty = D2ASMFuncs::D2GAME_GetPartyID(pUnit);
+							for (ClientData ** pClients = mRoom->pClients; i < mRoom->nNumClients; ++pClients, ++i) {
+								ClientData * pClientNear = *pClients;
+								if (!pClientNear || pUnit->pPlayerData->pClientData == pClientNear)
+									continue;
+
+								DEBUGMSG("Found client %s", pClientNear->CharName)
+								UnitAny* pNearUnit = pClientNear->pPlayerUnit;
+								if (unitParty != 0xFFFF && unitParty == D2ASMFuncs::D2GAME_GetPartyID(pNearUnit))
+									continue;
+								if (!D2ASMFuncs::D2GAME_isUnitInRange(pUnit->pGame, pUnit->dwUnitId, UNIT_PLAYER, pNearUnit, 15)) {
+									LRoster::UpdateRoster(pUnit->pGame, pUnit->pPlayerData->szName, 4); // Increase runaways count
+									LRosterData *pRoster = LRoster::Find(pUnit->pGame, pUnit->pPlayerData->szName);
+									if (pRoster)
+										LRoster::SyncClientRunaways(pUnit->pGame, pUnit->dwUnitId, pRoster);
+									break;
+								}
+							}
+						}
+						
 						D2ASMFuncs::D2GAME_MoveUnitToLevelId(pUnit, aLevel, pUnit->pGame);
 						SPECTATOR_RemoveFromQueue(pUnit->pGame, pUnit->dwUnitId);
 					}

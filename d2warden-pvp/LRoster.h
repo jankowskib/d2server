@@ -27,6 +27,7 @@ void COMBAT_Free(Game* pGame, UnitAny* pUnit);
 
 namespace LRoster
 {
+	void SyncClientRunaways(Game *ptGame, DWORD UnitId, LRosterData* pRoster);
 	void SyncClient(Game *ptGame, ClientData* ptClient);
 	void SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster);
 	LRosterData* Find(Game * ptGame, char* szName);

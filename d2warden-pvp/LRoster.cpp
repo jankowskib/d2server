@@ -178,7 +178,7 @@ void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster)
 
 	for(ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
 	{
-	if(pClientList->InitStatus == 4) {
+	if(pClientList->InitStatus & 4) {
 		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&pVKInfo,7);
 		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&pVDInfo,7);
 		D2ASMFuncs::D2GAME_SendPacket(pClientList, (BYTE*)&pVAInfo, 7);
@@ -187,6 +187,20 @@ void LRoster::SyncClient(Game *ptGame, DWORD UnitId, LRosterData* pRoster)
 	}
 }
 
+/*
+	Sends a runaway roster of a player with [UnitId] to all clients
+*/
+void LRoster::SyncClientRunaways(Game *ptGame, DWORD UnitId, LRosterData* pRoster)
+{
+	if (!ptGame || !pRoster) return;
+	RosterPacket pVGInfo = { 0x66, UnitId, (BYTE)4, (BYTE)pRoster->Giveups };
+
+	for (ClientData * pClientList = ptGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
+	{
+		if (pClientList->InitStatus & 4)
+			D2ASMFuncs::D2GAME_SendPacket(pClientList, (BYTE*)&pVGInfo, 7);
+	}
+}
 
 LRosterData * LRoster::Find(Game * ptGame, char* szName)
 {
