@@ -952,6 +952,12 @@ struct ExEventSpecatorEnd : ExEvent // (size 0x4)
 {
 };
 
+struct ExEventAccountInfo : ExEvent // (size 0x18)
+{
+	DWORD UnitId;
+	char szAccount[16];
+};
+
 /*
 	Join a game
 */

@@ -23,7 +23,33 @@
 #include "LRoster.h"
 #include "LSpectator.h"
 
-void onGameJoin(Game* pGame, ClientData* pClient)
+void EVENTS_SendAccountInfo(ClientData * pClient)
+{
+	ASSERT(pClient)
+
+	// Don't bother if we are the only player in a game
+	if (pClient->pGame->nClients == 1)
+		return;
+
+	ExEventAccountInfo hEvent;
+	hEvent.MsgType = EXEVENT_ACCOUNT_INFO;
+	hEvent.P_A6 = 0xA6;
+	hEvent.PacketLen = sizeof(ExEventAccountInfo);
+	for (ClientData* pClientList = pClient->pGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
+	{
+		if (!(pClientList->InitStatus & 4))
+			continue;
+		if (pClientList == pClient)
+			continue;
+
+		hEvent.UnitId = pClientList->UnitId;
+		strcpy_s<16>(hEvent.szAccount, pClientList->AccountName);
+		D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, sizeof(ExEventAccountInfo));
+	}
+
+}
+
+void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 {
 	WardenClient_i client = gWarden->findClientById(pClient->ClientID);
 	if (client != gWarden->getInvalidClient())
@@ -81,9 +107,9 @@ void onGameJoin(Game* pGame, ClientData* pClient)
 		}
 	}
 
-	if (!gWarden->wcfgSpectator) { // If we disable spectator mode in config, hide the spectator button on client
-		SendExEvent(pClient, EXOP_DISABLESPECTATOR, true);
-	}
+	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !gWarden->wcfgSpectator);
+
+	EVENTS_SendAccountInfo(pClient);
 
 }
 
@@ -261,7 +287,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 		ClientData* pClient = FindClientDataByName(pGame, pEvent->Name1);
 		if(pClient) 
 		{
-			onGameJoin(pGame, pClient);
+			EVENTS_OnGameJoin(pGame, pClient);
 			LRoster::SyncClient(pGame, pClient);
 			LRosterData* pRoster = LRoster::Find(pGame, pEvent->Name1);
 			if (pRoster && pClient->pPlayerUnit) {

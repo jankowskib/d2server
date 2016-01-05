@@ -368,7 +368,6 @@ void SendExEvent(ClientData* pClient, ExEventOption op, DWORD value)
 }
 
 
-
 void BroadcastEventMsg(Game* pGame, int Color, char *Msg...)
 {
 	va_list arguments;
