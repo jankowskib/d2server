@@ -103,7 +103,6 @@ void PatchD2(Warden* pWarden)
 #ifdef VER_113D
 	PatchGS(0, GetDllOffset("D2Game.dll", 0x3C707), 0xEB, 1, "Assassin's Cloak Crash Fix");
 	//PatchGS(CALL, GetDllOffset("D2Game.dll", 0x1602A), (DWORD)D2GAME_PortalCrashFix, 5, "TP Crash Fix");
-	PatchGS(NOP, GetDllOffset("D2Game.dll", 0xBC082), 0x90, 10, "pfnValidateSaveTime Fix");
 #endif
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_ISDEADOVERRIDE), (DWORD)D2Stubs::D2GAME_IsUnitDead_STUB, 5, "Is Unit Dead Override");

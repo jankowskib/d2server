@@ -294,6 +294,7 @@ struct _d2v {
 _d2v D2Vars = { 0 };
 void SetupD2Vars() {
 #endif
+	EXVARPTR(D2GAME, gCheckSaveTime, BOOL, 0x111C2C)
 	EXVARPTR(D2GAME, gpfnEventCallbacks, EventCallbackTable*, 0x111C28)
 	EXVARPTR(D2GAME, pSpell, pSpellTbl, 0x108690) // 1.13d
 	EXVARPTR(D2GAME, ClientDataLock, CRITICAL_SECTION*, 0x1109E0) // 1.13d only for now, use when wanna search client by pure id

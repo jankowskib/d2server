@@ -43,6 +43,11 @@ void  __stdcall OnCreatePacketReceive(PacketData* pPacket)
 	}
 	DEBUGMSG("Received: 0x%x", pPacket->aPacket[0])
 
+	// Fix for late patch for save time check
+	BOOL* gSaveTime = D2Vars.D2GAME_gCheckSaveTime;
+	if (*gSaveTime)
+		*gSaveTime = FALSE;
+
 	D2Funcs.D2GAME_ParseCreatePackets(pPacket);
 
 	switch (pPacket->aPacket[0]) {

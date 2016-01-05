@@ -878,18 +878,20 @@ struct ClientData //size 0x518
 	BYTE ClassId2;				   //0x0C
 	char CharName[16];			   //0x0D 
 	char AccountName[16];		   //0x1D 
-	BYTE _3[50];                    //0x2D 
-	DWORD _3b;					   //0x60
+	BYTE _3[50];                   //0x2D 
+	DWORD dwReserved2;			   //0x60
 	DWORD _4;		               //0x64
-	DebugGameInfo* pGameData;				   //0x68 (seems to be added by d2gs, not by original blizz game) 
-	DWORD _5[64];                   //0x6C 
+	DebugGameInfo* pGameData;	   //0x68 (seems to be added by d2gs, not by original blizz game) 
+	DWORD CharPortrait[64];        //0x6C 
 	DWORD UnitType;				   //0x16C
 	DWORD UnitId;                   //0x170
 	UnitAny* pPlayerUnit;           //0x174
 	DWORD _6;	                   //0x178 some bool
 	void * ptSaveFile;			   //0x17C
 	DWORD nOpenSize;				   //0x180
-	DWORD _7[9];					   //0x184
+	DWORD _7[3];					   //0x184
+	FILETIME* dwSaveStamp;			   //0x190 <- validated on 1.13d
+	DWORD _7a[5];					   //0x194
 	Game* pGame;					   //0x1A8 
 	DWORD ActNo;					   //0x1AC
 	DWORD _8;	                   //0x1B0
@@ -905,7 +907,8 @@ struct ClientData //size 0x518
 		DWORD SkillFlags;
 	} ClientHotKeys[16];  		   //0x3DC 
 	DWORD bWeaponSwitch;			   //0x45C
-	DWORD _11[11];				   //0x460
+	DWORD _11[10];				   //0x460
+	DWORD dwCharCreateStamp;       //0x488 (creation time read from d2s)
 	DWORD InactivityTime;		   //0x48C (seconds)
 	WORD CurrentLife;			   //0x490
 	WORD CurrentMana;			   //0x492
