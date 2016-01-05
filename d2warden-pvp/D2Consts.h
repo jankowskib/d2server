@@ -18,6 +18,31 @@
  * ========================================================== */
 
 
+
+enum D2CharFlags
+{
+	CHAR_CLASSIC = 0x0,
+	CHAR_HARDCORE = 0x4,
+	CHAR_DEAD = 0x8,
+	CHAR_EXPANSION = 0x20,
+	CHAR_LADDER = 0x40
+
+};
+
+/*
+	Item buffers
+*/
+enum Storage
+{
+	STORAGE_INVENTORY = 0,
+	STORAGE_EQUIP = 1,  // TRADE_PAGE_I
+	STORAGE_TRADE = 2, // TRADE_PAGE_II
+	STORAGE_CUBE = 3, // TRANSMORGIFY_BOX AKA CUBE
+	STORAGE_STASH = 4, // BIG_BANK_PAGE | BANK_PAGE
+	STORAGE_BELT = 5,
+	STORAGE_SNULL = 255
+};
+
 enum DifficultyLevels
 {
 	DIFF_NORMAL = 0,
@@ -166,6 +191,7 @@ enum PartyButtons
 	PB_LEAVE_PARTY = 9,
 	// -- my addtion below
 	PB_SPECATE = 10,
+	PB_MAX = PB_SPECATE
 };
 
 enum ExEventMsgs
@@ -182,6 +208,7 @@ enum ExEventMsgs
 enum ExEventOption
 {
 	EXOP_RESPAWNTIME = 1,
+	EXOP_DISABLESPECTATOR = 2,
 };
 
 enum EventMsgType

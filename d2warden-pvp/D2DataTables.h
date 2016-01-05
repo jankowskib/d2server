@@ -655,27 +655,101 @@ struct MissilesTxt
    BYTE unk;                     //0x1A3
 };
 
-#pragma pack(pop)
 
 struct ObjectTxt
 {
-	CHAR szName[0x40];				//0x00
-	WCHAR wszName[0x40];			//0x40
-	BYTE _1[4];						//0xC0
-	BYTE nSelectable0;				//0xC4
-	BYTE _2[0x87];					//0xC5
-	BYTE nOrientation;				//0x14C
-	BYTE _2b[0x19];					//0x14D
-	BYTE nSubClass;					//0x166
-	BYTE _3[0x11];					//0x167
-	BYTE nParm0;					//0x178
-	BYTE _4[0x39];					//0x179
-	BYTE nPopulateFn;				//0x1B2
-	BYTE nOperateFn;				//0x1B3
-	BYTE _5[8];						//0x1B4
-	DWORD nAutoMap;					//0x1BB
+	char szName[64];
+	wchar_t wszName[64];
+	char szToken[2];
+	WORD wSpawnMax;
+	BYTE nSelectable[8];
+	DWORD dwTrapProb;
+	DWORD dwSizeX;
+	DWORD dwSizeY;
+	BYTE pad0xD8;
+	DWORD dwFrameCnt[7];
+	WORD wFrameCnt7;
+	BYTE pad0xF7;
+	WORD wFrameDelta[8];
+	BYTE nCycleAnim[8];
+	BYTE nLit[8];
+	BYTE nBlocksLight[8];
+	BYTE nHasCollision[8];
+	BYTE nIsAttackable0;
+	BYTE nStart[8];
+	BYTE nOrderFlag[8];
+	BYTE nEnvEffect;
+	BYTE nIsDoor;
+	BYTE nBlocksVis;
+	BYTE nOrientation;
+	BYTE nPreOperate;
+	BYTE nTrans;
+	BYTE nMode[8];
+	BYTE pad0x147;
+	DWORD dwXOffset;
+	DWORD dwYOffset;
+	BYTE nDraw;
+	BYTE nHD;
+	BYTE nTR;
+	BYTE nLG;
+	BYTE nRA;
+	BYTE nLA;
+	BYTE nRH;
+	BYTE nLH;
+	BYTE nSH;
+	BYTE nS1;
+	BYTE nS2;
+	BYTE nS3;
+	BYTE nS4;
+	BYTE nS5;
+	BYTE nS6;
+	BYTE nS7;
+	BYTE nS8;
+	BYTE nTotalPieces;
+	BYTE nXSpace;
+	BYTE nYSpace;
+	BYTE nRed;
+	BYTE nGreen;
+	BYTE nBlue;
+	BYTE nSubClass;
+	DWORD dwNameOffset;
+	BYTE pad0x16C;
+	BYTE nMonsterOK;
+	BYTE nOperateRange;
+	BYTE nShrineFunction;
+	BYTE nAct;
+	BYTE nLockable;
+	BYTE nGore;
+	BYTE nRestore;
+	BYTE nRestoreVirgins;
+	WORD wSync;
+	BYTE pad0x177;
+	DWORD dwParm[8];
+	BYTE nTgtFX;
+	BYTE nTgtFY;
+	BYTE nTgtBX;
+	BYTE nTgtBY;
+	BYTE nDamage;
+	BYTE nCollisionSubst;
+	WORD pad0x19E;
+	DWORD dwLeft;
+	DWORD dwTop;
+	DWORD dwWidth;
+	DWORD dwHeight;
+	BYTE nBeta;
+	BYTE nInitFn;
+	BYTE nPopulateFn;
+	BYTE nOperateFn;
+	BYTE nClientFn;
+	BYTE nOverlay;
+	BYTE nBlockMissile;
+	BYTE nDrawUnder;
+	DWORD dwOpenWarp;
+	DWORD dwAutomap;
 };
 
+
+#pragma pack(pop)
 
 struct DifficultyLevelsTxt //size 0x58
 {

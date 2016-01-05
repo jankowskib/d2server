@@ -131,7 +131,7 @@ struct EventCallbackTable
 	void* _7;											//0x4C
 	void* _8;											//0x50
 #ifdef VER_113D
-	void(__fastcall *fpValidateFileTime)(FILETIME **ft);//0x54 1.13d only
+	void(__fastcall *fpValidateFileTime)(FILETIME *ft);//0x54 1.13d only
 #endif
 };
 
@@ -257,6 +257,7 @@ struct LRosterData
 	int Assists;
 	int Kills;
 	int Deaths;
+	int Giveups;
 	LRosterData *ptNext;
 };
 
@@ -996,6 +997,48 @@ struct px13
 };
 
 /*
+Put item to buffer
+*/
+struct px18
+{
+	BYTE P_18;
+	DWORD itemId;
+	DWORD x;
+	DWORD y;
+	DWORD bufferId;
+};
+
+/*
+Put item to belt
+*/
+struct px23
+{
+	BYTE P_23;
+	DWORD itemId;
+	WORD wX;
+	WORD wY;
+};
+
+/*
+Put a scroll to book
+*/
+struct px29
+{
+	BYTE P_29;
+	DWORD scrollId;
+	DWORD bookId;
+};
+
+/*
+Click on a doors
+*/
+struct px3d
+{
+	BYTE P_3D;
+	DWORD dwUnitId;
+};
+
+/*
 Put an item into holder
 */
 struct px44
@@ -1006,6 +1049,19 @@ struct px44
 	DWORD dwItemId;		//0x09
 	DWORD dwObjectState;//0x0D 2 -> Cancel, 3-> Accept
 };
+
+
+/*
+Waypoint action
+*/
+struct px49
+{
+	BYTE P_49;
+	DWORD ObjectId;
+	WORD WpId;
+	WORD _1;
+};
+
 
 /*
 Request players chat relation change
