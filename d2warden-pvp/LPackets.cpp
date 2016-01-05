@@ -41,6 +41,7 @@ void  __stdcall OnCreatePacketReceive(PacketData* pPacket)
 		DEBUGMSG("Invalid join packet! (0x%x)", pPacket->aPacket[0])
 		return;
 	}
+	if (pPacket->aPacket[0] != 0x6d) // ping packet
 	DEBUGMSG("Received: 0x%x", pPacket->aPacket[0])
 
 	// Fix for late patch for save time check

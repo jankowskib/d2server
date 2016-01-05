@@ -418,6 +418,10 @@ BOOL __fastcall OnReceivePacket(BYTE * ThePacket, PacketData * pClient) // retur
 	return true;
 }
 
+/*
+	Very early - client status & 1
+	Don't use...
+*/
 int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 {
 	//if(pClient->InitStatus!=4)
@@ -425,66 +429,7 @@ int __fastcall OnGameEnter(ClientData* pClient, Game* ptGame, UnitAny* ptPlayer)
 
 	DEBUGMSG("Entering the game!")
 
-	WardenClient_i client = gWarden->findClientById(pClient->ClientID);
-	if (client != gWarden->getInvalidClient())
-	{
-		DEBUGMSG("NEWCLIENT: Setup for '%s' !", pClient->CharName);
-		client->setup(ptGame, pClient);
 
-		if (client->bNeedUpdate)
-		{
-			if (gWarden->wcfgUpdateURL.empty()) return false;
-			SendMsgToClient(pClient, "Trying to download patch....");
-			ExEventDownload pEvent;
-			::memset(&pEvent, 0, sizeof(ExEventDownload));
-			pEvent.P_A6 = 0xA6;
-			pEvent.MsgType = EXEVENT_DOWNLOAD;
-			pEvent.bExec = 1;
-			strcpy_s(pEvent.szURL, 255, gWarden->wcfgUpdateURL.c_str());
-			if (pEvent.szURL[0])
-				pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
-			else
-				pEvent.PacketLen = 15;
-
-			D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
-		}
-	}
-	else
-	{
-		DEBUGMSG("Booting %s", pClient->AccountName)
-		Log("NEWCLIENT: Failed to find a client! Dropping player %s !", pClient->AccountName);
-		BootPlayer(pClient->ClientID, BOOT_UNKNOWN_FAILURE);
-		return 0;
-	}
-
-	ExEventDownload pEvent;
-	pEvent.P_A6 = 0xA6;
-	pEvent.bExec = 0;
-	pEvent.MsgType = EXEVENT_DOWNLOAD;
-	strcpy_s(pEvent.szURL, 255, gWarden->wcfgClansURL.c_str());
-	if (pEvent.szURL[0])
-		pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
-	else
-		pEvent.PacketLen = 15;
-	D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
-
-
-	if (strlen(ptGame->GameDesc) > 0)
-	{
-		char tk[32];
-		strcpy_s(tk, 32, ptGame->GameDesc);
-		char *nt = 0;
-		for (char * ret = strtok_s(tk, " -", &nt); ret; ret = strtok_s(NULL, " -", &nt))
-		{
-			if (_strnicmp(ret, "ffa", 3) == 0) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!"); continue; }
-			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && gWarden->wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
-			if (_strnicmp(ret, "t", 1) == 0 && strlen(ret) == 1) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue; }
-		}
-	}
-
-	if (!gWarden->wcfgSpectator) { // If we disable spectator mode in config, hide the spectator button on client
-		SendExEvent(pClient, EXOP_DISABLESPECTATOR, 1);
-	}
 	return 0;
 }
 
