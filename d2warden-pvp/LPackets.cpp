@@ -128,8 +128,11 @@ void  __stdcall OnDebugPacketReceive(PacketData* pPacket)
 int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nPacketLen)
 {
 	BYTE pType = pPacket[0];
-	if (pType > 0x66)
+	if (pType > 0x66) {
+		Log("HACK: Unknown packet (0x%x) recived from *%s", pType, pUnit->pPlayerData->pClientData->AccountName);
 		return MSG_HACK;
+	}
+
 	PacketTbl* cbCallback = (PacketTbl*)&D2Vars.D2GAME_ClientPacketTable[pType];
 
 	if (!cbCallback->Callback)
@@ -183,72 +186,6 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		return OnClickUnit(pGame, pUnit, (SkillTargetPacket*)pPacket, nPacketLen);
 	}
-	case D2SRVMSG_RESSURECT: // Ressurect
-	{
-		if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
-			return MSG_OK;
-		if (pGame->nSyncTimer > 1)
-			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-		return OnResurrect(pGame, pUnit, pPacket, nPacketLen);
-	}
-	case D2SRVMSG_OVERHEAD:
-	case D2SRVMSG_CHAT:
-	case D2SRVMSG_SELECT_SKILL: 
-	case D2SRVMSG_UNKNOWN_0x43:
-	{
-		if (pGame->nSyncTimer > 1)
-			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
-	}
-	case D2SRVMSG_PARTY_OPTIONS_2: // Party relation
-	{
-		px5e * p = (px5e*)pPacket;
-		if (nPacketLen != sizeof(px5e))
-		{
-			if (pUnit)
-				Log("HACK: Malformed packet 0x5E. **VERY SUSPECT**. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
-			return MSG_HACK;
-		}
-		if (p->nButton != PB_SPECATE)
-		{
-			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
-				return MSG_OK;
-		}
-		else
-		{
-			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH)
-				return MSG_OK;
-		}
-
-		if (pGame->nSyncTimer > 1)
-			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
-	}
-	case D2SRVMSG_WARDEN_RESPONSE:
-	{
-		if (pGame->nSyncTimer > 1)
-			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-		return gWarden->onWardenPacketReceive(pGame, pUnit, pPacket, nPacketLen);
-	}
-	case D2SRVMSG_USE_WAYPOINT:
-	{
-		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
-			return MSG_OK;
-
-		if (pUnit->pPlayerData->pTrade) {
-			Log("HACK: D2SRVMSG_USE_WAYPOINT used while in-trade. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
-			BootPlayer(pUnit->pPlayerData->pClientData->ClientID, BOOT_BAD_WAYPOINT_DATA);
-			return MSG_OK;
-		}
-
-		if (pGame->nSyncTimer > 1)
-			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
-
-		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
-	}
 	case D2SRVMSG_INTERACT: //0x13
 	{
 		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
@@ -267,7 +204,142 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 		}
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
-	case D2SRVMSG_STAFF_IN_ORIFICE: // 0x44
+	case D2SRVMSG_OVERHEAD:		//0x14
+	{
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		/*
+			Fix overhead crash
+		*/
+		if (nPacketLen > 3) {
+			if (!pPacket[3]) {
+				Log("HACK: D2SRVMSG_OVERHEAD with invalid message! (*%s)",
+					pUnit->pPlayerData->pClientData->AccountName);
+				return MSG_HACK;
+			}
+		}
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_ITEM_TO_BUFFER: //0x18
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		px18* packet = (px18*)pPacket;
+		/*
+			Migrate validator from d2server.dll
+		*/
+		if (packet->bufferId == STORAGE_EQUIP) {
+			Log("HACK: D2SRVMSG_ITEM_TO_BUFFER used to put item into EQUIP! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		if (packet->bufferId == STORAGE_TRADE && (pUnit->dwInteractType != UNIT_PLAYER || !pUnit->bInteracting)) {
+			Log("HACK: D2SRVMSG_ITEM_TO_BUFFER used to put item in trade buffer but the player is in trade state! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_ITEM_TO_BELT: //0x23
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		/*
+			Migrated from d2server.dll
+		*/
+		px23* packet = (px23*)pPacket;
+		if (packet->wX > 16) {
+			Log("HACK: Player used D2SRVMSG_ITEM_TO_BELT to place an item in invalid place (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_SCROLL_TO_BOOK: //0x29
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		/*
+			Migrated check from d2server.dll
+		*/
+		px29* packet = (px29*)pPacket;
+		UnitAny* pBook = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->bookId, UNIT_ITEM);
+		UnitAny* pScroll = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->scrollId, UNIT_ITEM);
+		if (!pBook || !pScroll) {
+			return MSG_UNK;
+		}
+
+		if ((pScroll->dwClassId == 529 && pBook->dwClassId != 518) || (pScroll->dwClassId == 530 && pBook->dwClassId != 519)) {
+			Log("HACK: D2SRVMSG_SCROLL_TO_BOOK used on wrong book! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_CHAT:			//0x15
+	case D2SRVMSG_SELECT_SKILL: //0x32
+	case D2SRVMSG_UNKNOWN_0x43: //0x43
+	{
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_HIGHLIST_ADOOR: //0x3D
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		/*
+			Migrate validator from d2server.dll
+		*/
+
+		px3d* packet = (px3d*)pPacket;
+		UnitAny* pDoors = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->dwUnitId, UNIT_OBJECT);
+		if (!pDoors) {
+			return MSG_UNK;
+		}
+		ObjectTxt* pTxt = pDoors->pObjectData->pObjectTxt;
+		if (pTxt) {
+			if (!pTxt->nIsDoor)
+			{
+				Log("HACK: D2SRVMSG_HIGHLIST_ADOOR used but the desired object is not a doors! (*%s)",
+					pUnit->pPlayerData->pClientData->AccountName);
+				return MSG_HACK;
+			}
+		}
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_RESSURECT: //0x41
+	{
+		if (!pUnit || pUnit->dwMode != PLAYER_MODE_DEAD)
+			return MSG_OK;
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+		return OnResurrect(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_STAFF_IN_ORIFICE: //0x44
 	{
 		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
 			return MSG_OK;
@@ -277,6 +349,25 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 
 		px44* packet = (px44*)pPacket;
+		/*
+			Migrate validator from d2server.dll
+		*/
+		if (pUnit->dwInteractType != UNIT_OBJECT || pUnit->dwInteractId != packet->dwHolderId || !pUnit->bInteracting) {
+			Log("HACK: D2SRVMSG_STAFF_IN_ORIFICE used but the player is not interacting! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		UnitAny* pStaff = D2ASMFuncs::D2GAME_FindUnit(pGame, packet->dwHolderId, UNIT_OBJECT);
+		if (!pStaff || pStaff->dwClassId != OBJ_WHERE_YOU_PLACE_THE_HORADRIC_STAFF) {
+			Log("HACK: D2SRVMSG_STAFF_IN_ORIFICE used but the player is not interacting with the staff! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		/*
+			This is my additional validation
+		*/
 		if (pUnit->bInteracting && packet->dwHolderId != pUnit->dwInteractId) {
 			Log("HACK: D2SRVMSG_STAFF_IN_ORIFICE used on %s but player is interacting with %s. Received from *%s", UnitTypeToStr(packet->dwHolderType),
 				UnitTypeToStr(pUnit->dwInteractType), pUnit->pPlayerData->pClientData->AccountName);
@@ -285,6 +376,77 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 		}
 
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_CHANGE_TP_LOCATION: //0x45
+	case D2SRVMSG_MOVE_UNIT: //0x59
+	{
+		/*
+			Migrate from d2server.dll - disable that packets
+		*/
+		return MSG_HACK;
+	}
+	case D2SRVMSG_USE_WAYPOINT: //0x49
+	{
+		if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+			return MSG_OK;
+
+		if (pUnit->pPlayerData->pTrade) {
+			Log("HACK: D2SRVMSG_USE_WAYPOINT used while in-trade. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
+			BootPlayer(pUnit->pPlayerData->pClientData->ClientID, BOOT_BAD_WAYPOINT_DATA);
+			return MSG_OK;
+		}
+
+		/*
+			Migrate validator from d2server.dll
+		*/
+		px49* packet = (px49*)pPacket;
+		if (pUnit->dwInteractType != UNIT_OBJECT || pUnit->dwInteractId != packet->ObjectId || !pUnit->bInteracting) {
+			Log("HACK: D2SRVMSG_USE_WAYPOINT used but the player is not interacting with the waypoint! (*%s)",
+				pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_PARTY_OPTIONS_2: // 0x5E
+	{
+		px5e * p = (px5e*)pPacket;
+		if (nPacketLen != sizeof(px5e))
+		{
+			Log("HACK: Malformed D2SRVMSG_PARTY_OPTIONS_2. **VERY SUSPECT**. Received from *%s", pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+		if (p->nButton > PB_MAX)
+		{
+			Log("WARN: Unknown party operation (D2SRVMSG_PARTY_OPTIONS_2) request sent from *%s", pUnit->pPlayerData->pClientData->AccountName);
+			return MSG_HACK;
+		}
+
+		if (p->nButton != PB_SPECATE)
+		{
+			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH || D2Funcs.D2COMMON_GetUnitState(pUnit, uninterruptable))
+				return MSG_OK;
+		}
+		else
+		{
+			if (!pUnit || pUnit->dwMode == PLAYER_MODE_DEAD || pUnit->dwMode == PLAYER_MODE_DEATH)
+				return MSG_OK;
+		}
+
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
+	}
+	case D2SRVMSG_WARDEN_RESPONSE: //0x66
+	{
+		if (pGame->nSyncTimer > 1)
+			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
+
+		return gWarden->onWardenPacketReceive(pGame, pUnit, pPacket, nPacketLen);
 	}
 	default:
 	{
