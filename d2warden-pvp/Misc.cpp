@@ -263,7 +263,7 @@ void BroadcastMsg(Game* pGame,char *Msg...)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -277,7 +277,7 @@ void BroadcastPacket(Game* pGame, BYTE * aPacket, int aLen)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus == 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,aLen);
+	if(pClientList->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,aLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -299,11 +299,11 @@ void BroadcastExEvent(Game* pGame, int Color, int Sound, int Font, short X, shor
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus==4) {
+	if(pClientList->InitStatus & 4) {
 		_snprintf_s(hEvent.szMsg,255,255,"%s",(pClientList->LocaleID == 10 ? polMsg.c_str() : engMsg.c_str()));
 		hEvent.PacketLen = 0xE + strlen(hEvent.szMsg) +1;
 		D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
-		}
+	}
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -326,7 +326,7 @@ void BroadcastExEvent(Game* pGame, int Color, DWORD UnitId, int nCell, std::stri
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-		if(pClientList->InitStatus==4)	D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
+		if(pClientList->InitStatus & 4)	D2ASMFuncs::D2GAME_SendPacket(pClientList,(BYTE*)&hEvent,hEvent.PacketLen);
 		if(!pClientList->ptPrevious) break;
 		pClientList=pClientList->ptPrevious;
 	}
@@ -348,7 +348,7 @@ void SendExEvent(ClientData* pClient, int Color, int Sound, int Font, short X, s
 	_snprintf_s(hEvent.szMsg,255,255,"%s",(pClient->LocaleID == 10 ? polMsg.c_str() : engMsg.c_str()));
 	hEvent.PacketLen = 0xE + strlen(hEvent.szMsg) +1;
 
-	if(pClient->InitStatus==4) D2ASMFuncs::D2GAME_SendPacket(pClient,(BYTE*)&hEvent,hEvent.PacketLen);
+	if(pClient->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClient,(BYTE*)&hEvent,hEvent.PacketLen);
 }
 
 void SendExEvent(ClientData* pClient, ExEventOption op, DWORD value)
@@ -364,7 +364,7 @@ void SendExEvent(ClientData* pClient, ExEventOption op, DWORD value)
 
 	hEvent.PacketLen = sizeof(ExEventGameOptions);
 
-	if (pClient->InitStatus == 4) D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, hEvent.PacketLen);
+	if (pClient->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, hEvent.PacketLen);
 }
 
 
@@ -393,7 +393,7 @@ void BroadcastEventMsg(Game* pGame, int Color, char *Msg...)
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus>=4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -409,7 +409,8 @@ void BroadcastEventMsgEx(Game* pGame, int Color, std::string EngMsg, std::string
 	EngMsg.resize(255);
 	while(pClientList)
 	{
-		if(pClientList->InitStatus!=4) continue;
+		if(!(pClientList->InitStatus & 4))
+			continue;
 
 		WORD MsgLen = 27 + (pClientList->LocaleID == 10 ? strlen(PolMsg.c_str()) : strlen(EngMsg.c_str()));
 		BYTE * aPacket = new BYTE[MsgLen];
