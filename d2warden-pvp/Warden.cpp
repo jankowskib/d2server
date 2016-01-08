@@ -27,7 +27,7 @@
 
 #include "LWorldEvent.h"
 
-Warden::Warden() : dist(300, 10000), random(rng, dist)
+Warden::Warden() : dist(300, 5000), random(rng, dist)
 {
 	const char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 	const BYTE RC4_Key[17] = "WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
@@ -334,7 +334,7 @@ DWORD __fastcall Warden::onJoinGame(PacketData *pPacket)
 	client.VerCode = (BYTE)packet->VerByte;
 
 	DEBUGMSG("Client version is %d, server requires %d", packet->VerByte, wcfgD2EXVersion)
-	if (packet->VerByte > 13 && packet->VerByte < wcfgD2EXVersion && !wcfgAllowVanilla)
+	if (packet->VerByte > 13 && packet->VerByte != wcfgD2EXVersion && !wcfgAllowVanilla)
 	{
 		client.bNeedUpdate = true;
 	}
@@ -344,9 +344,11 @@ DWORD __fastcall Warden::onJoinGame(PacketData *pPacket)
 		BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
 		return MSG_ERROR;
 	}
-	else if (!wcfgAllowVanilla)
+	else if (!wcfgAllowVanilla && packet->VerByte < 13)
 	{
 		Log("Dropping connection with '%s', reason : Unsupported patch version (1.%d).", packet->szCharName, client.VerCode);
+		BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
+		return MSG_ERROR;
 	}
 
 	DEBUGMSG("Added %s to WardenQueue", packet->szCharName);
@@ -519,16 +521,6 @@ void Warden::loop()
 			++pWardenClient;
 			continue;
 		}
-		DWORD NetClient = D2Funcs.D2NET_GetClient(pWardenClient->ClientID);
-
-		if (!NetClient)
-		{
-			DEBUGMSG("MAINLOOP: Removing %s!, reason: %s", pWardenClient->CharName.c_str(), !NetClient ? "CheckValidClient == false" :
-				pWardenClient->WardenStatus == WARDEN_NOTHING ? "WardenStatus == NOTHING" : "ErrorCount>5");
-			pWardenClient->removePacket();
-			pWardenClient = clients.erase(pWardenClient);
-			continue;
-		}
 
 		switch (pWardenClient->WardenStatus)
 		{
@@ -575,22 +567,21 @@ void Warden::loop()
 					DEBUGMSG("Triggering check event becasue of WARDEN_DOWNLOAD_MOD in CHECK_CLIENT ");
 					break;
 				}
+				else if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
+				{
+					pWardenClient->removePacket();
+					pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
+					pWardenClient->NextCheckTime = CurrentTick + random();
+					break;
+				}
 				else
-					if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
-					{
-						pWardenClient->removePacket();
-						pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
-						pWardenClient->NextCheckTime = CurrentTick + random();
-						break;
-					}
-					else
-					{
-						pWardenClient->removePacket();
-						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
-						pWardenClient->NextCheckTime = CurrentTick;
-						DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
-						break;
-					}
+				{
+					pWardenClient->removePacket();
+					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
+					pWardenClient->NextCheckTime = CurrentTick;
+					DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+					break;
+				}
 			}
 			else
 			{
@@ -642,25 +633,25 @@ void Warden::loop()
 					pWardenClient->removePacket();
 					break;
 				}
+				else if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
+				{
+					pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
+					pWardenClient->ErrorCount = 0; // Nastepne 5 szans, jako ze udalo ci sie sciagnac modul
+					pWardenClient->NextCheckTime = CurrentTick + random();
+					pWardenClient->removePacket();
+					break;
+				}
 				else
-					if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
-					{
-						pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
-						pWardenClient->ErrorCount = 0; // Nastepne 5 szans, jako ze udalo ci sie sciagnac modul
-						pWardenClient->NextCheckTime = CurrentTick + random();
-						pWardenClient->removePacket();
-						break;
-					}
-					else
-					{
-						pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
-						pWardenClient->NextCheckTime = CurrentTick;
-						break;
-					}
+				{
+					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
+					pWardenClient->NextCheckTime = CurrentTick;
+					break;
+				}
 			}
 			else
 			{
-				if (GetTickCount() - pWardenClient->ClientLogonTime>30000) pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE; //Daje ci 30 sekund (Na cbn jest 45)
+				if (GetTickCount() - pWardenClient->ClientLogonTime>30000) 
+					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE; //Daje ci 30 sekund (Na cbn jest 45)
 				pWardenClient->NextCheckTime = CurrentTick + 100;
 			}
 		}
@@ -900,7 +891,7 @@ void Warden::loop()
 		break;
 		case WARDEN_NOTHING:
 		{
-			Sleep(1);
+			pWardenClient->NextCheckTime = GetTickCount() + random();
 		}
 		break;
 		case WARDEN_ERROR_RESPONSE:
