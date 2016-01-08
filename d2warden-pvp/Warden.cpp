@@ -396,6 +396,7 @@ void Warden::loadConfig()
 	wcfgExpRange = GetPrivateProfileInt("Warden", "ExpRange", 6400, wcfgConfigFile.c_str());
 	wcfgDisableRepairCost = GetPrivateProfileInt("Warden", "DisableRepairCosts", 1, wcfgConfigFile.c_str());
 	wcfgAllowQuests = GetPrivateProfileInt("Warden", "AllowQuests", 1, wcfgConfigFile.c_str());
+	wcfgEnableLevelCmd = GetPrivateProfileInt("Warden", "EnableLevelCmd", 1, wcfgConfigFile.c_str());
 
 	GetPrivateProfileString("Warden", "ClanDataURL", "http://www.lolet.yoyo.pl/Clans.ini", URL, 255, wcfgConfigFile.c_str());
 	wcfgClansURL = URL;

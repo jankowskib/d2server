@@ -975,6 +975,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				return false;
 			}
 #ifdef ENABLE_LEVEL_COMMAND
+			if (Warden::getInstance().wcfgEnableLevelCmd)
 			if (_stricmp(str, "#level") == 0 || _stricmp(str, "#lvl") == 0)
 			{
 				if (D2Funcs.D2COMMON_GetStatSigned(pUnit, STAT_LEVEL, NULL) != 1)

@@ -100,6 +100,7 @@ public:
 	BYTE wcfgDisableRepairCost;
 	BYTE wcfgAllowQuests;
 	BYTE wcfgEnableWE;
+	BYTE wcfgEnableLevelCmd;
 	string wcfgDatabase;
 	string wcfgDBUser;
 	string wcfgDBPass;
