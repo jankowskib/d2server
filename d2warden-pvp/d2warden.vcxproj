@@ -249,6 +249,7 @@ EXIT 0</Command>
     <ClCompile Include="LegacyFuncs.cpp" />
     <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
+    <ClCompile Include="LServer.cpp" />
     <ClCompile Include="LUberQuest.cpp" />
     <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="Offset.cpp" />
@@ -271,7 +272,6 @@ EXIT 0</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Vars.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Warden.cpp" />
     <ClCompile Include="WardenClient.cpp" />
@@ -318,6 +318,7 @@ EXIT 0</Command>
     <ClInclude Include="LParty.h" />
     <ClInclude Include="LQuests.h" />
     <ClInclude Include="LRoster.h" />
+    <ClInclude Include="LServer.h" />
     <ClInclude Include="LUberQuest.h" />
     <ClInclude Include="LWorldEvent.h" />
     <ClInclude Include="MainLoop.h" />
@@ -329,7 +330,6 @@ EXIT 0</Command>
     <ClInclude Include="LSpectator.h" />
     <ClInclude Include="StatDumpThread.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Vars.h" />
     <ClInclude Include="Warden.h" />
     <ClInclude Include="WardenChecks.h" />
     <ClInclude Include="Misc.h" />

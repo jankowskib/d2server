@@ -114,10 +114,10 @@ void __fastcall ExpCallback(Game *pGame, UnitAny *pPartyMember, PartyExp *pnPart
 			int pX = D2Funcs.D2GAME_GetUnitX(pPartyMember);
 			int pY = D2Funcs.D2GAME_GetUnitY(pPartyMember);
 
-			if (GetRange(pX, pY, mX, mY)> gWarden->wcfgExpRange && gWarden->wcfgExpRange != -1) return;
+			if (GetRange(pX, pY, mX, mY)> Warden::getInstance().wcfgExpRange && Warden::getInstance().wcfgExpRange != -1) return;
 
 			int nMembers = pnPartyExp->nMembers;
-			if (nMembers > gWarden->wcfgMaxPlayers)
+			if (nMembers > Warden::getInstance().wcfgMaxPlayers)
 			{
 				D2ERROR("nMember>wcfgMaxPlayers")
 			}

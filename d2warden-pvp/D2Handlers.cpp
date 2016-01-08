@@ -180,9 +180,9 @@ BOOL __stdcall isPermStore(Game* ptGame, UnitAny* ptNPC, UnitAny* ptItem)
 	{
 		DWORD iCode = D2Funcs.D2COMMON_GetItemCode(ptItem);
 		//WORLD EVENT
-		if (gWarden->wcfgEnableWE && WE_isKey(ptItem))
+		if (Warden::getInstance().wcfgEnableWE && WE_isKey(ptItem))
 		{
-			if (gWarden->SellCount == gWarden->NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
+			if (Warden::getInstance().SellCount == Warden::getInstance().NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
 
 			ptItem->pItemData->InvPage = 0xFF;
 			return TRUE;
@@ -285,7 +285,7 @@ DWORD __fastcall OnD2ExPacket(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, D
 	//if(Version==1)
 	//{
 	//WardenClient_i ptCurrentClient = GetClientByID(ptPlayer->pPlayerData->pClientData->ClientID);
-	//if(ptCurrentClient == gWarden->clients.end()) return 0;
+	//if(ptCurrentClient == Warden::getInstance().clients.end()) return 0;
 	//ptCurrentClient->NewPatch=1;
 	//
 	//return 0;
@@ -331,11 +331,11 @@ Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGam
 		char * ret = strtok_s(tk, "- ", &nt);
 		while (ret)
 		{
-			if (ret[0] == 'm' && strlen(ret) > 1 && gWarden->wcfgEnableSeed)
+			if (ret[0] == 'm' && strlen(ret) > 1 && Warden::getInstance().wcfgEnableSeed)
 				MySeed = atoi(ret + 1);
-			if (ret[0] == 't' && strlen(ret) == 1 && gWarden->wcfgAllowTourMode)
+			if (ret[0] == 't' && strlen(ret) == 1 && Warden::getInstance().wcfgAllowTourMode)
 				pGame->bFestivalMode = 1;
-			if (_strnicmp(ret, "ffa", 3) == 0 && gWarden->wcfgFFAMode)
+			if (_strnicmp(ret, "ffa", 3) == 0 && Warden::getInstance().wcfgFFAMode)
 				pGame->dwGameState = 1;
 			ret = strtok_s(NULL, "- ", &nt);
 		}
@@ -444,7 +444,7 @@ int __fastcall ReparseChat(Game* pGame, UnitAny *pUnit, BYTE *ThePacket, int Pac
 	Msg[255] = 0;
 	BYTE * aPacket = 0;
 
-	if (gWarden->wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
+	if (Warden::getInstance().wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
 
 	if (nNameLen > 12)
 	{
@@ -589,21 +589,21 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#we") == 0)
 			{
-				if (!gWarden->wcfgEnableWE) return true;
-				int z = gWarden->NextDC - gWarden->SellCount; // 261 - 217 ( 44)
-				int y = z - gWarden->MinSell; // 50 -40 =  10
-				if (y < 0) y = gWarden->MinSell + y;  // 40 - 30 = 10
-				else y = gWarden->MinSell;
+				if (!Warden::getInstance().wcfgEnableWE) return true;
+				int z = Warden::getInstance().NextDC - Warden::getInstance().SellCount; // 261 - 217 ( 44)
+				int y = z - Warden::getInstance().MinSell; // 50 -40 =  10
+				if (y < 0) y = Warden::getInstance().MinSell + y;  // 40 - 30 = 10
+				else y = Warden::getInstance().MinSell;
 				if (y == 0) y = 1;
-				int x = y + (gWarden->MaxSell - gWarden->MinSell);
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", gWarden->wcfgEnableWE ? "On" : "Off", gWarden->SellCount, y, x);
+				int x = y + (Warden::getInstance().MaxSell - Warden::getInstance().MinSell);
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", Warden::getInstance().wcfgEnableWE ? "On" : "Off", Warden::getInstance().SellCount, y, x);
 				return false;
 			}
 			if (_stricmp(str, "#uptime") == 0)
 			{
-				int time = (GetTickCount() - gWarden->getUpTime()) / 1000;
+				int time = (GetTickCount() - Warden::getInstance().getUpTime()) / 1000;
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "GS Uptime %.2d:%.2d:%.2d, WardenClients %d, pGame->nClients %d", time / 3600, (time / 60) % 60, time % 60, 
-					gWarden->getClientCount(), pUnit->pGame->nClients);
+					Warden::getInstance().getClientCount(), pUnit->pGame->nClients);
 				return false;
 			}
 			if (_stricmp(str, "#build") == 0)
@@ -652,14 +652,14 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#update") == 0)
 			{
-				if (gWarden->wcfgUpdateURL.empty()) return false;
+				if (Warden::getInstance().wcfgUpdateURL.empty()) return false;
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "Trying to download patch....");
 				ExEventDownload pEvent;
 				::memset(&pEvent, 0, sizeof(ExEventDownload));
 				pEvent.P_A6 = 0xA6;
 				pEvent.MsgType = EXEVENT_DOWNLOAD;
 				pEvent.bExec = 1;
-				strcpy_s(pEvent.szURL, 255, gWarden->wcfgUpdateURL.c_str());
+				strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgUpdateURL.c_str());
 				if (pEvent.szURL[0])
 					pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 				else
@@ -770,7 +770,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#gu") == 0)
 			{
-				if (gWarden->wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
+				if (Warden::getInstance().wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
 				{
 					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
 					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
@@ -778,7 +778,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 					{
 						//Runaways feature
 						Room1* mRoom = pUnit->pPath->pRoom1;
-						int i = 0;
+						unsigned int i = 0;
 						if (mRoom->nNumClients > 1) {
 							WORD unitParty = D2ASMFuncs::D2GAME_GetPartyID(pUnit);
 							for (ClientData ** pClients = mRoom->pClients; i < mRoom->nNumClients; ++pClients, ++i) {
@@ -817,15 +817,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#debug") == 0)
 			{
-				WardenClient_i ptCurrentClient = gWarden->findClientById(ClientID);
-				if (ptCurrentClient == gWarden->getInvalidClient()) return TRUE;
+				WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
+				if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
 				ptCurrentClient->DebugTrick = !ptCurrentClient->DebugTrick;
 				return false;
 			}
 			if (_stricmp(str, "#reload") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
-				gWarden->loadConfig();
+				Warden::getInstance().loadConfig();
 				SendMsgToClient(pUnit->pPlayerData->pClientData, pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Ustawienia prze³adowane." : "Config reloaded.");
 				return false;
 			}
@@ -835,15 +835,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 				str = strtok_s(NULL, " ", &t);
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#kick <*account> or #kick [charname]!"); return false; }
-				WardenClient_i psUnit = gWarden->getInvalidClient();
+				WardenClient_i psUnit = Warden::getInstance().getInvalidClient();
 				if (str[0] == '*') {
 					str++;
-					psUnit = gWarden->findClientByAcc(str);
+					psUnit = Warden::getInstance().findClientByAcc(str);
 				}
 				else
-					psUnit = gWarden->findClientByName(str);
+					psUnit = Warden::getInstance().findClientByName(str);
 
-				if (psUnit == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
+				if (psUnit == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
 				BroadcastMsg(pUnit->pPlayerData->pClientData->pGame, "'%s' has been kicked by *%s", psUnit->CharName.c_str(), pUnit->pPlayerData->pClientData->AccountName);
 				BootPlayer(psUnit->ptClientData->ClientID, BOOT_CONNECTION_INTERRUPTED);
 				return false;
@@ -857,15 +857,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				{
 					if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
-					WardenClient_i ptCurrentClient = gWarden->getInvalidClient();
+					WardenClient_i ptCurrentClient = Warden::getInstance().getInvalidClient();
 					if (str[0] == '*') {
 						str++;
-						ptCurrentClient = gWarden->findClientByAcc(str);
+						ptCurrentClient = Warden::getInstance().findClientByAcc(str);
 					}
 					else
-						ptCurrentClient = gWarden->findClientByName(str);
+						ptCurrentClient = Warden::getInstance().findClientByName(str);
 
-					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					pDestUnit = ptCurrentClient->ptPlayer;
 				}
 
@@ -939,8 +939,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int LvlId = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (str) {
-					WardenClient_i ptCurrentClient = gWarden->findClientByName(str);
-					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					WardenClient_i ptCurrentClient = Warden::getInstance().findClientByName(str);
+					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					if (!ptCurrentClient->ptPlayer) { return false; }
 					if (aUnit == ptCurrentClient->ptPlayer){ return false; }
 					aUnit = ptCurrentClient->ptPlayer;
@@ -1083,8 +1083,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int ObjId = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (str) {
-					WardenClient_i ptCurrentClient = gWarden->findClientByName(str);
-					if (ptCurrentClient == gWarden->getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					WardenClient_i ptCurrentClient = Warden::getInstance().findClientByName(str);
+					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					if (!ptCurrentClient->ptPlayer) {  return false; }
 					if (aUnit == ptCurrentClient->ptPlayer){  return false; }
 					aUnit = ptCurrentClient->ptPlayer;

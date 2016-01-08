@@ -30,26 +30,18 @@
 
 BOOL __stdcall WardenPreInit()
 {
-	if(!InitializeCriticalSectionAndSpinCount(&LOG_CS, 4000))
-	{
-		LogNoLock("Failed to allocate critical section!");
-		return FALSE;
-	}
-
 	SetupD2Vars();
 	SetupD2Pointers();
 	SetupD2Funcs();
 	
-	gWarden = new Warden(GetTickCount());
 
-	if (!gWarden || !gWarden->isInited())
+	if (!Warden::getInstance().isInited())
 	{
-		DeleteCriticalSection(&LOG_CS);
-		LogNoLock("Error during initialization. Warden is turned off");
+		Log("Error during initialization. Stopping...");
 		return FALSE;
 	}
 
-	if (!gWarden->NextDC)
+	if (!Warden::getInstance().NextDC)
 		WE_GenerateNextDC();
 
 	Log("Warden initialized successfully.");
@@ -67,7 +59,7 @@ DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 
 			if(!WardenPreInit())
 			{
-				LogNoLock("Failed to init the Warden :(");
+				Log("Failed to init the Warden :(");
 				return FALSE;
 			}
 
@@ -75,11 +67,7 @@ DWORD WINAPI DllMain(HMODULE hModule, int dwReason, void* lpReserved)
 		break;
 		case DLL_PROCESS_DETACH:
 		{
-			if (gWarden) {
-				Log("Detaching Warden: something gone wrong");
-				delete gWarden; 
-				gWarden = 0;
-			}
+			Log("Server shutting down");
 		}
 		break;
 	}

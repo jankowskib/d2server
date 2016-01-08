@@ -41,10 +41,10 @@
 #include "LCube.h"
 #include "MainLoop.h"
 
-void PatchD2(Warden* pWarden)
+void Warden::patchD2()
 {
 
-	int NEU_NODE = pWarden->wcfgMaxPlayers + 3;
+	int NEU_NODE = wcfgMaxPlayers + 3;
 
 	#define JUMP 0xE9
 	#define CALL 0xE8
@@ -109,12 +109,12 @@ void PatchD2(Warden* pWarden)
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_MONSTERSPAWN_I), (DWORD)OnMonsterSpawn, 5, "On Create Monster");
 
-	if (pWarden->wcfgHostileLevel)
+	if (wcfgHostileLevel)
 	{
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_I + 2), pWarden->wcfgHostileLevel, 1, "Hostile Level I");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_II + 2), pWarden->wcfgHostileLevel, 1, "Hostile Level II");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_III + 2), pWarden->wcfgHostileLevel, 1, "Hostile Level III");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_IV + 2), pWarden->wcfgHostileLevel, 1, "Hostile Level IV");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_I + 2), wcfgHostileLevel, 1, "Hostile Level I");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_II + 2), wcfgHostileLevel, 1, "Hostile Level II");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_III + 2), wcfgHostileLevel, 1, "Hostile Level III");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_HOSTILELVL_IV + 2), wcfgHostileLevel, 1, "Hostile Level IV");
 	}
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_LASTHITINTERCEPT), (DWORD)D2Stubs::D2GAME_LastHitIntercept_STUB, 5, "LastHitIntercept");
@@ -122,22 +122,22 @@ void PatchD2(Warden* pWarden)
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_CLIENT_PACKET_WRAPPER_NEW), (DWORD)D2Stubs::D2GAME_OnPacketReceive_STUB, 5, "Client Packet Wrapper NEW ");
 
 
-	if (pWarden->wcfgAllowD2Ex)
+	if (wcfgAllowD2Ex)
 	{
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_D2EX_CONNECT), (DWORD)OnD2ExPacket, 5, "D2Ex Connect");
 		D2Vars.D2NET_ToSrvPacketSizes[0x0B] = 5;
 	}
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_ACT_LOAD), (DWORD)OnActLoad, 5, "Act Load");
-	if (pWarden->wcfgMoveToTown)
+	if (wcfgMoveToTown)
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_MOVE_PLAYER_CORPSE_TO_TOWN), (DWORD)OnCreateCorpse, 5, "Move Player Corpse To Town"); // 1.13d = 	0x93BCB 
 
-	if (pWarden->wcfgDisableHostileDelay)
+	if (wcfgDisableHostileDelay)
 	{
 		PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_HOSTILE_WP_DELAY), 0, 19, "Hostile WP Delay");
 		PatchGS(0x33, GetDllOffset("D2Game.dll", D2GAME_HOSTILE_BUTTON_DELAY), 0xF6, 2, "Hostile Button Delay"); //0x33F6 xor esi, esi
 	}
 
-	if (pWarden->wcfgDropEarGold)
+	if (wcfgDropEarGold)
 	{
 		PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_GOLD_DROP_ON_DEATH), 0, 7, "Gold drop on death");
 		PatchGS(0xEB, GetDllOffset("D2Game.dll", D2GAME_EAR_DROP_ON_DEATH), 0, 1, "Ear drop on death");
@@ -147,7 +147,7 @@ void PatchD2(Warden* pWarden)
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_PLAYER_MODE_INTERCEPT),(DWORD)D2Stubs::D2GAME_OnPlayerModeChange_I,5,"Player mode intercept");
 
-	if (pWarden->wcfgStrBugFix)
+	if (wcfgStrBugFix)
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_STRDEX_BUG_FIX), (DWORD)D2Stubs::D2GAME_SendStatToOther_STUB, 5, "Str/dex bug fix");
 
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_CHAT_WRAPPER), (DWORD)D2Stubs::D2GAME_Chat_STUB, 6, "Chat Wrapper");
@@ -165,14 +165,14 @@ void PatchD2(Warden* pWarden)
 
 
 
-	if (pWarden->wcfgSpectator)
+	if (wcfgSpectator)
 	{
 		WriteDword((DWORD*)&D2Vars.D2GAME_ClientPacketTable[0x5E].Callback, (DWORD)&OnPartyRelationChange);
 	}
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_LOCK_HACK_WRAPPER),(DWORD)D2Stubs::D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");
 
-	if (pWarden->wcfgFFAMode)
+	if (wcfgFFAMode)
 	{
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_I), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
 		PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PERM_STORE_STUB_II), (DWORD)D2Stubs::D2GAME_PermStore_STUB, 5, "Perm Store Stub");
@@ -193,7 +193,7 @@ void PatchD2(Warden* pWarden)
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_GOLDTRANS_III), (DWORD)D2Stubs::D2GAME_GoldTransaction_STUB, 5, "Fetch forum gold value instead of gold stat III");
 #endif
 
-	if (pWarden->wcfgDisableRepairCost)
+	if (wcfgDisableRepairCost)
 	{
 		PatchGS(0, GetDllOffset("D2Common.dll", D2COMMON_REPAIR_I), 0xD231, 2, "Disable repair costs");
 		PatchGS(0x90, GetDllOffset("D2Game.dll", D2COMMON_REPAIR_II), 0x90909090, 8, "Disable repair costs II");
@@ -239,7 +239,7 @@ void PatchD2(Warden* pWarden)
 	//	PatchGS(JUMP,GetDllOffset("Fog.dll",FOG_MEM_REALLOC_OVERRIDE),(DWORD)ExMemory::Realloc,5,"Mem Realloc Override");
 
 	//PatchGS(0x90, GetDllOffset("D2Game.dll", D2GAME_NODESEX_AI_TEMP_FIX), 0x90909090, 9, "NodesEX: Ai Temp Fix"); // This temp fix is no more needed
-	if (pWarden->wcfgMaxPlayers > 8) {
+	if (wcfgMaxPlayers > 8) {
 		DEBUGMSG("Patching the nodes system")
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_BAAL_AI), (DWORD)NODES_BaalCheck, 7, "NodesEX: Baal Ai"); // bylo 0x2BB75
 		PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_NODESEX_DIABLO_AI), (DWORD)NODES_NormalCheck, 7, "NodesEX: Diablo Ai");
@@ -257,16 +257,16 @@ void PatchD2(Warden* pWarden)
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NODE_OFFSET_III), 0x1E00, 4, "NodesEX: Change node offset III");
 
 		//Basic fixes
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS), pWarden->wcfgMaxPlayers, 1, "GameEnter: Check number of players");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS_II), pWarden->wcfgMaxPlayers, 1, "GameEnter: Check number of players II");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS), wcfgMaxPlayers, 1, "GameEnter: Check number of players");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_GAMEENTER_CHECK_NUMBER_OF_PLAYERS_II), wcfgMaxPlayers, 1, "GameEnter: Check number of players II");
 #ifndef _SINGLEPLAYER
-		PatchGS(0, GetDllOffset("D2GS.exe", 0x240C), pWarden->wcfgMaxPlayers, 1, "GameEnter: Check number of players III");
-		PatchGS(0, GetDllOffset("D2GS.exe", 0x4FD4), pWarden->wcfgMaxPlayers, 1, "GameEnter: Check number of players IV");
+		PatchGS(0, GetDllOffset("D2GS.exe", 0x240C), wcfgMaxPlayers, 1, "GameEnter: Check number of players III");
+		PatchGS(0, GetDllOffset("D2GS.exe", 0x4FD4), wcfgMaxPlayers, 1, "GameEnter: Check number of players IV");
 #endif
 
 		//TREASURE Class
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP), pWarden->wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP_II), pWarden->wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop II");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP), wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_FIX_TREASURE_CLASS_DROP_II), wcfgMaxPlayers, 1, "NodesEX: Fix Treasure Class Drop II");
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CREATE_UNITANY_CHANGE_NEUTRAL_NODE), NEU_NODE, 4, "NodesEX: Create UnitAny: Change neutral Node");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_ITEM_CREATE_SUB), NEU_NODE, 4, "NodesEX: Create Item: Change neutral Node");
@@ -314,12 +314,12 @@ void PatchD2(Warden* pWarden)
 
 		//Teraz potwory
 
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_PLAYERS_NODES_FROM_8), pWarden->wcfgMaxPlayers, 1, "NodesEX: Change Players Nodes from 8");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_PLAYERS_NODES_FROM_8), wcfgMaxPlayers, 1, "NodesEX: Change Players Nodes from 8");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE), NEU_NODE, 1, "NodesEX: Change neutral Node");
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_CREATEMONSTER_I_F1), NEU_NODE, 4, "NodesEX: Change neutral Node: CreateMonster I - f1");
 
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_REMOVEMONSTERCORPSE_CHANGE_ITERATION_TO_16), pWarden->wcfgMaxPlayers, 1, "NodesEX: RemoveMonsterCorpse: Change iteration to 16");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_REMOVEMONSTERCORPSE_CHANGE_ITERATION_TO_16), wcfgMaxPlayers, 1, "NodesEX: RemoveMonsterCorpse: Change iteration to 16");
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_MONSTERS_SKILL_NECRO), NEU_NODE, 1, "NodesEX: Change neutral Node: Monsters Skill : Necro");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_17_SAME_FUNC_AS_ABOVE), NEU_NODE - 2, 4, "NodesEX: Change Monster Node to 17 same func as above");
@@ -328,13 +328,13 @@ void PatchD2(Warden* pWarden)
 
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_MONSTERS), NEU_NODE, 1, "NodesEX: Change neutral Node: Monsters");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_SAME_FUNC_AS_ABOVE), pWarden->wcfgMaxPlayers, 4, "NodesEX: Change iteration to 16: same func as above");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_I), 0x1E00 + (4 * pWarden->wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_II), 0x1E00 + (4 * pWarden->wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_SAME_FUNC_AS_ABOVE), wcfgMaxPlayers, 4, "NodesEX: Change iteration to 16: same func as above");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_I), 0x1E00 + (4 * wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_OFFSET_TO_NEWNODES16_SAME_FUNC_AS_ABOVE_II), 0x1E00 + (4 * wcfgMaxPlayers), 4, "NodesEX: Change offset to NewNodes[16]: same func as above");
 
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16), pWarden->wcfgMaxPlayers, 1, "NodesEX: Change iteration to 16");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16), wcfgMaxPlayers, 1, "NodesEX: Change iteration to 16");
 
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_16), pWarden->wcfgMaxPlayers, 4, "NodesEX: Change Monster Node to 16");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_16), wcfgMaxPlayers, 4, "NodesEX: Change Monster Node to 16");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_MONSTER_NODE_TO_17), NEU_NODE - 2, 4, "NodesEX: Change Monster Node to 17");
 
 		//Missiles
@@ -345,14 +345,14 @@ void PatchD2(Warden* pWarden)
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_NEUTRAL_NODE_PLAYER_EVENT_CONTROLLER), NEU_NODE, 1, "NodesEX: MONAI_WUSSIE: Change neutral Node");
 #ifdef VER_113D
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_WUSSIE_AI_NODE_TO_16), pWarden->wcfgMaxPlayers, 1, "NodesEX: MONAI_WUSSIE: Change iteration to 16");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ROGUE_SCOUT_SPAWN_NODE_TO_16), pWarden->wcfgMaxPlayers, 1, "NodesEX: Rogue Scout spawn: Change iteration to 16");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_WUSSIE_AI_NODE_TO_16), wcfgMaxPlayers, 1, "NodesEX: MONAI_WUSSIE: Change iteration to 16");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ROGUE_SCOUT_SPAWN_NODE_TO_16), wcfgMaxPlayers, 1, "NodesEX: Rogue Scout spawn: Change iteration to 16");
 
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALLMAKER: Change iteration to 17");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEWALL_NODE_TO_17_SKILL), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEWALL: Change iteration to 17");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ATTRACT_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:ATTRACT: Change iteration to 17");
 		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_BONEPRISON_NODE_TO_17), NEU_NODE - 2, 1, "NodesEX: SRVDOFUNC:BONEPRISON: Change iteration to 17");
-		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_MISSING_I), pWarden->wcfgMaxPlayers, 1, "NodesEX: Change iteration to 17 [unknown]");
+		PatchGS(0, GetDllOffset("D2Game.dll", D2GAME_NODESEX_CHANGE_ITERATION_TO_16_MISSING_I), wcfgMaxPlayers, 1, "NodesEX: Change iteration to 17 [unknown]");
 
 	}
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", 0xB2255), (DWORD)D2Stubs::D2GAME_TestCrash_STUB, 5, "NodesEX: Test why the game keeps crashing");

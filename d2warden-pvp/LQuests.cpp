@@ -430,11 +430,11 @@ void __stdcall QUEST_AllocQuestControl(Game *pGame)
 	pQControl->pQuestFlags = pBuffer;
 
 	pGame->pQuestControl = pQControl;
-	if (!gWarden->wcfgAllowQuests) {
+	if (!Warden::getInstance().wcfgAllowQuests) {
 		for (int n = 0; n < gnQuestsToInit; ++n)
 			D2Funcs.D2COMMON_SetQuestFlag((QuestFlags*)pQControl->pQuestFlags, n, 0xD);
 	}
 	FINISHDEBUGMSG("ok!")
-	DEBUGMSG("Quest are %d", gWarden->wcfgAllowQuests)
+	DEBUGMSG("Quest are %d", Warden::getInstance().wcfgAllowQuests)
 	GAME_EmptyExtendedMemory(pGame);
 }

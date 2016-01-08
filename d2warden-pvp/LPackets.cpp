@@ -63,7 +63,7 @@ void  __stdcall OnCreatePacketReceive(PacketData* pPacket)
 			DEBUGMSG("Failed to get game info!");
 		}
 
-		result = gWarden->onJoinGame(pPacket);
+		result = Warden::getInstance().onJoinGame(pPacket);
 	break;
 	}
 
@@ -442,12 +442,20 @@ int __stdcall OnPacketReceive(BYTE *pPacket, UnitAny *pUnit, Game *pGame, int nP
 
 		return cbCallback->Callback(pGame, pUnit, pPacket, nPacketLen);
 	}
+	case D2SRVMSG_HACK_DETECTION:
+	case D2SRVMSG_HACK_DETECTION_2:
+	{
+		/*
+			Not used 
+		*/
+		return MSG_OK;
+	}
 	case D2SRVMSG_WARDEN_RESPONSE: //0x66
 	{
 		if (pGame->nSyncTimer > 1)
 			pGame->nSyncTimer = D2Funcs.FOG_GetTime();
 
-		return gWarden->onWardenPacketReceive(pGame, pUnit, pPacket, nPacketLen);
+		return Warden::getInstance().onWardenPacketReceive(pGame, pUnit, pPacket, nPacketLen);
 	}
 	default:
 	{
@@ -501,18 +509,18 @@ DWORD __fastcall OnClickUnit(Game* pGame, UnitAny* pPlayer, SkillTargetPacket *p
 	if (!pPlayerData) 
 		return MSG_ERROR;
 
-	if (gWarden->wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
+	if (Warden::getInstance().wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == 0x36)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
 		return MSG_OK;
 	}
 
-	if (SkillId == D2S_HOLYBOLT && !gWarden->wcfgAllowHB)
+	if (SkillId == D2S_HOLYBOLT && !Warden::getInstance().wcfgAllowHB)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
 		return MSG_OK;
 	}
-	if (SkillId == D2S_WHIRLWIND && !gWarden->wcfgAllowNLWW)
+	if (SkillId == D2S_WHIRLWIND && !Warden::getInstance().wcfgAllowNLWW)
 	{
 		SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "NLWW jest zabronione na tym serwerze" : "NLWW Is Not Allowed On This Server");
 		return MSG_OK;
@@ -588,13 +596,13 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 		if (!ptSkill) return MSG_HACK;
 		int SkillId = D2Funcs.D2COMMON_GetSkillId(ptSkill, __FILE__, __LINE__);
 
-		if (gWarden->wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == D2S_TELEPORT)
+		if (Warden::getInstance().wcfgTeleChars[pPlayer->dwClassId] == FALSE && pPlayer->pGame->dwGameState == 0 && SkillId == D2S_TELEPORT)
 		{
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Teleport nie jest dozwolony dla tej klasy!" : "Teleport Is Not Allowed For This Character");
 			return MSG_OK;
 		}
 
-		if (SkillId == D2S_HOLYBOLT && !gWarden->wcfgAllowHB) {
+		if (SkillId == D2S_HOLYBOLT && !Warden::getInstance().wcfgAllowHB) {
 			SendMsgToClient(pPlayerData->pClientData, pPlayerData->pClientData->LocaleID == 10 ? "Swiety pocisk jest zabroniony na tym serwerze" : "Holy Bolt Is Not Allowed On This Server");
 			return MSG_OK;
 		}
@@ -620,11 +628,11 @@ DWORD __fastcall OnClickLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 		else
 			SPECTATOR_UpdatePositions(pGame, pPlayer, UnitX, UnitY);
 
-		if (!gWarden->wcfgDetectTrick)
+		if (!Warden::getInstance().wcfgDetectTrick)
 			return MSG_OK;
 
-		WardenClient_i ptWardenClient = gWarden->findClientById(pPlayerData->pClientData->ClientID);
-		if (ptWardenClient == gWarden->getInvalidClient()) return 0;
+		WardenClient_i ptWardenClient = Warden::getInstance().findClientById(pPlayerData->pClientData->ClientID);
+		if (ptWardenClient == Warden::getInstance().getInvalidClient()) return 0;
 
 		if (GetTickCount() > ptWardenClient->UIModesTime + 500) {  return 0; }
 
@@ -690,8 +698,8 @@ DWORD __fastcall OnRunToLocation(Game* pGame, UnitAny* pPlayer, SkillPacket *ptP
 	}
 	if (pPlayerData->pTrade)
 	{
-		WardenClient_i ptWardenClient = gWarden->findClientById(pPlayerData->pClientData->ClientID);
-		if (ptWardenClient == gWarden->getInvalidClient())
+		WardenClient_i ptWardenClient = Warden::getInstance().findClientById(pPlayerData->pClientData->ClientID);
+		if (ptWardenClient == Warden::getInstance().getInvalidClient())
 			return MSG_OK;
 		if (!ptWardenClient->DupeDetected)
 		{
@@ -754,7 +762,7 @@ DWORD __fastcall OnResurrect(Game *pGame, UnitAny *pPlayer, BYTE *aPacket, DWORD
 		return MSG_OK;
 	}
 
-	if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (gWarden->wcfgRespawnTimer * 1000))
+	if ((GetTickCount() - pPlayer->pPlayerData->tDeathTime) <= (Warden::getInstance().wcfgRespawnTimer * 1000))
 		return MSG_OK;
 
 	if (pPlayer->pSkills)

@@ -22,15 +22,17 @@
 
 const char* UnitTypeToStr(DWORD type)
 {
+#define ENUMSTR( name ) case name: return # name ;
 	switch (type)
 	{
-	case UNIT_PLAYER: return "PLAYER";
-	case UNIT_MONSTER: return "MONSTER";
-	case UNIT_ITEM: return "ITEM";
-	case UNIT_MISSILE: return "MISSILE";
-	case UNIT_OBJECT: return "OBJECT"; 
+		ENUMSTR(UNIT_PLAYER)
+		ENUMSTR(UNIT_MONSTER)
+		ENUMSTR(UNIT_ITEM)
+		ENUMSTR(UNIT_MISSILE)
+		ENUMSTR(UNIT_OBJECT)
 	}
-	return "INVALIDTYPE!";
+	return "UNKNOWN_UNIT!";
+#undef ENUMSTR
 }
 
 DWORD __declspec(naked) GetEIP()
@@ -64,7 +66,9 @@ bool isAnAdmin(std::string szAcc)
 {
  boost::to_lower(szAcc);
 
- for (std::list<std::string>::iterator i = gWarden->wcfgAdmins.begin(); i != gWarden->wcfgAdmins.end(); ++i) if (szAcc == *i) return true;
+ for (const auto i : Warden::getInstance().wcfgAdmins)
+	 if (szAcc == i) 
+		 return true;
 
  return false;
 }
@@ -805,11 +809,10 @@ void Log(char *format,...)
 	char timebuf[256] = { 0 };
 	GetLocalTime(&t);
 	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
-
-	EnterCriticalSection(&LOG_CS);
+;
 	FILE *fp = 0;
 	fopen_s(&fp,"d2warden.log","a+");
-	if (!fp) { delete[] text; 	LeaveCriticalSection(&LOG_CS); return; }
+	if (!fp) { delete[] text; return; }
 	fseek(fp,0,SEEK_END);
 	fwrite(timebuf,strlen(timebuf),1,fp);
 	fwrite(text,strlen(text),1,fp);
@@ -821,35 +824,8 @@ void Log(char *format,...)
 	OutputDebugString("\n");
 #endif
 	delete[] text;
-	LeaveCriticalSection(&LOG_CS);
 };
 
-void LogNoLock(char *format,...)
-{
-	va_list arguments;
-	va_start(arguments, format);
-	int len = _vscprintf(format, arguments ) + 1;
-	char * text = new char[len];
-	vsprintf_s(text, len, format, arguments);
-	va_end(arguments);
-
-	SYSTEMTIME t = { 0 };
-	char timebuf[256] = { 0 };
-	GetLocalTime(&t);
-	sprintf_s(timebuf,256,"[%04d-%02d-%02d %02d:%02d:%02d]",t.wYear,t.wMonth,t.wDay,t.wHour, t.wMinute, t.wSecond );
-
-	FILE *fp = 0;
-	fopen_s(&fp,"d2warden.log","a+");
-	if (!fp) { delete[] text; return; }
-	fseek(fp,0,SEEK_END);
-	fwrite(timebuf,strlen(timebuf),1,fp);
-	fwrite(text,strlen(text),1,fp);
-	fwrite("\n",1,1,fp);
-	fflush(fp);
-	fclose(fp);
-
-	delete[] text;
-};
 
 void Debug(const char * szFunction, char *format,...)
 {
@@ -925,10 +901,9 @@ void LogToFile(char *FileName, bool PutTime, char *format,...)
 	char * text = new char[len];
 	vsprintf_s(text, len, format, arguments);
 	va_end(arguments);
-	EnterCriticalSection(&LOG_CS);
 	FILE *fp = 0;
 	fopen_s(&fp,FileName,"a+");
-	if (!fp) { delete[] text; LeaveCriticalSection(&LOG_CS); return; }
+	if (!fp) { delete[] text; return; }
 	fseek(fp,0,SEEK_END);
 
 if(PutTime)
@@ -945,7 +920,6 @@ if(PutTime)
 	fclose(fp);
 
 	delete[] text;
-	LeaveCriticalSection(&LOG_CS);
 };
 
 void LogError(unsigned char log_level_in,char *format,...)

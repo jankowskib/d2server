@@ -27,7 +27,7 @@
 
 #include "LWorldEvent.h"
 
-Warden::Warden(DWORD timestamp) : dist(300, 10000), random(rng, dist)
+Warden::Warden() : dist(300, 10000), random(rng, dist)
 {
 	const char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 	const BYTE RC4_Key[17] = "WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
@@ -57,7 +57,7 @@ Warden::Warden(DWORD timestamp) : dist(300, 10000), random(rng, dist)
 	Log("Setting allowed player limit on %d", wcfgMaxPlayers);
 	Log("Patching game...");
 
-	PatchD2(this);
+	patchD2();
 
 	if (strlen(Warden_MOD) != 36)
 	{
@@ -134,14 +134,10 @@ Warden::Warden(DWORD timestamp) : dist(300, 10000), random(rng, dist)
 
 Warden::~Warden()
 {
-	LogNoLock("Shutting down...");
-
+	Log("Shutting down...");
 	delete[] moduleEncrypted;
-
 	clients.clear();
-
-	DeleteCriticalSection(&LOG_CS);
-	LogNoLock("Done!");
+	Log("Done!");
 }
 
 
@@ -167,7 +163,6 @@ DWORD Warden::uploadModule(DWORD ClientID, unsigned char *RC4_KEY, DWORD modOffs
 	memcpy(&MyMod[6], moduleEncrypted + modOffset, ModLen);
 	rc4_crypt(RC4_KEY, &MyMod[3], ModLen + 3);
 	D2Funcs.D2NET_SendPacket(0, ClientID, MyMod, ModLen + 6);
-	//D2ASMFuncs::D2GAME_SendPacket(ptClient,MyMod,ModLen+6);
 	return ModLen + modOffset;
 };
 
@@ -336,27 +331,26 @@ DWORD __fastcall Warden::onJoinGame(PacketData *pPacket)
 	px68* packet = (px68*)pPacket->aPacket;
 	DEBUGMSG("Adding a new client...")
 	WardenClient client(pPacket->ClientID, packet->ServerHash);
-	client.VerCode = packet->VerByte;
+	client.VerCode = (BYTE)packet->VerByte;
 
-	if (client.VerCode < wcfgD2EXVersion && !wcfgAllowVanilla)
+	DEBUGMSG("Client version is %d, server requires %d", packet->VerByte, wcfgD2EXVersion)
+	if (packet->VerByte > 13 && packet->VerByte < wcfgD2EXVersion && !wcfgAllowVanilla)
 	{
-		if (client.VerCode >= 16)
-		{
-			client.bNeedUpdate = true;
-		}
-		else
-		{
-			if (client.VerCode == 13)
-				Log("NewClient: Dropping connection with '%s', reason : No D2Ex2 installed.", packet->szCharName);
-			else
-				Log("NewClient: Dropping connection with '%s', reason : Unsupported patch version (1.%d).", packet->szCharName, client.VerCode);
-			BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
-			return MSG_ERROR;
-		}
+		client.bNeedUpdate = true;
+	}
+	else if (!wcfgAllowVanilla && packet->VerByte == 13)
+	{
+		Log("Dropping connection with '%s', reason : No D2Ex2 installed.", packet->szCharName);
+		BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
+		return MSG_ERROR;
+	}
+	else if (!wcfgAllowVanilla)
+	{
+		Log("Dropping connection with '%s', reason : Unsupported patch version (1.%d).", packet->szCharName, client.VerCode);
 	}
 
 	DEBUGMSG("Added %s to WardenQueue", packet->szCharName);
-	clients.emplace_back(client);
+	clients.push_back(client);
 	return MSG_OK;
 }
 
@@ -371,7 +365,7 @@ void Warden::loadConfig()
 	wcfgConfigFile.assign(filename);
 	wcfgConfigFile += "\\D2Warden.ini";
 
-	srand(time(0));
+	srand((DWORD)time(0));
 
 	GetPrivateProfileString("Warden", "AllowTeleport", "1,5", temp, 100, wcfgConfigFile.c_str());
 	for (rt = strtok_s(temp, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
@@ -495,18 +489,20 @@ void Warden::loadConfig()
 
 char* Warden::getStatusMessage(WardenStatus status)
 {
+#define ENUMSTR( name ) case name: return # name ;
 	switch (status)
 	{
-	case WARDEN_START: return "WARDEN_START";
-	case WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT: return "WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT";
-	case WARDEN_DOWNLOAD_MOD: return "WARDEN_DOWNLOAD_MOD";
-	case WARDEN_ERROR_RESPONSE: return "WARDEN_ERROR_RESPONSE";
-	case WARDEN_WAITING_DOWNLOAD_END: return "WARDEN_WAITING_DOWNLOAD_END";
-	case WARDEN_SEND_REQUEST: return "WARDEN_SEND_REQUEST";
-	case WARDEN_RECEIVE_CHECK: return "WARDEN_RECEIVE_CHECK";
-	case WARDEN_NOTHING: return "WARDEN_NOTHING";
+	ENUMSTR(WARDEN_START)
+	ENUMSTR(WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT)
+	ENUMSTR(WARDEN_DOWNLOAD_MOD)
+	ENUMSTR(WARDEN_ERROR_RESPONSE)
+	ENUMSTR(WARDEN_WAITING_DOWNLOAD_END)
+	ENUMSTR(WARDEN_SEND_REQUEST)
+	ENUMSTR(WARDEN_RECEIVE_CHECK)
+	ENUMSTR(WARDEN_NOTHING)
 	}
 	return "WARDEN_UNKNOWN";
+#undef ENUMSTR
 }
 
 void Warden::loop()

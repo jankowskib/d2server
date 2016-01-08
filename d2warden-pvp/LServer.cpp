@@ -1,9 +1,8 @@
 /* ==========================================================
 * d2warden
-* https://bitbucket.org/lolet/d2warden
+* https://github.com/lolet/d2warden
 * ==========================================================
-*			Copyright 2008 marsgod
-*			 2011-2015 Bartosz Jankowski
+* Copyright 2011-2013 Bartosz Jankowski
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,32 +17,25 @@
 * limitations under the License.
 * ========================================================== */
 
-
 #include "stdafx.h"
+#include "LServer.h"
 
 
-/**
-	Executed after all standard events are parsed
-	Warning: The server is now inside the critical section (pGame->pLock) !
-*/
-void __stdcall MainLoop(Game *pGame)
-{
-	if (pGame->GameFrame % 25 && !Warden::getInstance().empty())
-		Warden::getInstance().loop();
-}
+namespace LServer {
+	
 
-void __declspec(naked) MainLoop_ASM()
-{
-	__asm
-	{
+	/*
+		Patch no 18 <- not needed
+		Patch location: D2GAME.0xD53C6
+		Original code: call		ParseIncomingPacket_6FC873A0
+		New code:	   call		D2GS_OnPacketRecv_STUB
+	*/
+	/*
+		Patch no 19 <- not needed
+		Patch location D2GAME.0xBFEEF
+		Original code: call		GAME_ParseCreatePackets_6FCF53E0
+		New code:      call		D2GS_ParseCreatePackets_STUB
+	*/
 
-		push esi // pGame
 
-		call MainLoop
-
-		pop edi
-		pop ebx
-		pop esi
-		retn
-	}
 }

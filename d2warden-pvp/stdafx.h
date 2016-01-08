@@ -62,15 +62,14 @@
 #endif
 
 #include "D2Stubs.h"
-#include "Vars.h"
 
 #include "Misc.h"
 #include "Warden.h"
 #include "WardenClient.h"
 #include "Offset.h"
 
-#define ASSERT(e) if (e == 0) {LogNoLock("Critical error in line %d, file '%s' , function: '%s'm eip 0x%X.",__LINE__,__FILE__,__FUNCTION__,GetEIP()); exit(-1); }
-#define D2ERROR(s) { LogNoLock("Critical error '%s' in line %d, file '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
+#define ASSERT(e) if (e == 0) {Log("Critical error in line %d, file '%s' , function: '%s'm eip 0x%X.",__LINE__,__FILE__,__FUNCTION__,GetEIP()); exit(-1); }
+#define D2ERROR(s) { Log("Critical error '%s' in line %d, file '%s' , function: '%s'.",s,__LINE__,__FILE__,__FUNCTION__); exit(-1); }
 
 #ifdef _DEBUG
 #define DEBUGMSG(s,...) Debug(__FUNCTION__, s, ##__VA_ARGS__);

@@ -73,7 +73,6 @@ void DebugNoEnter(const char * szFunction, char *format, ...);
 void DebugFinishEnter(char *format, ...);
 
 void Log(char *format,...);
-void LogNoLock(char *format,...);
 void LogToFile(char *FileName, bool PutTime, char *format,...);
 void LogError(unsigned char log_level_in,char *format,...);
 void LogMsg(char * GameName, char *format,...);

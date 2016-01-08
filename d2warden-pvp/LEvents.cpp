@@ -51,13 +51,13 @@ void EVENTS_SendAccountInfo(ClientData * pClient)
 
 void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 {
-	WardenClient_i client = gWarden->findClientById(pClient->ClientID);
-	if (client != gWarden->getInvalidClient())
+	WardenClient_i client = Warden::getInstance().findClientById(pClient->ClientID);
+	if (client != Warden::getInstance().getInvalidClient())
 	{
 		DEBUGMSG("NEWCLIENT: Setup for '%s' !", pClient->CharName);
 		client->setup(pGame, pClient);
 
-		if (client->bNeedUpdate && !gWarden->wcfgUpdateURL.empty())
+		if (client->bNeedUpdate && !Warden::getInstance().wcfgUpdateURL.empty())
 		{
 			SendMsgToClient(pClient, "Trying to download patch....");
 			ExEventDownload pEvent;
@@ -65,7 +65,7 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 			pEvent.P_A6 = 0xA6;
 			pEvent.MsgType = EXEVENT_DOWNLOAD;
 			pEvent.bExec = 1;
-			strcpy_s(pEvent.szURL, 255, gWarden->wcfgUpdateURL.c_str());
+			strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgUpdateURL.c_str());
 			if (pEvent.szURL[0])
 				pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 			else
@@ -82,17 +82,19 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 		return;
 	}
 
-	ExEventDownload pEvent;
-	pEvent.P_A6 = 0xA6;
-	pEvent.bExec = 0;
-	pEvent.MsgType = EXEVENT_DOWNLOAD;
-	strcpy_s(pEvent.szURL, 255, gWarden->wcfgClansURL.c_str());
-	if (pEvent.szURL[0])
-		pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
-	else
-		pEvent.PacketLen = 15;
-	D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
-
+	// Download the clan list only if URL isn't empty
+	if (!Warden::getInstance().wcfgClansURL.empty()) {
+		ExEventDownload pEvent;
+		pEvent.P_A6 = 0xA6;
+		pEvent.bExec = 0;
+		pEvent.MsgType = EXEVENT_DOWNLOAD;
+		strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgClansURL.c_str());
+		if (pEvent.szURL[0])
+			pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
+		else
+			pEvent.PacketLen = 15;
+		D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
+	}
 
 	if (strlen(pGame->GameDesc) > 0)
 	{
@@ -102,12 +104,12 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 		for (char * ret = strtok_s(tk, " -", &nt); ret; ret = strtok_s(NULL, " -", &nt))
 		{
 			if (_strnicmp(ret, "ffa", 3) == 0) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!"); continue; }
-			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && gWarden->wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
+			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && Warden::getInstance().wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
 			if (_strnicmp(ret, "t", 1) == 0 && strlen(ret) == 1) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue; }
 		}
 	}
 
-	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !gWarden->wcfgSpectator);
+	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !Warden::getInstance().wcfgSpectator);
 
 	EVENTS_SendAccountInfo(pClient);
 
@@ -147,7 +149,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	}
 
 	ptVictim->pPlayerData->tDeathTime = GetTickCount();
-	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, gWarden->wcfgRespawnTimer);
+	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, Warden::getInstance().wcfgRespawnTimer);
 
 	SPECTATOR_RemoveFromQueue(ptGame, ptVictim->dwUnitId);
 
@@ -308,14 +310,14 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 		{
 
 			DEBUGMSG("[REMOVECLIENT] Removing (*%s) %s from WardenQueue", pEvent->Name2, pEvent->Name1);
-			WardenClient_i pWardenClient = gWarden->findClientByName(pEvent->Name1);
-			if(pWardenClient == gWarden->getInvalidClient()) 
+			WardenClient_i pWardenClient = Warden::getInstance().findClientByName(pEvent->Name1);
+			if(pWardenClient == Warden::getInstance().getInvalidClient()) 
 			{
 				DEBUGMSG("[REMOVECLIENT] Failed to find WardenClient!");
 				return;
 			}
 			SPECTATOR_RemoveFromQueue(pGame, pWardenClient->ptClientData->UnitId);
-			gWarden->onRemoveClient(pWardenClient);
+			Warden::getInstance().onRemoveClient(pWardenClient);
 
 		}
 		break;

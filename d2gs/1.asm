@@ -315,17 +315,18 @@ MyPatchInit proc
 	mov [eax],ecx
 	
 ; setup D2GAME CallBack Hook before D2GSPreInit!
-	mov ecx, D2GS_OnPacketRecv_OFF
-	mov eax,[ecx]
-	mov D2GS_OnPacketRecv_OLD,eax
-	mov eax,offset D2GS_OnPacketRecv_STUB
-	mov [ecx],eax
+; 07.01.2015 <- handled by d2warden
+;	mov ecx, D2GS_OnPacketRecv_OFF
+;	mov eax,[ecx]
+;	mov D2GS_OnPacketRecv_OLD,eax
+;	mov eax,offset D2GS_OnPacketRecv_STUB
+;	mov [ecx],eax
 	
-	mov ecx, D2GS_OnCreatePacket_OFF
-	mov eax,[ecx]
-	mov D2GS_OnCreatePacket_ORG,eax
-	mov eax,offset D2GS_OnCreatePacket_STUB
-	mov [ecx],eax
+;	mov ecx, D2GS_OnCreatePacket_OFF
+;	mov eax,[ecx]
+;	mov D2GS_OnCreatePacket_ORG,eax
+;	mov eax,offset D2GS_OnCreatePacket_STUB
+;	mov [ecx],eax
 	
 	mov ecx, D2GS_SaveChar_OFF
 	mov eax,[ecx]

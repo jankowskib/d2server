@@ -22,9 +22,12 @@
 #define __WARDENCLIENT_H__
 
 #include <string>
+#include <memory>
 #include "CommonStructs.h"
 #include "Windows.h"
+#include <list>
 
+enum WardenStatus;
 
 struct WardenPacket
 {
@@ -41,6 +44,8 @@ class WardenClient
 {
 public:
 	WardenClient(DWORD ClientId, DWORD sessionKey);
+	WardenClient& operator=(const WardenClient&) = default;
+	WardenClient(const WardenClient&) = default;
 	~WardenClient();
 	void setup(Game* pGame, ClientData* pClient);
 	void removePacket();
@@ -103,6 +108,11 @@ public:
 	BYTE VerCode;
 	bool bNeedUpdate;
 	bool ready;
+
+private:
+	WardenClient() = delete;
 };
+
+typedef std::list<WardenClient>::iterator WardenClient_i;
 
 #endif

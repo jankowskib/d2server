@@ -31,20 +31,20 @@ bool WE_isKey(UnitAny* ptItem)
 
 	for(int i = 0; i<20; i++)
 	{
-		if(gWarden->WItem.ItemCode[i] == 0) return false;
+		if(Warden::getInstance().WItem.ItemCode[i] == 0) return false;
 
 		//Log("ICode %s",TransCode(WItem.ItemCode[i]));
-		if (iCode == gWarden->WItem.ItemCode[i])
+		if (iCode == Warden::getInstance().WItem.ItemCode[i])
 			{
 				for(int q = 0; q<7; q++)
 				{
-					if (gWarden->WItem.ItemQuality[q] == -1) break;
+					if (Warden::getInstance().WItem.ItemQuality[q] == -1) break;
 			//		Log("IQuality %d",WItem.ItemQuality[q]);
-					if (gWarden->WItem.ItemQuality[q] == 0)
+					if (Warden::getInstance().WItem.ItemQuality[q] == 0)
 					{
-						gWarden->SellCount++;
-						WE_UpdateCounter(gWarden->SellCount);
-						if (gWarden->SellCount % gWarden->InfoDelay == 0)
+						Warden::getInstance().SellCount++;
+						WE_UpdateCounter(Warden::getInstance().SellCount);
+						if (Warden::getInstance().SellCount % Warden::getInstance().InfoDelay == 0)
 							WE_Inform(ptItem->pGame);
 
 						return true;
@@ -52,22 +52,22 @@ bool WE_isKey(UnitAny* ptItem)
 					for(int x = 0; x<20 ; x++)
 					{
 				//		Log("Idx %d",WItem.FileIdx[x]);
-						if (ptItem->pItemData->QualityNo == gWarden->WItem.ItemQuality[q] && gWarden->WItem.FileIdx[x] == -1)
+						if (ptItem->pItemData->QualityNo == Warden::getInstance().WItem.ItemQuality[q] && Warden::getInstance().WItem.FileIdx[x] == -1)
 						{
-							gWarden->SellCount++;
-							WE_UpdateCounter(gWarden->SellCount);
-							if (gWarden->SellCount % gWarden->InfoDelay == 0) 
+							Warden::getInstance().SellCount++;
+							WE_UpdateCounter(Warden::getInstance().SellCount);
+							if (Warden::getInstance().SellCount % Warden::getInstance().InfoDelay == 0) 
 								WE_Inform(ptItem->pGame);
 
 							return true;
 						}
-					if (gWarden->WItem.FileIdx[x] == -1)
+					if (Warden::getInstance().WItem.FileIdx[x] == -1)
 						break;
-					if (ptItem->pItemData->QualityNo == gWarden->WItem.ItemQuality[q] && gWarden->WItem.FileIdx[x] == ptItem->pItemData->FileIndex)
+					if (ptItem->pItemData->QualityNo == Warden::getInstance().WItem.ItemQuality[q] && Warden::getInstance().WItem.FileIdx[x] == ptItem->pItemData->FileIndex)
 					{
-						gWarden->SellCount++;
-						WE_UpdateCounter(gWarden->SellCount);
-						if (gWarden->SellCount % gWarden->InfoDelay == 0) 
+						Warden::getInstance().SellCount++;
+						WE_UpdateCounter(Warden::getInstance().SellCount);
+						if (Warden::getInstance().SellCount % Warden::getInstance().InfoDelay == 0) 
 							WE_Inform(ptItem->pGame);
 
 						return true;
@@ -85,15 +85,15 @@ void WE_GenerateNextDC()
 {
 	static boost::mt19937 rng;
 	rng.seed(static_cast<unsigned> (std::time(0)));
-	boost::uniform_int<int> dist(gWarden->MinSell, gWarden->MaxSell);
+	boost::uniform_int<int> dist(Warden::getInstance().MinSell, Warden::getInstance().MaxSell);
 	boost::variate_generator<boost::mt19937&, boost::uniform_int<int>>random(rng, dist);
 
-	int NxtDC = gWarden->NextDC + random();
+	int NxtDC = Warden::getInstance().NextDC + random();
 
 	std::ostringstream str;
 	str << NxtDC;
-	gWarden->NextDC = NxtDC;
-	WritePrivateProfileString("World Event", "NextDC", str.str().c_str(), gWarden->wcfgConfigFile.c_str());
+	Warden::getInstance().NextDC = NxtDC;
+	WritePrivateProfileString("World Event", "NextDC", str.str().c_str(), Warden::getInstance().wcfgConfigFile.c_str());
 }
 
 void WE_CreateDCKey(UnitAny* pUnit)
@@ -167,7 +167,7 @@ void WE_UpdateCounter(int Value)
 {
 	std::ostringstream str;
 	str << Value;
-	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(), gWarden->wcfgConfigFile.c_str());
+	WritePrivateProfileString("World Event", "SellCount", str.str().c_str(), Warden::getInstance().wcfgConfigFile.c_str());
 }
 
 
@@ -179,7 +179,7 @@ void WE_Inform(Game* ptGame)
 		aPacket.P_5A=0x5A;
 		aPacket.Color=9;
 		aPacket.MsgType=17;
-		*(DWORD*)&aPacket.Param1 = gWarden->SellCount;
+		*(DWORD*)&aPacket.Param1 = Warden::getInstance().SellCount;
 
 		BroadcastPacket(ptGame,(BYTE*)&aPacket, 40);
 }

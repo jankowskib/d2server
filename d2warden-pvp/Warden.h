@@ -24,13 +24,9 @@
 #include <list>
 #include <string>
 #include <boost/random.hpp>
+#include "WardenClient.h"
 
 using namespace std;
-
-class WardenClient;
-extern void PatchD2(Warden* pWarden);
-
-typedef list<WardenClient>::iterator WardenClient_i;
 
 enum WardenStatus
 {
@@ -47,8 +43,15 @@ enum WardenStatus
 class Warden
 {
 public:
-	Warden(DWORD timestamp);
+	Warden();
 	~Warden();
+
+
+	static Warden& getInstance()
+	{
+		static Warden warden;
+		return warden;
+	}
 
 	DWORD uploadModule(DWORD ClientID, unsigned char *RC4_KEY, DWORD MOD_Position);
 	void loadConfig();
@@ -121,6 +124,9 @@ public:
 	WEItem WItem;
 
 private:
+
+	void patchD2();
+
 	char* getStatusMessage(WardenStatus status);
 
 	boost::mt19937 rng;
@@ -134,6 +140,9 @@ private:
 	unsigned char *moduleEncrypted;
 
 	list<WardenClient> clients;
+
+	Warden(const Warden&);
+	Warden& operator=(const Warden&);
 };
 
 #endif

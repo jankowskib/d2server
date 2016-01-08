@@ -36,6 +36,12 @@
     <Filter Include="Header Files\1.13d">
       <UniqueIdentifier>{45f963ff-b898-4159-8b51-8c0da251d11c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Server">
+      <UniqueIdentifier>{4c71baf8-1eda-40fc-81f2-8044c323f9a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Server">
+      <UniqueIdentifier>{60e0b5f4-5626-41af-a103-2815e56ca6c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp">
@@ -77,9 +83,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Vars.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LSpectator.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
@@ -119,6 +122,9 @@
     <ClCompile Include="LegacyFuncs.cpp">
       <Filter>Source Files\ModuLes</Filter>
     </ClCompile>
+    <ClCompile Include="LServer.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -128,9 +134,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StatDumpThread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Build.h">
@@ -237,6 +240,9 @@
     </ClInclude>
     <ClInclude Include="LegacyFuncs.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LServer.h">
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -82,7 +82,7 @@ namespace D2Stubs
 		}
 
 		Log("======== Dump of new nodes ======");
-		for (int i = 0; i < gWarden->wcfgMaxPlayers + 2; ++i)
+		for (int i = 0; i < Warden::getInstance().wcfgMaxPlayers + 2; ++i)
 		{
 			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
 		}
