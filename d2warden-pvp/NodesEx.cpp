@@ -57,7 +57,7 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 			}
 			else
 			{
-				Log("NodesEX: nClients=%d <= Warden::getInstance(__FUNCTION__).wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers, n, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers);
+				Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers, n, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers);
 			}
 			break;
 		}
@@ -246,7 +246,7 @@ void __fastcall NODES_Free(Game *ptGame)
 
 	UnitNode** pNodes = ptGame->pNewNodes;
 
-	for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3; ++i)
+	for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 2; ++i)
 	{
 		if (pNodes[i])
 		{
@@ -351,7 +351,7 @@ __declspec(naked) UnitAny *__stdcall NODES_NormalCheck(Game *ptGame, UnitAny *pt
 			CMP ESI, EBX
 			JE L090
 			MOV EAX, DWORD PTR DS : [ESI + 0x10]
-			CMP EAX, 0x11
+			CMP EAX, 0x11 // PLAYER_MODE_DEAD
 			JE L090
 			CMP EAX, EBX
 			JE L090
