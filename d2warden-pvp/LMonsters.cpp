@@ -76,8 +76,8 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 	}
 	if(_stricmp(str,"#mspawn")==0)
 	{
-		WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
-		if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
+		WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientById(ClientID);
+		if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) return TRUE;
 
 		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
@@ -101,8 +101,8 @@ bool ParseMonCmds(UnitAny* pUnit, char* str, char *t)
 		str = strtok_s(NULL," ",&t);
 		if(str)
 		{
-			WardenClient_i psUnit = Warden::getInstance().findClientByName(str);
-			if (psUnit != Warden::getInstance().getInvalidClient())
+			WardenClient_i psUnit = Warden::getInstance(__FUNCTION__).findClientByName(str);
+			if (psUnit != Warden::getInstance(__FUNCTION__).getInvalidClient())
 			{
 			SendMsgToClient(pUnit->pPlayerData->pClientData,"Spawning monster on %s", psUnit->CharName);
 			aRoom = psUnit->ptPlayer->pPath->pRoom1;

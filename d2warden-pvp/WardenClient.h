@@ -37,7 +37,7 @@ struct WardenPacket
 	//#endif
 	DWORD ClientID;
 	DWORD PacketLen;
-	BYTE *ThePacket;
+	BYTE ThePacket[512];
 };
 
 class WardenClient
@@ -78,7 +78,7 @@ public:
 	BYTE NewPatch;
 	BYTE DebugTrick;
 
-	WardenPacket pWardenPacket;
+	WardenPacket wardenPacket;
 	DWORD MOD_Position;
 
 	unsigned char RC4_KEY_0X66[258];

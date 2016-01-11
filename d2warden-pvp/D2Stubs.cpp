@@ -82,7 +82,7 @@ namespace D2Stubs
 		}
 
 		Log("======== Dump of new nodes ======");
-		for (int i = 0; i < Warden::getInstance().wcfgMaxPlayers + 2; ++i)
+		for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 2; ++i)
 		{
 			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
 		}
@@ -1738,7 +1738,7 @@ namespace D2ASMFuncs
 		}
 		while (ptUnit->dwUnitId != dwUnitId)
 		{
-			ptUnit = ptUnit->pRoomNext; // mby pListNext
+			ptUnit = ptUnit->pListPrev;
 			if (!ptUnit) return 0;
 		}
 		return ptUnit;

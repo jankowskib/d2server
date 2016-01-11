@@ -42,6 +42,12 @@
     <Filter Include="Header Files\Server">
       <UniqueIdentifier>{60e0b5f4-5626-41af-a103-2815e56ca6c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_LIBS">
+      <UniqueIdentifier>{390447ff-de8e-430e-8ef5-4caf7c2f0111}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_LIBS\inih">
+      <UniqueIdentifier>{40f43865-6e13-46a9-a788-892a33610804}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp">
@@ -124,6 +130,12 @@
     </ClCompile>
     <ClCompile Include="LServer.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="inih\ini.c">
+      <Filter>_LIBS\inih</Filter>
+    </ClCompile>
+    <ClCompile Include="inih\cpp\INIReader.cpp">
+      <Filter>_LIBS\inih</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +255,12 @@
     </ClInclude>
     <ClInclude Include="LServer.h">
       <Filter>Header Files\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="inih\ini.h">
+      <Filter>_LIBS\inih</Filter>
+    </ClInclude>
+    <ClInclude Include="inih\cpp\INIReader.h">
+      <Filter>_LIBS\inih</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

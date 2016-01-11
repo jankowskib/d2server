@@ -23,6 +23,69 @@
 #include "LRoster.h"
 #include "LSpectator.h"
 
+/*
+	Sends all current clients clan info in the game to one pClient
+*/
+void EVENTS_SendClanInfo(ClientData * pClient)
+{
+	if (!Warden::getInstance(__FUNCTION__).clansAvailable) {
+		DEBUGMSG("Clans not available - skipping")
+		return;;
+	}
+	ASSERT(pClient)
+
+	ExEventClanInfo hEvent;
+	hEvent.MsgType = EXEVENT_CLAN_INFO;
+	hEvent.P_A6 = 0xA6;
+	hEvent.PacketLen = sizeof(ExEventClanInfo);
+	for (ClientData* pClientList = pClient->pGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
+	{
+		if (!(pClientList->InitStatus & 4))
+			continue;
+
+		string clan = Warden::getInstance(__FUNCTION__).wcfgClans.Get("D2ExClans", pClient->AccountName, "");
+		if (clan.empty())
+			continue;
+
+		hEvent.UnitId = pClientList->pPlayerUnit->dwUnitId;
+		strcpy_s<5>(hEvent.szClan, clan.substr(0, 4).c_str());
+		D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, sizeof(ExEventClanInfo));
+	}
+
+}
+
+/*
+	Sends a pClient clan info to all clients
+*/
+void EVENTS_BroadcastClanInfo(ClientData * pClient)
+{
+	if (!Warden::getInstance(__FUNCTION__).clansAvailable) {
+		DEBUGMSG("Clans not available - skipping")
+		return;
+	}
+	ASSERT(pClient)
+	string clan = Warden::getInstance(__FUNCTION__).wcfgClans.Get("D2ExClans", pClient->AccountName, "");
+
+	// If no info then stop
+	if (clan.empty())
+		return;
+
+	ExEventClanInfo hEvent;
+	hEvent.MsgType = EXEVENT_CLAN_INFO;
+	hEvent.P_A6 = 0xA6;
+	hEvent.UnitId = pClient->pPlayerUnit->dwUnitId;
+	strcpy_s<5>(hEvent.szClan, clan.substr(0, 4).c_str());
+	hEvent.PacketLen = sizeof(ExEventClanInfo);
+
+	for (ClientData* pClientList = pClient->pGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
+	{
+		if (!(pClientList->InitStatus & 4))
+			continue;
+
+		D2ASMFuncs::D2GAME_SendPacket(pClientList, (BYTE*)&hEvent, sizeof(ExEventClanInfo));
+	}
+
+}
 void EVENTS_SendAccountInfo(ClientData * pClient)
 {
 	ASSERT(pClient)
@@ -42,22 +105,23 @@ void EVENTS_SendAccountInfo(ClientData * pClient)
 		if (pClientList == pClient)
 			continue;
 
-		hEvent.UnitId = pClientList->UnitId;
+		hEvent.UnitId = pClientList->pPlayerUnit->dwUnitId;
 		strcpy_s<16>(hEvent.szAccount, pClientList->AccountName);
 		D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&hEvent, sizeof(ExEventAccountInfo));
 	}
 
 }
 
+
 void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 {
-	WardenClient_i client = Warden::getInstance().findClientById(pClient->ClientID);
-	if (client != Warden::getInstance().getInvalidClient())
+	WardenClient_i client = Warden::getInstance(__FUNCTION__).findClientById(pClient->ClientID);
+	if (client != Warden::getInstance(__FUNCTION__).getInvalidClient())
 	{
 		DEBUGMSG("NEWCLIENT: Setup for '%s' !", pClient->CharName);
 		client->setup(pGame, pClient);
 
-		if (client->bNeedUpdate && !Warden::getInstance().wcfgUpdateURL.empty())
+		if (client->bNeedUpdate && !Warden::getInstance(__FUNCTION__).wcfgUpdateURL.empty())
 		{
 			SendMsgToClient(pClient, "Trying to download patch....");
 			ExEventDownload pEvent;
@@ -65,7 +129,7 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 			pEvent.P_A6 = 0xA6;
 			pEvent.MsgType = EXEVENT_DOWNLOAD;
 			pEvent.bExec = 1;
-			strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgUpdateURL.c_str());
+			strcpy_s(pEvent.szURL, 255, Warden::getInstance(__FUNCTION__).wcfgUpdateURL.c_str());
 			if (pEvent.szURL[0])
 				pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 			else
@@ -82,20 +146,6 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 		return;
 	}
 
-	// Download the clan list only if URL isn't empty
-	if (!Warden::getInstance().wcfgClansURL.empty()) {
-		ExEventDownload pEvent;
-		pEvent.P_A6 = 0xA6;
-		pEvent.bExec = 0;
-		pEvent.MsgType = EXEVENT_DOWNLOAD;
-		strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgClansURL.c_str());
-		if (pEvent.szURL[0])
-			pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
-		else
-			pEvent.PacketLen = 15;
-		D2ASMFuncs::D2GAME_SendPacket(pClient, (BYTE*)&pEvent, pEvent.PacketLen);
-	}
-
 	if (strlen(pGame->GameDesc) > 0)
 	{
 		char tk[32];
@@ -104,14 +154,16 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 		for (char * ret = strtok_s(tk, " -", &nt); ret; ret = strtok_s(NULL, " -", &nt))
 		{
 			if (_strnicmp(ret, "ffa", 3) == 0) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Tryb FFA jest w³¹czony na tej grze!" : "Free For All Mode Is Enabled!"); continue; }
-			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && Warden::getInstance().wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
+			if (_strnicmp(ret, "m", 1) == 0 && strlen(ret) > 1 && Warden::getInstance(__FUNCTION__).wcfgAllowTourMode) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "Ustawiono identyfikator mapy na '%d'" : "Custom Map Id : '%d'", atoi(ret + 1)); continue; }
 			if (_strnicmp(ret, "t", 1) == 0 && strlen(ret) == 1) { SendMsgToClient(pClient, pClient->LocaleID == 10 ? "ÿc;Tryb turniejowy!" : "ÿc;Tournament Mode!"); continue; }
 		}
 	}
 
-	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !Warden::getInstance().wcfgSpectator);
+	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !Warden::getInstance(__FUNCTION__).wcfgSpectator);
+	SendExEvent(pClient, EXOP_SET_MAX_PLAYERS, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers);
 
 	EVENTS_SendAccountInfo(pClient);
+	EVENTS_SendClanInfo(pClient);
 
 }
 
@@ -149,7 +201,7 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	}
 
 	ptVictim->pPlayerData->tDeathTime = GetTickCount();
-	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, Warden::getInstance().wcfgRespawnTimer);
+	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, Warden::getInstance(__FUNCTION__).wcfgRespawnTimer);
 
 	SPECTATOR_RemoveFromQueue(ptGame, ptVictim->dwUnitId);
 
@@ -295,6 +347,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 			if (pRoster && pClient->pPlayerUnit) {
 				LRoster::SyncClient(pGame, pClient->pPlayerUnit->dwUnitId, pRoster);
 			}
+			EVENTS_BroadcastClanInfo(pClient);
 		}
 		else {
 			Log("OnGameJoin: Didn't find a unit!! report to lolet pls");
@@ -305,19 +358,20 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 	switch(pEvent->MsgType)
 	{
 		case EVENT_TIMEOUT:
+			DEBUGMSG("EVENT_TIMEOUT")
 		case EVENT_LEFT: 
 		case EVENT_DROPPED:
 		{
 
 			DEBUGMSG("[REMOVECLIENT] Removing (*%s) %s from WardenQueue", pEvent->Name2, pEvent->Name1);
-			WardenClient_i pWardenClient = Warden::getInstance().findClientByName(pEvent->Name1);
-			if(pWardenClient == Warden::getInstance().getInvalidClient()) 
+			WardenClient_i pWardenClient = Warden::getInstance(__FUNCTION__).findClientByName(pEvent->Name1);
+			if(pWardenClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) 
 			{
 				DEBUGMSG("[REMOVECLIENT] Failed to find WardenClient!");
 				return;
 			}
 			SPECTATOR_RemoveFromQueue(pGame, pWardenClient->ptClientData->UnitId);
-			Warden::getInstance().onRemoveClient(pWardenClient);
+			Warden::getInstance(__FUNCTION__).onRemoveClient(pWardenClient);
 
 		}
 		break;

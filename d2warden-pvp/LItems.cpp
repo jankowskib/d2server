@@ -43,7 +43,7 @@ bool FG_WaitForMySQLServer(unsigned int msTimeout)
 
 	do {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance().wcfgDBUser, Warden::getInstance().wcfgDBPass, Warden::getInstance().wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance(__FUNCTION__).wcfgDBUser, Warden::getInstance(__FUNCTION__).wcfgDBPass, Warden::getInstance(__FUNCTION__).wcfgDatabase);
 			return true;
 		}
 		catch (SQLException& e) {
@@ -86,7 +86,7 @@ int FG_GetGoldByAccount(string szAccount)
 
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance().wcfgDBUser, Warden::getInstance().wcfgDBPass, Warden::getInstance().wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance(__FUNCTION__).wcfgDBUser, Warden::getInstance(__FUNCTION__).wcfgDBPass, Warden::getInstance(__FUNCTION__).wcfgDatabase);
 		} catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
 			return 0;
@@ -120,7 +120,7 @@ bool FG_BuyItem(string szAccount, int nValue)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance().wcfgDBUser, Warden::getInstance().wcfgDBPass, Warden::getInstance().wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance(__FUNCTION__).wcfgDBUser, Warden::getInstance(__FUNCTION__).wcfgDBPass, Warden::getInstance(__FUNCTION__).wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -164,7 +164,7 @@ bool FG_RollbackCost(string szAccount, int nCost)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance().wcfgDBUser, Warden::getInstance().wcfgDBPass, Warden::getInstance().wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance(__FUNCTION__).wcfgDBUser, Warden::getInstance(__FUNCTION__).wcfgDBPass, Warden::getInstance(__FUNCTION__).wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -193,7 +193,7 @@ bool FG_SetValue(string szAccount, int nValue)
 {
 	if (!gCon || gCon->isClosed()) {
 		try {
-			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance().wcfgDBUser, Warden::getInstance().wcfgDBPass, Warden::getInstance().wcfgDatabase);
+			FG_ConnectToSQL("tcp://127.0.0.1:3306", Warden::getInstance(__FUNCTION__).wcfgDBUser, Warden::getInstance(__FUNCTION__).wcfgDBPass, Warden::getInstance(__FUNCTION__).wcfgDatabase);
 		}
 		catch (SQLException& e) {
 			Log("Failed to reconnect to MySQL server (%d): %s", e.getErrorCode(), e.what());
@@ -489,17 +489,17 @@ __fastcall
 #endif
 ITEMS_AddKillerId(Game *pGame, PresetItem *srCreateItem, int a5)
 {
-	if (Warden::getInstance().wcfgAutoIdentify)
+	if (Warden::getInstance(__FUNCTION__).wcfgAutoIdentify)
 	{
 		srCreateItem->dwItemFlags.bIdentified = 1;
 		srCreateItem->dwItemFlags.bRepaired = 1;
 	}
 
 	UnitAny* ptItem = D2Funcs.D2GAME_CreateItemEx(pGame, srCreateItem, 0);
-	if (Warden::getInstance().wcfgAutoIdentify)
+	if (Warden::getInstance(__FUNCTION__).wcfgAutoIdentify)
 		D2Funcs.D2COMMON_SetItemFlag(ptItem, ITEMFLAG_IDENTIFIED, 1);
 
-	if (Warden::getInstance().wcfgAddKillerClass)
+	if (Warden::getInstance(__FUNCTION__).wcfgAddKillerClass)
 	{
 		if (ptItem)
 		{
@@ -600,8 +600,8 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 		UnitAny* ptItem = D2Funcs.D2COMMON_GetCursorItem(pUnit->pInventory);
 		if (!ptItem) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Put Item On The Cursor!");  return false; }
 
-		WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
-		if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
+		WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientById(ClientID);
+		if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) return TRUE;
 
 		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
@@ -621,8 +621,8 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 		UnitAny* ptItem = D2Funcs.D2COMMON_GetCursorItem(pUnit->pInventory);
 		if (!ptItem) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Put Item On The Cursor!");  return false; }
 
-		WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
-		if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
+		WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientById(ClientID);
+		if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) return TRUE;
 
 		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
@@ -652,8 +652,8 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 	}
 	if (_stricmp(str, "#irem") == 0)
 	{
-		WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
-		if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
+		WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientById(ClientID);
+		if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) return TRUE;
 
 		if (!isAnAdmin(ptCurrentClient->AccountName)) { return TRUE; }
 
@@ -661,9 +661,9 @@ bool ParseItemsCmds(UnitAny* pUnit, char* str, char *t)
 
 		if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#irem <charname> <itemcode> <itemquality>"); return false; }
 
-		WardenClient_i ptFound = Warden::getInstance().findClientByName(str);
+		WardenClient_i ptFound = Warden::getInstance(__FUNCTION__).findClientByName(str);
 
-		if (ptFound == Warden::getInstance().getInvalidClient())  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't in game"); return false; }
+		if (ptFound == Warden::getInstance(__FUNCTION__).getInvalidClient())  { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't in game"); return false; }
 		if (!ptFound->ptPlayer) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player isn't inited"); return false; }
 
 		char * code = strtok_s(NULL, " ", &t);

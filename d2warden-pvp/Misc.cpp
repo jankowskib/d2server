@@ -66,7 +66,7 @@ bool isAnAdmin(std::string szAcc)
 {
  boost::to_lower(szAcc);
 
- for (const auto i : Warden::getInstance().wcfgAdmins)
+ for (const auto &i : Warden::getInstance(__FUNCTION__).wcfgAdmins)
 	 if (szAcc == i) 
 		 return true;
 
@@ -220,7 +220,8 @@ void UpdateStats(UnitAny* ptUnit, int StatNo, int StatValue)
 ClientData * pClientList = ptUnit->pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus==4) D2Funcs.D2GAME_UpdatePlayerStats(ptUnit,StatNo,StatValue,pClientList->pPlayerUnit);
+	if(pClientList->ClientID!=ptUnit->pPlayerData->pClientData->ClientID && pClientList->InitStatus & 4)
+		D2Funcs.D2GAME_UpdatePlayerStats(ptUnit,StatNo,StatValue,pClientList->pPlayerUnit);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}

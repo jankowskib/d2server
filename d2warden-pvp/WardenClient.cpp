@@ -47,7 +47,7 @@ WardenClient::WardenClient(DWORD ClientId, DWORD sessionKey)
 	ptClientData = 0;
 
 	ClientLogonTime = 0;
-	NextCheckTime = 0;
+	NextCheckTime = GetTickCount() + 2000;
 
 	WardenStatus = WARDEN_START;
 	CheckCounter = 0;
@@ -55,7 +55,8 @@ WardenClient::WardenClient(DWORD ClientId, DWORD sessionKey)
 	NewPatch = 0;
 	DebugTrick = 0;
 
-	memset(&pWardenPacket, 0, sizeof(WardenPacket));
+	wardenPacket = { 0 };
+
 	MOD_Position = 0;
 
 
@@ -106,14 +107,10 @@ void WardenClient::setup(Game* pGame, ClientData* pClient)
 
 void WardenClient::removePacket()
 {
-	if (pWardenPacket.ThePacket)
-	{
-		delete[] pWardenPacket.ThePacket;
-		pWardenPacket.PacketLen = 0;
-		pWardenPacket.ReceiveTime = 0;
-		pWardenPacket.ThePacket = 0;
-		pWardenPacket.ClientID = 0;
-	}
+	wardenPacket.PacketLen = 0;
+	wardenPacket.ReceiveTime = 0;
+	wardenPacket.ClientID = 0;
+	memset(wardenPacket.ThePacket, 0, 512);
 }
 
 

@@ -19,6 +19,7 @@
 * ========================================================== */
 
 #include "stdafx.h"
+
 #include "Warden.h"
 #include "WardenClient.h"
 #include "WardenChecks.h"
@@ -27,7 +28,7 @@
 
 #include "LWorldEvent.h"
 
-Warden::Warden() : dist(300, 5000), random(rng, dist)
+Warden::Warden() : dist(300, 5000), random(rng, dist), wcfgClans("Clans.ini")
 {
 	const char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 	const BYTE RC4_Key[17] = "WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
@@ -170,6 +171,7 @@ DWORD Warden::uploadModule(DWORD ClientID, unsigned char *RC4_KEY, DWORD modOffs
 
 WardenClient_i Warden::findClientById(DWORD clientId)
 {
+
 	WardenClient_i ptWardenClient = clients.end();
 
 	for (WardenClient_i i = clients.begin(); i != clients.end(); ++i)
@@ -290,26 +292,19 @@ DWORD __fastcall Warden::onWardenPacketReceive(Game *pGame, UnitAny *pPlayer, BY
 			DEBUGMSG("The client isnt ready yet!")
 			return MSG_OK;
 		}
-		client->pWardenPacket.ReceiveTime = GetTickCount();
-		client->pWardenPacket.PacketLen = pPacket[2] * 256 + pPacket[1];
+		client->wardenPacket.ClientID = ClientID;
+		client->wardenPacket.ReceiveTime = GetTickCount();
+		client->wardenPacket.PacketLen = pPacket[2] * 256 + pPacket[1];
 
-		if (client->pWardenPacket.PacketLen == 0 || client->pWardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
+		if (client->wardenPacket.PacketLen == 0 || client->wardenPacket.PacketLen > 512) // Taka jest maksymalna wielkosc pakietu obslugiowanego przez d2
 		{
 			DEBUGMSG("WardenPacket: Packet size exceeds 512 bytes!");
 			return MSG_HACK;
 		}
 
-		BYTE *ThePacket = new BYTE[client->pWardenPacket.PacketLen];
-		if (!ThePacket)
-		{
-			Log("WardenPacket: No memory to allocate packet data!");
-			return MSG_HACK;
-		}
+		memcpy(client->wardenPacket.ThePacket, pPacket + 3, client->wardenPacket.PacketLen);
 
-		memcpy(ThePacket, pPacket + 3, client->pWardenPacket.PacketLen);
-		client->pWardenPacket.ThePacket = ThePacket;
-
-		rc4_crypt(client->RC4_KEY_0X66, client->pWardenPacket.ThePacket, client->pWardenPacket.PacketLen);
+		rc4_crypt(client->RC4_KEY_0X66, client->wardenPacket.ThePacket, client->wardenPacket.PacketLen);
 		client->NextCheckTime = GetTickCount();
 
 		return MSG_OK; // Wszystko OK!
@@ -343,6 +338,7 @@ DWORD __fastcall Warden::onJoinGame(PacketData *pPacket)
 		Log("Dropping connection with '%s', reason : No D2Ex2 installed.", packet->szCharName);
 		BootPlayer(pPacket->ClientID, BOOT_VERSION_MISMATCH);
 		return MSG_ERROR;
+
 	}
 	else if (!wcfgAllowVanilla && packet->VerByte < 13)
 	{
@@ -354,6 +350,18 @@ DWORD __fastcall Warden::onJoinGame(PacketData *pPacket)
 	DEBUGMSG("Added %s to WardenQueue", packet->szCharName);
 	clients.push_back(client);
 	return MSG_OK;
+}
+
+void Warden::reloadClans()
+{
+	wcfgClans = INIReader("Clans.ini");
+	if (wcfgClans.ParseError() < 0) {
+		Log("Failed to open Clans.ini!");
+		clansAvailable = false;
+	}
+	else {
+		clansAvailable = true;
+	}
 }
 
 void Warden::loadConfig()
@@ -400,14 +408,15 @@ void Warden::loadConfig()
 	wcfgAllowQuests = GetPrivateProfileInt("Warden", "AllowQuests", 1, wcfgConfigFile.c_str());
 	wcfgEnableLevelCmd = GetPrivateProfileInt("Warden", "EnableLevelCmd", 1, wcfgConfigFile.c_str());
 
-	GetPrivateProfileString("Warden", "ClanDataURL", "http://www.lolet.yoyo.pl/Clans.ini", URL, 255, wcfgConfigFile.c_str());
-	wcfgClansURL = URL;
 	GetPrivateProfileString("Warden", "UpdateURL", "", URL, 255, wcfgConfigFile.c_str());
 	wcfgUpdateURL = URL;
 
 	GetPrivateProfileString("Warden", "GSName", "N/A", URL, 255, wcfgConfigFile.c_str());
 	wcfgGSName = URL;
 	GetPrivateProfileString("Warden", "Admins", "LOLET", URL, 255, wcfgConfigFile.c_str());
+	
+	reloadClans();
+
 	tk = 0;
 	for (rt = strtok_s(URL, ", ", &tk); rt; rt = strtok_s(NULL, ", ", &tk))
 	{
@@ -516,8 +525,24 @@ void Warden::loop()
 	for (WardenClient_i pWardenClient = clients.begin(); pWardenClient != clients.end();)
 	{
 		DWORD CurrentTick = GetTickCount();
-		if ((pWardenClient->NextCheckTime > CurrentTick && pWardenClient->WardenStatus != WARDEN_NOTHING) || !pWardenClient->ready)
-		{
+		if (pWardenClient->NextCheckTime > CurrentTick)	{
+			++pWardenClient;
+			continue;
+		}
+
+		/*
+			Remove client if isn't ready in 10 sec - probably join failed
+		*/
+		if (!pWardenClient->ready && CurrentTick - pWardenClient->NextCheckTime > 10 * 1000) {
+			pWardenClient->removePacket();
+			DEBUGMSG("Removed client %d because of join failed", pWardenClient->ClientID)
+			pWardenClient = clients.erase(pWardenClient);
+			continue;
+		}
+
+		if (pWardenClient->ready && (!(pWardenClient->ptClientData->InitStatus & 4))){
+			DEBUGMSG("Waiting for status 4 for %s, currently its a %d", pWardenClient->AccountName, pWardenClient->ptClientData->InitStatus)
+			pWardenClient->NextCheckTime = CurrentTick + 200;
 			++pWardenClient;
 			continue;
 		}
@@ -541,7 +566,8 @@ void Warden::loop()
 
 			memcpy(WardenCMD0_local, &AE_Packet00[3], 37);
 			rc4_crypt(pWardenClient->RC4_KEY_0XAE, &AE_Packet00[3], 37);
-			D2Funcs.D2NET_SendPacket(0, pWardenClient->ClientID, AE_Packet00, sizeof(AE_Packet00));
+			//D2Funcs.D2NET_SendPacket(0, pWardenClient->ClientID, AE_Packet00, sizeof(AE_Packet00));
+			D2ASMFuncs::D2GAME_SendPacket(pWardenClient->ptClientData, AE_Packet00, sizeof(AE_Packet00));
 			memcpy(&AE_Packet00[3], WardenCMD0_local, 37);
 			pWardenClient->WardenStatus = WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT;
 			pWardenClient->NextCheckTime = CurrentTick + 500;
@@ -549,17 +575,17 @@ void Warden::loop()
 		break;
 		case WARDEN_CHECK_CLIENT_HAS_MOD_OR_NOT:
 		{
-			if (pWardenClient->pWardenPacket.ThePacket)
+			if (pWardenClient->wardenPacket.ClientID)
 			{
-				if (pWardenClient->pWardenPacket.PacketLen != 1)
+				if (pWardenClient->wardenPacket.PacketLen != 1)
 				{
 					pWardenClient->removePacket();
 					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 					pWardenClient->NextCheckTime = CurrentTick;
-					DEBUGMSG("Triggering check event because of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+					DEBUGMSG("Triggering check event because of pWardenClient->wardenPacket.PacketLen != 1 in CHECK_CLIENT ");
 					break;
 				}
-				if (pWardenClient->pWardenPacket.ThePacket[0] == 0)
+				if (pWardenClient->wardenPacket.ThePacket[0] == 0)
 				{
 					pWardenClient->removePacket();
 					pWardenClient->WardenStatus = WARDEN_DOWNLOAD_MOD;
@@ -567,7 +593,7 @@ void Warden::loop()
 					DEBUGMSG("Triggering check event becasue of WARDEN_DOWNLOAD_MOD in CHECK_CLIENT ");
 					break;
 				}
-				else if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
+				else if (pWardenClient->wardenPacket.ThePacket[0] == 1)
 				{
 					pWardenClient->removePacket();
 					pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
@@ -579,7 +605,7 @@ void Warden::loop()
 					pWardenClient->removePacket();
 					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 					pWardenClient->NextCheckTime = CurrentTick;
-					DEBUGMSG("Triggering check event becasue of pWardenClient->pWardenPacket.PacketLen != 1 in CHECK_CLIENT ");
+					DEBUGMSG("Triggering check event becasue of pWardenClient->wardenPacket.PacketLen != 1 in CHECK_CLIENT ");
 					break;
 				}
 			}
@@ -616,16 +642,16 @@ void Warden::loop()
 		break;
 		case WARDEN_WAITING_DOWNLOAD_END:
 		{
-			if (pWardenClient->pWardenPacket.ThePacket)
+			if (pWardenClient->wardenPacket.ClientID)
 			{
-				if (pWardenClient->pWardenPacket.PacketLen != 1)
+				if (pWardenClient->wardenPacket.PacketLen != 1)
 				{
 					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 					pWardenClient->NextCheckTime = CurrentTick;
 					pWardenClient->removePacket();
 					break;
 				}
-				if (pWardenClient->pWardenPacket.ThePacket[0] == 0)
+				if (pWardenClient->wardenPacket.ThePacket[0] == 0)
 				{
 					pWardenClient->ErrorCount++;
 					pWardenClient->WardenStatus = WARDEN_START;
@@ -633,7 +659,7 @@ void Warden::loop()
 					pWardenClient->removePacket();
 					break;
 				}
-				else if (pWardenClient->pWardenPacket.ThePacket[0] == 1)
+				else if (pWardenClient->wardenPacket.ThePacket[0] == 1)
 				{
 					pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
 					pWardenClient->ErrorCount = 0; // Nastepne 5 szans, jako ze udalo ci sie sciagnac modul
@@ -643,6 +669,7 @@ void Warden::loop()
 				}
 				else
 				{
+					pWardenClient->removePacket();
 					pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 					pWardenClient->NextCheckTime = CurrentTick;
 					break;
@@ -679,22 +706,22 @@ void Warden::loop()
 			}
 			pWardenClient->WardenStatus = WARDEN_RECEIVE_CHECK;
 			pWardenClient->NextCheckTime = CurrentTick + 5000; // Give 5 seconds for answer
-			pWardenClient->pWardenPacket.SendTime = CurrentTick;
+			pWardenClient->wardenPacket.SendTime = CurrentTick;
 		}
 		break;
 		case WARDEN_RECEIVE_CHECK:
 		{
-			if (pWardenClient->pWardenPacket.ThePacket)
+			if (pWardenClient->wardenPacket.ClientID)
 			{
-				if (pWardenClient->pWardenPacket.PacketLen >= 7)
+				if (pWardenClient->wardenPacket.PacketLen >= 7)
 				{
 					switch (pWardenClient->CheckCounter)
 					{
 					case 0:
 					{
-						pWardenClient->MouseXPosition = *(WORD*)&(pWardenClient->pWardenPacket.ThePacket[12]);
-						pWardenClient->MouseYPosition = *(WORD*)&(pWardenClient->pWardenPacket.ThePacket[8]);
-						memcpy(pWardenClient->UIModes, pWardenClient->pWardenPacket.ThePacket + 17, 4 * 16);
+						pWardenClient->MouseXPosition = *(WORD*)&(pWardenClient->wardenPacket.ThePacket[12]);
+						pWardenClient->MouseYPosition = *(WORD*)&(pWardenClient->wardenPacket.ThePacket[8]);
+						memcpy(pWardenClient->UIModes, pWardenClient->wardenPacket.ThePacket + 17, 4 * 16);
 #if 0
 						if (pWardenClient->MouseXPosition>800 || pWardenClient->MouseYPosition>600)
 							Log("Hack: %s (*%s) has mouse in abnormal position (X='%d', Y='%d')!", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), pWardenClient->MouseXPosition, pWardenClient->MouseYPosition);
@@ -704,13 +731,13 @@ void Warden::loop()
 					break;
 					//case 2:
 					//{
-					//memcpy(pWardenClient->UIModes,pWardenClient->pWardenPacket.ThePacket+8,4*16);
+					//memcpy(pWardenClient->UIModes,pWardenClient->wardenPacket.ThePacket+8,4*16);
 					//pWardenClient->UIModesTime=GetTickCount();
 					//}
 					//break;
 					case 1:
 					{
-						pWardenClient->MyIp.assign((char*)&pWardenClient->pWardenPacket.ThePacket[8]);
+						pWardenClient->MyIp.assign((char*)&pWardenClient->wardenPacket.ThePacket[8]);
 						if (pWardenClient->MyIp == "127.0.0.1")
 						{
 							Log("Hack: %s (*%s) is using RedVex (IP='%s')!", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), pWardenClient->MyIp.c_str());
@@ -720,12 +747,12 @@ void Warden::loop()
 					break;
 					case 2:
 					{
-						pWardenClient->AnimData = *(DWORD*)&(pWardenClient->pWardenPacket.ThePacket[8]);
+						pWardenClient->AnimData = *(DWORD*)&(pWardenClient->wardenPacket.ThePacket[8]);
 					}
 					break;
 					case 3:
 					{
-						pWardenClient->AnimData2 = *(DWORD*)&(pWardenClient->pWardenPacket.ThePacket[8]);
+						pWardenClient->AnimData2 = *(DWORD*)&(pWardenClient->wardenPacket.ThePacket[8]);
 					}
 					break;
 					case 4:
@@ -733,17 +760,17 @@ void Warden::loop()
 						const BYTE TMCBP[] = { 0x36, 0x00, 0x00, 0x00, 0x30, 0x49, 0x4E, 0x55, 0x48, 0x54, 0x48, 0x00, 0x01, 0x00, 0x00, 0x00 };
 						const BYTE TMCOK[] = { 0x36, 0x00, 0x00, 0x00, 0x4C, 0x31, 0x4F, 0x50, 0x48, 0x54, 0x48, 0x00, 0x02, 0x00, 0x00, 0x00 };
 
-						if (memcmp(pWardenClient->pWardenPacket.ThePacket + 8, TMCBP, 16) == 0)
+						if (memcmp(pWardenClient->wardenPacket.ThePacket + 8, TMCBP, 16) == 0)
 						{
 							char out[100];
-							ConvertBytesToHexString(pWardenClient->pWardenPacket.ThePacket + 8, 16, out, 50, ',');
+							ConvertBytesToHexString(pWardenClient->wardenPacket.ThePacket + 8, 16, out, 50, ',');
 							Log("Hack: %s (*%s) is using TMC BP (%s)!", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), out);
 						}
 						//else 
-						//if(memcmp(pWardenClient->pWardenPacket.ThePacket+8,TMCOK,16)!=0)
+						//if(memcmp(pWardenClient->wardenPacket.ThePacket+8,TMCOK,16)!=0)
 						//{
 						//char out[100];
-						//ConvertBytesToHexString(pWardenClient->pWardenPacket.ThePacket+8,16,out,50,',');
+						//ConvertBytesToHexString(pWardenClient->wardenPacket.ThePacket+8,16,out,50,',');
 						//Log("Hack: %s (*%s) MAY use some private TMC (%s)!",pWardenClient->CharName,pWardenClient->AccountName,out);
 						//}
 						pWardenClient->TMCDetected = true;
@@ -752,7 +779,7 @@ void Warden::loop()
 					case 5:
 					{
 						BYTE MH[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-						if (memcmp(pWardenClient->pWardenPacket.ThePacket + 8, MH, 6) == 0)
+						if (memcmp(pWardenClient->wardenPacket.ThePacket + 8, MH, 6) == 0)
 						{
 							Log("Hack: %s (*%s) is using Sting's MapHack!", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str());
 							pWardenClient->StingDetected = true;
@@ -762,10 +789,10 @@ void Warden::loop()
 					case 6:
 					{
 						BYTE WTF[] = { 0x5B, 0x59, 0xC2, 0x04, 0x00 };
-						if (memcmp(pWardenClient->pWardenPacket.ThePacket + 8, WTF, 5) != 0)
+						if (memcmp(pWardenClient->wardenPacket.ThePacket + 8, WTF, 5) != 0)
 						{
 							char out[50];
-							ConvertBytesToHexString(pWardenClient->pWardenPacket.ThePacket + 8, 5, out, 50, ',');
+							ConvertBytesToHexString(pWardenClient->wardenPacket.ThePacket + 8, 5, out, 50, ',');
 							Log("Hack: %s (*%s) is using WtfPk/MH hack! (%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), out);
 							pWardenClient->WtfDetected = true;
 						}
@@ -774,10 +801,10 @@ void Warden::loop()
 					case 7:
 					{
 						BYTE RCV[] = { 0xE8, 0xAA, 0xF1, 0xF4, 0xFF };
-						if (memcmp(pWardenClient->pWardenPacket.ThePacket + 8, RCV, 5) != 0)
+						if (memcmp(pWardenClient->wardenPacket.ThePacket + 8, RCV, 5) != 0)
 						{
 							char out[50];
-							ConvertBytesToHexString(pWardenClient->pWardenPacket.ThePacket + 8, 5, out, 50, ',');
+							ConvertBytesToHexString(pWardenClient->wardenPacket.ThePacket + 8, 5, out, 50, ',');
 							Log("Hack: %s (*%s) is using Packet Intercepter hack! (%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), out);
 							pWardenClient->RCVDetected = true;
 						}
@@ -785,7 +812,7 @@ void Warden::loop()
 					break;
 					case 8:
 					{
-						pWardenClient->ptSkillsTxt = *(DWORD*)(pWardenClient->pWardenPacket.ThePacket + 8);
+						pWardenClient->ptSkillsTxt = *(DWORD*)(pWardenClient->wardenPacket.ThePacket + 8);
 					}
 					break;
 					case 9:
@@ -793,7 +820,7 @@ void Warden::loop()
 					case 11:
 					case 12:
 					{
-						SkillsTxt* pRec = (SkillsTxt*)(pWardenClient->pWardenPacket.ThePacket + 8);
+						SkillsTxt* pRec = (SkillsTxt*)(pWardenClient->wardenPacket.ThePacket + 8);
 						SkillsTxt* pSrvTxt = (*D2Vars.D2COMMON_sgptDataTables)->pSkillsTxt;
 
 						if (pSrvTxt[pRec->wSkillId].dwFlags.bLeftSkill != pRec->dwFlags.bLeftSkill ||
@@ -809,10 +836,10 @@ void Warden::loop()
 					{
 						//6FAE2B40  83 EC 20 89 4C 24 0C     ƒì ‰L$.
 						BYTE LP[] = { 0x83, 0xEC, 0x20, 0x89, 0x4C, 0x24, 0x0C };
-						if (memcmp(pWardenClient->pWardenPacket.ThePacket + 8, LP, 7) != 0)
+						if (memcmp(pWardenClient->wardenPacket.ThePacket + 8, LP, 7) != 0)
 						{
 							char out[100];
-							ConvertBytesToHexString(pWardenClient->pWardenPacket.ThePacket + 8, 7, out, 100, ',');
+							ConvertBytesToHexString(pWardenClient->wardenPacket.ThePacket + 8, 7, out, 100, ',');
 							Log("Hack: %s (*%s) is using some private hack! (%s)", pWardenClient->CharName.c_str(), pWardenClient->AccountName.c_str(), out);
 							pWardenClient->LPDetected = true;
 						}
@@ -856,10 +883,12 @@ void Warden::loop()
 					pWardenClient->NextCheckTime = GetTickCount() + random();
 					//	Debug("Next check for %s in %.2f secs",pWardenClient->AccountName.c_str(),(float)(pWardenClient->NextCheckTime - GetTickCount()) / 1000);
 					pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
+					pWardenClient->removePacket();
 					pWardenClient->ErrorCount = 0;
 				}
 				else
 				{
+					pWardenClient->removePacket();
 					pWardenClient->ErrorCount++;
 					if (pWardenClient->ErrorCount>10) pWardenClient->WardenStatus = WARDEN_ERROR_RESPONSE;
 					else pWardenClient->WardenStatus = WARDEN_SEND_REQUEST;
@@ -868,7 +897,7 @@ void Warden::loop()
 			}
 			else
 			{
-				if (CurrentTick - pWardenClient->pWardenPacket.SendTime < 5000)
+				if (CurrentTick - pWardenClient->wardenPacket.SendTime < 5000)
 					pWardenClient->NextCheckTime = GetTickCount() + 10;
 				else
 				{

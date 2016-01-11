@@ -180,9 +180,9 @@ BOOL __stdcall isPermStore(Game* ptGame, UnitAny* ptNPC, UnitAny* ptItem)
 	{
 		DWORD iCode = D2Funcs.D2COMMON_GetItemCode(ptItem);
 		//WORLD EVENT
-		if (Warden::getInstance().wcfgEnableWE && WE_isKey(ptItem))
+		if (Warden::getInstance(__FUNCTION__).wcfgEnableWE && WE_isKey(ptItem))
 		{
-			if (Warden::getInstance().SellCount == Warden::getInstance().NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
+			if (Warden::getInstance(__FUNCTION__).SellCount == Warden::getInstance(__FUNCTION__).NextDC) { WE_GenerateNextDC(); WE_CreateDCKey(ptNPC); }
 
 			ptItem->pItemData->InvPage = 0xFF;
 			return TRUE;
@@ -285,7 +285,7 @@ DWORD __fastcall OnD2ExPacket(Game* ptGame, UnitAny* ptPlayer, BYTE *ptPacket, D
 	//if(Version==1)
 	//{
 	//WardenClient_i ptCurrentClient = GetClientByID(ptPlayer->pPlayerData->pClientData->ClientID);
-	//if(ptCurrentClient == Warden::getInstance().clients.end()) return 0;
+	//if(ptCurrentClient == Warden::getInstance(__FUNCTION__).clients.end()) return 0;
 	//ptCurrentClient->NewPatch=1;
 	//
 	//return 0;
@@ -331,11 +331,11 @@ Act* __stdcall OnActLoad(DWORD ActNumber, DWORD InitSeed, DWORD Unk0, Game *pGam
 		char * ret = strtok_s(tk, "- ", &nt);
 		while (ret)
 		{
-			if (ret[0] == 'm' && strlen(ret) > 1 && Warden::getInstance().wcfgEnableSeed)
+			if (ret[0] == 'm' && strlen(ret) > 1 && Warden::getInstance(__FUNCTION__).wcfgEnableSeed)
 				MySeed = atoi(ret + 1);
-			if (ret[0] == 't' && strlen(ret) == 1 && Warden::getInstance().wcfgAllowTourMode)
+			if (ret[0] == 't' && strlen(ret) == 1 && Warden::getInstance(__FUNCTION__).wcfgAllowTourMode)
 				pGame->bFestivalMode = 1;
-			if (_strnicmp(ret, "ffa", 3) == 0 && Warden::getInstance().wcfgFFAMode)
+			if (_strnicmp(ret, "ffa", 3) == 0 && Warden::getInstance(__FUNCTION__).wcfgFFAMode)
 				pGame->dwGameState = 1;
 			ret = strtok_s(NULL, "- ", &nt);
 		}
@@ -444,7 +444,7 @@ int __fastcall ReparseChat(Game* pGame, UnitAny *pUnit, BYTE *ThePacket, int Pac
 	Msg[255] = 0;
 	BYTE * aPacket = 0;
 
-	if (Warden::getInstance().wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
+	if (Warden::getInstance(__FUNCTION__).wcfgAllowLoggin) LogToFile("GameLog.txt", true, "%s\t%s\t%s\t%s", pGame->GameName, pUnit->pPlayerData->pClientData->AccountName, szName, Msg);
 
 	if (nNameLen > 12)
 	{
@@ -589,21 +589,21 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#we") == 0)
 			{
-				if (!Warden::getInstance().wcfgEnableWE) return true;
-				int z = Warden::getInstance().NextDC - Warden::getInstance().SellCount; // 261 - 217 ( 44)
-				int y = z - Warden::getInstance().MinSell; // 50 -40 =  10
-				if (y < 0) y = Warden::getInstance().MinSell + y;  // 40 - 30 = 10
-				else y = Warden::getInstance().MinSell;
+				if (!Warden::getInstance(__FUNCTION__).wcfgEnableWE) return true;
+				int z = Warden::getInstance(__FUNCTION__).NextDC - Warden::getInstance(__FUNCTION__).SellCount; // 261 - 217 ( 44)
+				int y = z - Warden::getInstance(__FUNCTION__).MinSell; // 50 -40 =  10
+				if (y < 0) y = Warden::getInstance(__FUNCTION__).MinSell + y;  // 40 - 30 = 10
+				else y = Warden::getInstance(__FUNCTION__).MinSell;
 				if (y == 0) y = 1;
-				int x = y + (Warden::getInstance().MaxSell - Warden::getInstance().MinSell);
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", Warden::getInstance().wcfgEnableWE ? "On" : "Off", Warden::getInstance().SellCount, y, x);
+				int x = y + (Warden::getInstance(__FUNCTION__).MaxSell - Warden::getInstance(__FUNCTION__).MinSell);
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "World Event is %s, Sell count : %d, Need: %d-%d items", Warden::getInstance(__FUNCTION__).wcfgEnableWE ? "On" : "Off", Warden::getInstance(__FUNCTION__).SellCount, y, x);
 				return false;
 			}
 			if (_stricmp(str, "#uptime") == 0)
 			{
-				int time = (GetTickCount() - Warden::getInstance().getUpTime()) / 1000;
+				int time = (GetTickCount() - Warden::getInstance(__FUNCTION__).getUpTime()) / 1000;
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "GS Uptime %.2d:%.2d:%.2d, WardenClients %d, pGame->nClients %d", time / 3600, (time / 60) % 60, time % 60, 
-					Warden::getInstance().getClientCount(), pUnit->pGame->nClients);
+					Warden::getInstance(__FUNCTION__).getClientCount(), pUnit->pGame->nClients);
 				return false;
 			}
 			if (_stricmp(str, "#build") == 0)
@@ -616,11 +616,11 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				map<DWORD, UnitAny*> hmap;
 				for (int i = 0; i < 128; ++i)
 				{	
-					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pListNext)
+					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pListPrev)
 					{
 						hmap[u->dwUnitId] = u;
 					}
-					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pRoomNext)
+					for (UnitAny* u = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; u; u = u->pRoomPrev)
 					{
 						hmap[u->dwUnitId] = u;
 					}
@@ -652,14 +652,14 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#update") == 0)
 			{
-				if (Warden::getInstance().wcfgUpdateURL.empty()) return false;
+				if (Warden::getInstance(__FUNCTION__).wcfgUpdateURL.empty()) return false;
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "Trying to download patch....");
 				ExEventDownload pEvent;
 				::memset(&pEvent, 0, sizeof(ExEventDownload));
 				pEvent.P_A6 = 0xA6;
 				pEvent.MsgType = EXEVENT_DOWNLOAD;
 				pEvent.bExec = 1;
-				strcpy_s(pEvent.szURL, 255, Warden::getInstance().wcfgUpdateURL.c_str());
+				strcpy_s(pEvent.szURL, 255, Warden::getInstance(__FUNCTION__).wcfgUpdateURL.c_str());
 				if (pEvent.szURL[0])
 					pEvent.PacketLen = 14 + strlen(pEvent.szURL) + 1;
 				else
@@ -770,7 +770,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#gu") == 0)
 			{
-				if (Warden::getInstance().wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
+				if (Warden::getInstance(__FUNCTION__).wcfgAllowGU && !pUnit->pPlayerData->isSpecing)
 				{
 					int aLevel = D2Funcs.D2COMMON_GetTownLevel(pUnit->dwAct);
 					int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pUnit->pPath->pRoom1);
@@ -817,16 +817,23 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			}
 			if (_stricmp(str, "#debug") == 0)
 			{
-				WardenClient_i ptCurrentClient = Warden::getInstance().findClientById(ClientID);
-				if (ptCurrentClient == Warden::getInstance().getInvalidClient()) return TRUE;
+				WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientById(ClientID);
+				if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) return TRUE;
 				ptCurrentClient->DebugTrick = !ptCurrentClient->DebugTrick;
 				return false;
 			}
 			if (_stricmp(str, "#reload") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
-				Warden::getInstance().loadConfig();
+				Warden::getInstance(__FUNCTION__).loadConfig();
 				SendMsgToClient(pUnit->pPlayerData->pClientData, pUnit->pPlayerData->pClientData->LocaleID == 10 ? "Ustawienia prze³adowane." : "Config reloaded.");
+				return false;
+			}
+			if (_stricmp(str, "#reloadclans") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				Warden::getInstance(__FUNCTION__).reloadClans();
+				SendMsgToClient(pUnit->pPlayerData->pClientData, Warden::getInstance(__FUNCTION__).clansAvailable ? "Clans reloaded successfully." : "Error in ini file!" );
 				return false;
 			}
 			if (_stricmp(str, "#kick") == 0)
@@ -835,15 +842,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 				str = strtok_s(NULL, " ", &t);
 				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#kick <*account> or #kick [charname]!"); return false; }
-				WardenClient_i psUnit = Warden::getInstance().getInvalidClient();
+				WardenClient_i psUnit = Warden::getInstance(__FUNCTION__).getInvalidClient();
 				if (str[0] == '*') {
 					str++;
-					psUnit = Warden::getInstance().findClientByAcc(str);
+					psUnit = Warden::getInstance(__FUNCTION__).findClientByAcc(str);
 				}
 				else
-					psUnit = Warden::getInstance().findClientByName(str);
+					psUnit = Warden::getInstance(__FUNCTION__).findClientByName(str);
 
-				if (psUnit == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
+				if (psUnit == Warden::getInstance(__FUNCTION__).getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
 				BroadcastMsg(pUnit->pPlayerData->pClientData->pGame, "'%s' has been kicked by *%s", psUnit->CharName.c_str(), pUnit->pPlayerData->pClientData->AccountName);
 				BootPlayer(psUnit->ptClientData->ClientID, BOOT_CONNECTION_INTERRUPTED);
 				return false;
@@ -857,15 +864,15 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				{
 					if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
 
-					WardenClient_i ptCurrentClient = Warden::getInstance().getInvalidClient();
+					WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).getInvalidClient();
 					if (str[0] == '*') {
 						str++;
-						ptCurrentClient = Warden::getInstance().findClientByAcc(str);
+						ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientByAcc(str);
 					}
 					else
-						ptCurrentClient = Warden::getInstance().findClientByName(str);
+						ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientByName(str);
 
-					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					pDestUnit = ptCurrentClient->ptPlayer;
 				}
 
@@ -939,8 +946,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				int LvlId = atoi(str);
 				str = strtok_s(NULL, " ", &t);
 				if (str) {
-					WardenClient_i ptCurrentClient = Warden::getInstance().findClientByName(str);
-					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
+					WardenClient_i ptCurrentClient = Warden::getInstance(__FUNCTION__).findClientByName(str);
+					if (ptCurrentClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
 					if (!ptCurrentClient->ptPlayer) { return false; }
 					if (aUnit == ptCurrentClient->ptPlayer){ return false; }
 					aUnit = ptCurrentClient->ptPlayer;
@@ -949,6 +956,24 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				if (LvlId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) return false;
 				SendMsgToClient(aUnit->pPlayerData->pClientData, "Moving '%s' to level '%d'...", aUnit->pPlayerData->szName, LvlId);
 				D2ASMFuncs::D2GAME_MoveUnitToLevelId(aUnit, LvlId, aUnit->pGame);
+				return false;
+			}
+			if (_stricmp(str, "#moveall") == 0)
+			{
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				str = strtok_s(NULL, " ", &t);
+				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#move <levelid>"); return false; }
+				int LvlId = atoi(str);
+				if (!LvlId) return false;
+				if (LvlId >= (*D2Vars.D2COMMON_sgptDataTables)->dwLevelsRecs) return false;
+				SendMsgToClient(pUnit->pPlayerData->pClientData, "Moving '%d' clients to level '%d'...", pUnit->pPlayerData->pClientData->pGame->nClients, LvlId);
+				for (ClientData* pClientList = pUnit->pPlayerData->pClientData->pGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
+				{
+					if (!(pClientList->InitStatus & 4))
+						continue;
+					D2ASMFuncs::D2GAME_MoveUnitToLevelId(pClientList->pPlayerUnit, LvlId, pClientList->pGame);
+				}
+
 				return false;
 			}
 			if (_stricmp(str, "#op") == 0)
@@ -975,7 +1000,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				return false;
 			}
 #ifdef ENABLE_LEVEL_COMMAND
-			if (Warden::getInstance().wcfgEnableLevelCmd)
+			if (Warden::getInstance(__FUNCTION__).wcfgEnableLevelCmd)
 			if (_stricmp(str, "#level") == 0 || _stricmp(str, "#lvl") == 0)
 			{
 				if (D2Funcs.D2COMMON_GetStatSigned(pUnit, STAT_LEVEL, NULL) != 1)
@@ -1075,107 +1100,18 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "State %d has been set!", nState);
 				return false;
 			}
-			if (_stricmp(str, "#move2obj") == 0)
+			#ifdef _DEBUG
+			if (_stricmp(str, "#threadinfo") == 0)
 			{
-				UnitAny* aUnit = pUnit;
-				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName))  return TRUE;
-				str = strtok_s(NULL, " ", &t);
-				if (!str) { SendMsgToClient(pUnit->pPlayerData->pClientData, "#move <object class id> [account]"); return false; }
-				int ObjId = atoi(str);
-				str = strtok_s(NULL, " ", &t);
-				if (str) {
-					WardenClient_i ptCurrentClient = Warden::getInstance().findClientByName(str);
-					if (ptCurrentClient == Warden::getInstance().getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Player not found!"); return false; }
-					if (!ptCurrentClient->ptPlayer) {  return false; }
-					if (aUnit == ptCurrentClient->ptPlayer){  return false; }
-					aUnit = ptCurrentClient->ptPlayer;
-					
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				for (auto &i : Warden::getInstance(__FUNCTION__).threadMap) {
+					for (auto &j : i.second)
+					SendMsgToClient(pUnit->pPlayerData->pClientData, "Thread %d, func %s", i.first, j.c_str());
 				}
-				if (!ObjId) return false;
-				if (ObjId > (*D2Vars.D2COMMON_ObjectTxtRecs))
-				{
-					SendMsgToClient(aUnit->pPlayerData->pClientData, "Object '%d' is out of range (%d)...", ObjId, *D2Vars.D2COMMON_ObjectTxtRecs);
-					return false;
-				}
-			/*	Level* pLevel = D2Funcs.D2COMMON_GetLevel(pUnit->pGame->pDrlgAct[0]->pMisc, 39);
-				if (pLevel)
-				{
-					SendMsgToClient(pUnit->pPlayerData->pClientData, "Allocated level...");
-					D2Funcs.D2COMMON_10736(pLevel);
-				}
-				*/
-
-				int nAct = aUnit->pPath->pRoom1->pAct->dwAct;
-
-				for (InactiveRoom * pRoom = pUnit->pGame->pDrlgRoomList[nAct]; pRoom; pRoom = pRoom->pNextRoom)
-					for (InactiveObject * pObj = pRoom->pObject; pObj; pObj = pObj->pNext)
-					{
-
-						if (pObj->dwClassId == ObjId)
-						{
-							D2POINT Pos = { pObj->xPos, pObj->yPos };
-							D2POINT Out = { 0, 0 };
-
-							Room1 * mRoom = D2Funcs.D2COMMON_GetRoomXYByLevel(aUnit->pAct, 133, 0, (int*)&Out.x, (int*)&Out.y, 2);
-
-							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
-							if (!mRoom)
-							{
-								SendMsgToClient(pUnit->pPlayerData->pClientData, "I method: Room not found!"); 
-							}
-							SendMsgToClient(aUnit->pPlayerData->pClientData, "I method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
-							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
-							return false;
-						}
-
-
-					}
-			
-
-				for (int i = 0; i < 128; ++i)
-					for (UnitAny * obj = pUnit->pGame->pUnitList[UNIT_OBJECT][i]; obj; obj = obj->pListNext)
-				{
-						if (obj->dwClassId == ObjId)
-						{
-							Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(obj);
-							if (!mRoom)
-							{
-								SendMsgToClient(pUnit->pPlayerData->pClientData, "Room not found!"); return false;
-							}
-							D2POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
-							D2POINT Out = { 0, 0 };
-
-							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
-							SendMsgToClient(aUnit->pPlayerData->pClientData, "II method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
-							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
-							return false;
-						}
-
-				}
-
-				for (Room1* pRoom = pUnit->pGame->pDrlgAct[0]->pRoom1; pRoom; pRoom = pRoom->pRoomNext)
-					for (UnitAny* obj = pRoom->pUnitFirst; obj; obj = obj->pListNext)
-					{
-						if (obj->dwClassId == ObjId)
-						{
-							Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(obj);
-							if (!mRoom)
-							{
-								SendMsgToClient(pUnit->pPlayerData->pClientData, "III method: Room not found!"); return false;
-							}
-							D2POINT Pos = { obj->pStaticPath->xPos, obj->pStaticPath->yPos };
-							D2POINT Out = { 0, 0 };
-
-							mRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, mRoom, &Out, 0);
-							SendMsgToClient(aUnit->pPlayerData->pClientData, "III method: Moving '%s' to object '%d' @ [%d,%d]...", aUnit->pPlayerData->szName, ObjId, Out.x, Out.y);
-							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, mRoom, pUnit->pGame, aUnit);
-							return false;
-						}
-					}
-				SendMsgToClient(pUnit->pPlayerData->pClientData, "Object not found!"); 
 				return false;
 			}
 
+			#endif
 		}
 	}
 	return TRUE;

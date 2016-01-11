@@ -245,6 +245,14 @@ EXIT 0</Command>
   <ItemGroup>
     <ClCompile Include="D2Handlers.cpp" />
     <ClCompile Include="D2Patches.cpp" />
+    <ClCompile Include="inih\cpp\INIReader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="inih\ini.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="LCube.cpp" />
     <ClCompile Include="LegacyFuncs.cpp" />
     <ClCompile Include="LPackets.cpp" />
@@ -308,6 +316,8 @@ EXIT 0</Command>
     <ClInclude Include="ExPointers_111B.h" />
     <ClInclude Include="ExPointers_113D.h" />
     <ClInclude Include="global.h" />
+    <ClInclude Include="inih\cpp\INIReader.h" />
+    <ClInclude Include="inih\ini.h" />
     <ClInclude Include="introtate.h" />
     <ClInclude Include="LCube.h" />
     <ClInclude Include="LegacyFuncs.h" />

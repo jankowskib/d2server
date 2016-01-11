@@ -75,6 +75,8 @@ void Warden::patchD2()
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
 #ifdef VER_113D
+	PatchGS(CUSTOM, GetDllOffset("Fog.dll", 0x202C1), 0xEB, 1, "Disable reconnect spam hacklisting");
+
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PARSE_CREATE_PACKETS), (DWORD)OnCreatePacketReceive, 5, "Create packet parser");
 	PatchGS(JUMP, GetDllOffset("D2Game.dll", D2GAME_GAME_LOOP), (DWORD)MainLoop_ASM, 5, "Game loop");
 

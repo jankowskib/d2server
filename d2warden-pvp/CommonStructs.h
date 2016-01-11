@@ -792,9 +792,9 @@ struct UnitAny
 	DWORD dwOverlayTick;			//0xD4
 	DWORD dwDoorTick;				//0xD8
 	Timer* pTimer;					//0xDC
-	UnitAny* pChangedNext;			//0xE0
-	UnitAny*  pRoomNext;			//0xE4 E8 is RoomNext!
-	UnitAny*  pListNext;			//0xE8
+	UnitAny* pChangedPrev;			//0xE0
+	UnitAny*  pListPrev;			//0xE4
+	UnitAny*  pRoomPrev;			//0xE8
 	UnitMsg* pMsgFirst;				//0xEC
 	UnitMsg* pMsgLast;				//0xF0
 };
@@ -957,6 +957,13 @@ struct ExEventAccountInfo : ExEvent // (size 0x18)
 	DWORD UnitId;
 	char szAccount[16];
 };
+
+struct ExEventClanInfo : ExEvent // (size 0xD)
+{
+	DWORD UnitId;
+	char szClan[5];
+};
+
 
 /*
 	Join a game

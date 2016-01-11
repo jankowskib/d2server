@@ -25,6 +25,7 @@
 #include <string>
 #include <boost/random.hpp>
 #include "WardenClient.h"
+#include "inih\cpp\INIReader.h"
 
 using namespace std;
 
@@ -47,15 +48,28 @@ public:
 	~Warden();
 
 
-	static Warden& getInstance()
+	static Warden& getInstance(char* str)
 	{
 		static Warden warden;
+		int old = warden.threadMap.size();
+		if (warden.threadMap.count(GetCurrentThreadId()))
+		for (auto &funcs : warden.threadMap[GetCurrentThreadId()]) {
+			if (funcs == str)
+				return warden;
+		}
+		warden.threadMap[GetCurrentThreadId()].emplace_back(string(str));
+		if (warden.threadMap.size() > old)
+		{
+			Debug("", "Should break here!");
+		}
 		return warden;
 	}
 
 	DWORD uploadModule(DWORD ClientID, unsigned char *RC4_KEY, DWORD MOD_Position);
 	void loadConfig();
 	void loop();
+	void reloadClans();
+
 
 	WardenClient_i findClientByName(string szName);
 	WardenClient_i findClientByName(Game* pGame, string szName);
@@ -104,15 +118,18 @@ public:
 	string wcfgDatabase;
 	string wcfgDBUser;
 	string wcfgDBPass;
-	string wcfgClansURL;
 	string wcfgConfigFile;
 	string wcfgUpdateURL;
 	string wcfgGSName;
+	INIReader wcfgClans;
+	bool clansAvailable;
 	list<string> wcfgAdmins;
 	BYTE wcfgTeleChars[7];
 
 	// keeps the highest dmg amount
 	int DmgRekord;
+
+	map<DWORD, vector<string>> threadMap;
 
 	unsigned char AE_Packet00[40];
 
