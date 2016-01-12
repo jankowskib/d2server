@@ -28,8 +28,8 @@
 */
 void __stdcall MainLoop(Game *pGame)
 {
-	if (pGame->GameFrame % 25 && !Warden::getInstance(__FUNCTION__).empty())
-		Warden::getInstance(__FUNCTION__).loop();
+	if (!Warden::getInstance(__FUNCTION__).empty())
+		Warden::getInstance(__FUNCTION__).loop(pGame);
 }
 
 void __declspec(naked) MainLoop_ASM()

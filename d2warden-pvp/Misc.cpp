@@ -228,6 +228,39 @@ ClientData * pClientList = ptUnit->pGame->pClientList;
 
 }
 
+void SendMsgToClient(ClientData* ptClient, char *Msg...)
+{
+	va_list arguments;
+
+	va_start(arguments, Msg);
+
+	int len = _vscprintf(Msg, arguments) + 1;
+	char * text = new char[len];
+
+	vsnprintf_s(text, len, 255, Msg, arguments);
+	va_end(arguments);
+	const char * szReceiper = "GS";
+
+	size_t nameSize = strlen(szReceiper) + 1;
+	size_t textSize = strlen(text) + 1;
+	WORD msgLen = 10 + nameSize + textSize;
+
+	BYTE * aPacket = new BYTE[msgLen];
+	memset(aPacket, 0, msgLen);
+	aPacket[0] = 0x26;
+	aPacket[1] = 0x01;
+	aPacket[3] = 0x02;
+	aPacket[9] = 0x53; //0x05
+
+
+	strcpy_s((char*)&aPacket[10], nameSize, szReceiper);
+	strcpy_s((char*)&aPacket[10 + nameSize], textSize, text);
+
+	D2ASMFuncs::D2GAME_SendPacket(ptClient, aPacket, msgLen);
+	delete[] aPacket;
+	delete[] text;
+}
+
 void BroadcastMsg(Game* pGame,char *Msg...)
 {
 /*
@@ -255,20 +288,26 @@ void BroadcastMsg(Game* pGame,char *Msg...)
 	vsnprintf_s(text,len,255,Msg,arguments);
 	va_end(arguments);
 	 
-	WORD MsgLen = 21+strlen(text);
-	BYTE * aPacket = new BYTE[MsgLen];
-	memset(aPacket,0,MsgLen);
+	const char * szReceiper = "ÿc1GS";
+
+	size_t nameSize = strlen(szReceiper) + 1;
+	size_t textSize = strlen(text) + 1;
+	WORD msgLen = 10 + nameSize + textSize;
+
+	BYTE * aPacket = new BYTE[msgLen];
+	memset(aPacket, 0, msgLen);
 	aPacket[0] = 0x26;
 	aPacket[1] = 0x01;
-	aPacket[3] = 0x02; //MsgStyle
-	aPacket[9] = 0x53; //MsgFlags
-	strcpy_s((char*)aPacket+10,10,"ÿc1WARDEN");
-	strcpy_s((char*)aPacket+20,MsgLen-20,text);
+	aPacket[3] = 0x02;
+	aPacket[9] = 0x53; //0x05
+
+	strcpy_s((char*)&aPacket[10], nameSize, szReceiper);
+	strcpy_s((char*)&aPacket[10 + nameSize], textSize, text);	
 
 	ClientData * pClientList = pGame->pClientList;
 	while(pClientList)
 	{
-	if(pClientList->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClientList,aPacket,MsgLen);
+	if(pClientList->InitStatus & 4) D2ASMFuncs::D2GAME_SendPacket(pClientList, aPacket, msgLen);
 	if(!pClientList->ptPrevious) break;
 	pClientList=pClientList->ptPrevious;
 	}
@@ -547,35 +586,6 @@ void PatchGS(BYTE bInst, DWORD pAddr, DWORD pFunc, DWORD dwLen, char* Type)
 		Log("Cannot write bytes for patch: %s",Type);
 	}
 	delete[] bCode;
-}
-
-void SendMsgToClient(ClientData* ptClient,char *Msg...)
-{
-	va_list arguments;
-
-	va_start(arguments, Msg);
-
-	int len = _vscprintf(Msg, arguments ) + 1;
-	char * text = new char[len];
-
-	vsnprintf_s(text,len,255,Msg,arguments);
-	va_end(arguments);
-
-	WORD MsgLen = 21+strlen(text);
-	BYTE * aPacket = new BYTE[MsgLen];
-	memset(aPacket,0,MsgLen);
-	aPacket[0] = 0x26;
-	aPacket[1] = 0x01;
-	aPacket[3] = 0x02;
-	aPacket[9] = 0x53; //0x05
-	strcpy_s((char*)aPacket+10,10,"ÿc3WARDEN");
-	strcpy_s((char*)aPacket+20,MsgLen-20,text);
-
-//	D2Funcs.D2NET_SendPacket(0,ptClient->ClientID,aPacket,MsgLen);
-
-	D2ASMFuncs::D2GAME_SendPacket(ptClient,aPacket,MsgLen);
-	delete[] aPacket;
-	delete[] text;
 }
 
 void UpdatePlayerXY(UnitAny* ptUnit)

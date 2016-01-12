@@ -852,7 +852,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 				if (psUnit == Warden::getInstance(__FUNCTION__).getInvalidClient()) { SendMsgToClient(pUnit->pPlayerData->pClientData, "Wrong charname / Player is not in the game!"); return false; }
 				BroadcastMsg(pUnit->pPlayerData->pClientData->pGame, "'%s' has been kicked by *%s", psUnit->CharName.c_str(), pUnit->pPlayerData->pClientData->AccountName);
-				BootPlayer(psUnit->ptClientData->ClientID, BOOT_CONNECTION_INTERRUPTED);
+				BootPlayer(psUnit->ClientID, BOOT_CONNECTION_INTERRUPTED);
 				return false;
 			}
 			if (_stricmp(str, "#stats") == 0)
@@ -1103,7 +1103,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 			#ifdef _DEBUG
 			if (_stricmp(str, "#threadinfo") == 0)
 			{
-				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName)) return TRUE;
+				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName) && string(pUnit->pPlayerData->pClientData->AccountName) != "LOLET")
+					return TRUE;
 				for (auto &i : Warden::getInstance(__FUNCTION__).threadMap) {
 					for (auto &j : i.second)
 					SendMsgToClient(pUnit->pPlayerData->pClientData, "Thread %d, func %s", i.first, j.c_str());

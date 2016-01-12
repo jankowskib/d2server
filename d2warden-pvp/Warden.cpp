@@ -144,6 +144,7 @@ Warden::~Warden()
 
 void Warden::onRemoveClient(WardenClient_i client)
 {
+	DEBUGMSG("called!")
 	clients.erase(client);
 }
 
@@ -517,7 +518,7 @@ char* Warden::getStatusMessage(WardenStatus status)
 #undef ENUMSTR
 }
 
-void Warden::loop()
+void Warden::loop(Game* pGame)
 {
 	unsigned char WardenCMD0_local[38] = { 0 };
 	DWORD dwNextCheck = 0;
@@ -534,8 +535,13 @@ void Warden::loop()
 			Remove client if isn't ready in 10 sec - probably join failed
 		*/
 		if (!pWardenClient->ready && CurrentTick - pWardenClient->NextCheckTime > 10 * 1000) {
-			pWardenClient->removePacket();
 			DEBUGMSG("Removed client %d because of join failed", pWardenClient->ClientID)
+			pWardenClient = clients.erase(pWardenClient);
+			continue;
+		}
+
+		if (!D2Funcs.D2NET_GetClient(pWardenClient->ClientID)) { // If client is not found remove it asap
+			DEBUGMSG("Removed client (%d) because he probably left the game!", pWardenClient->ClientID)
 			pWardenClient = clients.erase(pWardenClient);
 			continue;
 		}

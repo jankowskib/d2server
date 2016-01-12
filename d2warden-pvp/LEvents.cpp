@@ -30,7 +30,7 @@ void EVENTS_SendClanInfo(ClientData * pClient)
 {
 	if (!Warden::getInstance(__FUNCTION__).clansAvailable) {
 		DEBUGMSG("Clans not available - skipping")
-		return;;
+		return;
 	}
 	ASSERT(pClient)
 
@@ -40,12 +40,15 @@ void EVENTS_SendClanInfo(ClientData * pClient)
 	hEvent.PacketLen = sizeof(ExEventClanInfo);
 	for (ClientData* pClientList = pClient->pGame->pClientList; pClientList; pClientList = pClientList->ptPrevious)
 	{
-		if (!(pClientList->InitStatus & 4))
+		if (!(pClientList->InitStatus & 4)) {
+			DEBUGMSG("Skipped sending clan info of %s", pClientList->AccountName)
 			continue;
+		}
 
-		string clan = Warden::getInstance(__FUNCTION__).wcfgClans.Get("D2ExClans", pClient->AccountName, "");
+		string clan = Warden::getInstance(__FUNCTION__).wcfgClans.Get("D2ExClans", pClientList->AccountName, "");
 		if (clan.empty())
 			continue;
+		DEBUGMSG("Sending clan info of %s to %s", pClientList->AccountName, pClient->AccountName)
 
 		hEvent.UnitId = pClientList->pPlayerUnit->dwUnitId;
 		strcpy_s<5>(hEvent.szClan, clan.substr(0, 4).c_str());
@@ -161,6 +164,7 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 
 	SendExEvent(pClient, EXOP_DISABLESPECTATOR, !Warden::getInstance(__FUNCTION__).wcfgSpectator);
 	SendExEvent(pClient, EXOP_SET_MAX_PLAYERS, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers);
+	SendExEvent(pClient, EXOP_RESPAWNTIME, Warden::getInstance(__FUNCTION__).wcfgRespawnTimer);
 
 	EVENTS_SendAccountInfo(pClient);
 	EVENTS_SendClanInfo(pClient);
@@ -201,7 +205,6 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 	}
 
 	ptVictim->pPlayerData->tDeathTime = GetTickCount();
-	SendExEvent(ptVictim->pPlayerData->pClientData, EXOP_RESPAWNTIME, Warden::getInstance(__FUNCTION__).wcfgRespawnTimer);
 
 	SPECTATOR_RemoveFromQueue(ptGame, ptVictim->dwUnitId);
 
@@ -211,19 +214,30 @@ void __stdcall OnDeath(UnitAny* ptKiller, UnitAny * ptVictim, Game * ptGame)
 		int KillCount = 0;
 		bool check = false;
 		if (!ptKiller->pPlayerData->FirstKillTick) { ptKiller->pPlayerData->FirstKillTick = GetTickCount(); }
-		if (GetTickCount() - ptKiller->pPlayerData->FirstKillTick < 1500) { ptKiller->pPlayerData->KillCount++; KillCount = ptKiller->pPlayerData->KillCount; }
-		if (KillCount>1) { ptKiller->pPlayerData->FirstKillTick = 0; ptKiller->pPlayerData->KillCount = 0; check = true; }
-
-		if (check)
+		if (GetTickCount() - ptKiller->pPlayerData->FirstKillTick < 1500) {
+			++ptKiller->pPlayerData->KillCount; 
+		}
+		else // timeout has reached
 		{
-			switch (KillCount)
+			if (ptKiller->pPlayerData->KillCount > 1)
 			{
-			case 2: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOUBLEKILL, 3, -1, 150, "PODWOJNE ZABÓJSTWO!", "DOUBLE KILL!"); 	BroadcastExEvent(ptKiller->pGame, COL_WHITE, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
-			case 3: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_TRIPLEKILL, 3, -1, 150, "POTROJNE ZABÓJSTWO!", "TRIPPLE KILL!"); BroadcastExEvent(ptKiller->pGame, COL_GOLD, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
-			case 5:
-			case 4: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOMINATION, 3, -1, 150, "ZABOJCA DRU¯YNY!", "TEAM KILL!"); BroadcastExEvent(ptKiller->pGame, COL_RED, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
+				switch (KillCount)
+				{
+				case 2: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOUBLEKILL, 3, -1, 150, "PODWOJNE ZABÓJSTWO!", "DOUBLE KILL!"); 	BroadcastExEvent(ptKiller->pGame, COL_WHITE, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
+				case 3: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_TRIPLEKILL, 3, -1, 150, "POTROJNE ZABÓJSTWO!", "TRIPPLE KILL!"); BroadcastExEvent(ptKiller->pGame, COL_GOLD, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
+				case 5:
+				case 4: {SendExEvent(ptKiller->pPlayerData->pClientData, COL_YELLOW, D2EX_DOMINATION, 3, -1, 150, "ZABOJCA DRU¯YNY!", "TEAM KILL!"); BroadcastExEvent(ptKiller->pGame, COL_RED, ptKiller->dwUnitId, 1, "data\\D2Ex\\Blobs"); } break;
+				}
+				ptKiller->pPlayerData->FirstKillTick = 0;
+				ptKiller->pPlayerData->KillCount = 0;
+			}
+			else {
+				ptKiller->pPlayerData->FirstKillTick = GetTickCount();
+				ptKiller->pPlayerData->KillCount = 1;
 			}
 		}
+
+
 
 		int InRange = D2ASMFuncs::D2GAME_isUnitInRange(ptGame, ptVictim->dwUnitId, UNIT_PLAYER, ptKiller, 51);
 
@@ -317,7 +331,9 @@ void __stdcall OnCreateCorpse(Game *pGame, UnitAny *pUnit, int xPos, int yPos, R
 0x11 - "%Param1 Stones of Jordan Sold to Merchants"
 0x12 - "Diablo Walks the Earth"
 */
-
+/*
+	Warning: function may be executed in another thread!
+*/
 void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 {
 	DEBUGMSG("OnBroadcastEvent %d",pEvent->MsgType);
@@ -353,7 +369,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 			Log("OnGameJoin: Didn't find a unit!! report to lolet pls");
 		}
 	}
-	BroadcastPacket(pGame,(BYTE*)pEvent,40);
+	BroadcastPacket(pGame,(BYTE*)pEvent, sizeof(EventPacket));
 
 	switch(pEvent->MsgType)
 	{
@@ -363,6 +379,7 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 		case EVENT_DROPPED:
 		{
 
+			/*
 			DEBUGMSG("[REMOVECLIENT] Removing (*%s) %s from WardenQueue", pEvent->Name2, pEvent->Name1);
 			WardenClient_i pWardenClient = Warden::getInstance(__FUNCTION__).findClientByName(pEvent->Name1);
 			if(pWardenClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) 
@@ -371,8 +388,13 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 				return;
 			}
 			SPECTATOR_RemoveFromQueue(pGame, pWardenClient->ptClientData->UnitId);
-			Warden::getInstance(__FUNCTION__).onRemoveClient(pWardenClient);
-
+			*/
+			//TODO: Think where to move this code^^
+			ClientData* pClient = FindClientDataByName(pGame, pEvent->Name1);
+			if (pClient && pClient->InitStatus == 4 && pClient->pPlayerUnit)
+			{
+				SPECTATOR_RemoveFromQueue(pGame, pClient->pPlayerUnit->dwUnitId);
+			}
 		}
 		break;
 	}

@@ -67,7 +67,7 @@ public:
 
 	DWORD uploadModule(DWORD ClientID, unsigned char *RC4_KEY, DWORD MOD_Position);
 	void loadConfig();
-	void loop();
+	void loop(Game* pGame);
 	void reloadClans();
 
 

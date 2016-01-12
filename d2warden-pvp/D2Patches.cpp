@@ -169,7 +169,7 @@ void Warden::patchD2()
 
 	if (wcfgSpectator)
 	{
-		WriteDword((DWORD*)&D2Vars.D2GAME_ClientPacketTable[0x5E].Callback, (DWORD)&OnPartyRelationChange);
+		WriteDword((DWORD*)&D2Vars.D2GAME_ClientPacketTable[0x5E].Callback, (DWORD)&OnPartyRelationChange); // TODO: move to lpackets
 	}
 
 	//PatchGS(JUMP,GetDllOffset("D2Game.dll",D2GAME_LOCK_HACK_WRAPPER),(DWORD)D2Stubs::D2GAME_LogHack_STUB,5,"Lock Hack Wrapper");

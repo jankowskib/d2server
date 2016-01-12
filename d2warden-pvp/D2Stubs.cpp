@@ -82,11 +82,32 @@ namespace D2Stubs
 		}
 
 		Log("======== Dump of new nodes ======");
-		for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 2; ++i)
+		for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3; ++i)
 		{
 			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
 		}
+		
+		Log("pGame->pLRosterData 0x%x", pMonster->pGame->pLRosterData);
+		Log("pGame->dwGameState 0x%x", pMonster->pGame->dwKillCount);
+		Log("pGame->bSpawnedClone 0x%x", pMonster->pGame->bSpawnedClone);
+		Log("pGame->dwGameState 0x%x", pMonster->pGame->dwGameState);
 
+		Log("Warden clients %d", Warden::getInstance(__FUNCTION__).getClientCount());
+		Log("=== Dump of players in current game ====");
+		int n = 0;
+		for (ClientData* pClient = pMonster->pGame->pClientList; pClient; pClient = pClient->ptPrevious)
+		{
+			Log("%d : %s, %s, InitStatus %d, act %d", n, pClient->AccountName, ConvertClass(pClient->ClassId), pClient->InitStatus, pClient->ActNo);
+			if (pClient->InitStatus & 4)
+				if (pClient->pPlayerUnit) {
+				Room1* pRoom = D2Funcs.D2COMMON_GetUnitRoom(pClient->pPlayerUnit);
+				if (pRoom) {
+					Log("\tpPlayer location: %d [%d, %d]", pRoom->pRoom2->pLevel->dwLevelNo, pRoom->pRoom2->dwPosX, pRoom->pRoom2->dwPosY);
+				}
+				Log("\tPlayer node %d", pClient->pPlayerUnit->dwNodeIdx);
+			}
+			++n;
+		}
 
 		Log("========== Now game will crash :( ==");
 	}
@@ -636,25 +657,15 @@ namespace D2Stubs
 	{
 		__asm
 		{
-			//	push ebx
-			//	push eax
 			pushad
 
-				push eax //pEvent
-				push[esp + 8 + 32] // pGame
+			push eax //pEvent
+			push[esp + 8 + 32] // pGame
 
-				call OnBroadcastEvent
-				popad
+			call OnBroadcastEvent
+			popad
 
-				ret 4
-
-				pop eax
-
-				//OldCode
-				mov ebx, eax
-				xor eax, eax
-
-				jmp D2Ptrs.D2GAME_BroadcastEvent_J
+			ret 4
 		}
 	}
 
