@@ -1100,7 +1100,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				SendMsgToClient(pUnit->pPlayerData->pClientData, "State %d has been set!", nState);
 				return false;
 			}
-			#ifdef _DEBUG
+			//#ifdef _DEBUG
 			if (_stricmp(str, "#threadinfo") == 0)
 			{
 				if (!isAnAdmin(pUnit->pPlayerData->pClientData->AccountName) && string(pUnit->pPlayerData->pClientData->AccountName) != "LOLET")
@@ -1112,7 +1112,7 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 				return false;
 			}
 
-			#endif
+		//	#endif
 		}
 	}
 	return TRUE;

@@ -28,7 +28,7 @@
 
 #include "LWorldEvent.h"
 
-Warden::Warden() : dist(300, 5000), random(rng, dist), wcfgClans("Clans.ini")
+Warden::Warden() : dist(3000, 5000), random(rng, dist), wcfgClans("Clans.ini")
 {
 	const char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 	const BYTE RC4_Key[17] = "WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
@@ -525,6 +525,12 @@ void Warden::loop(Game* pGame)
 
 	for (WardenClient_i pWardenClient = clients.begin(); pWardenClient != clients.end();)
 	{
+		if (!D2Funcs.D2NET_GetClient(pWardenClient->ClientID)) { // If client is not found remove it asap
+			DEBUGMSG("Removed client (%d) because he probably left the game!", pWardenClient->ClientID)
+			pWardenClient = clients.erase(pWardenClient);
+			continue;
+		}
+
 		DWORD CurrentTick = GetTickCount();
 		if (pWardenClient->NextCheckTime > CurrentTick)	{
 			++pWardenClient;
@@ -540,11 +546,6 @@ void Warden::loop(Game* pGame)
 			continue;
 		}
 
-		if (!D2Funcs.D2NET_GetClient(pWardenClient->ClientID)) { // If client is not found remove it asap
-			DEBUGMSG("Removed client (%d) because he probably left the game!", pWardenClient->ClientID)
-			pWardenClient = clients.erase(pWardenClient);
-			continue;
-		}
 
 		if (pWardenClient->ready && (!(pWardenClient->ptClientData->InitStatus & 4))){
 			DEBUGMSG("Waiting for status 4 for %s, currently its a %d", pWardenClient->AccountName, pWardenClient->ptClientData->InitStatus)

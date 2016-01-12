@@ -47,7 +47,7 @@ WardenClient::WardenClient(DWORD ClientId, DWORD sessionKey)
 	ptClientData = 0;
 
 	ClientLogonTime = 0;
-	NextCheckTime = GetTickCount() + 2000;
+	NextCheckTime = GetTickCount() + 10000;
 
 	WardenStatus = WARDEN_START;
 	CheckCounter = 0;
