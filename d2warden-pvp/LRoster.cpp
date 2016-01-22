@@ -125,14 +125,9 @@ void __fastcall OnGameDestroy(Game* ptGame)
 {
 	DEBUGMSG("Closing game %s", ptGame->GameName);
 	LRoster::Clear(ptGame);
-	LSpectator *l = ptGame->pLSpectator;
-	while (l)
-	{
-		LSpectator *d = l;
-		l = l->pNext;
-		D2Funcs.FOG_FreeServerMemory(ptGame->pMemPool, d, __FILE__, __LINE__, NULL);
-	}
-	ptGame->pLSpectator = 0;
+
+	ptGame->pSpectators->clear();
+	delete ptGame->pSpectators;
 }
 
 /*

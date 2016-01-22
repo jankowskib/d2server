@@ -20,6 +20,10 @@
 #ifndef COMMONSTRUCTS_H__
 #define COMMONSTRUCTS_H__
 
+using namespace std;
+
+#include <list>
+
 struct PlayerTrade;
 struct ClientData;
 struct QuestFlags;
@@ -268,6 +272,13 @@ struct LSpectator
 	LSpectator *pNext;
 	LSpectator *pPrev;
 };
+
+struct PlayerObservation
+{
+	DWORD ObservatorId;
+	DWORD UnitId;
+};
+
 
 
 struct Path  // same as 1.11b (1.13d), sizof 0x200
@@ -880,6 +891,7 @@ struct Game
 	DWORD LastVictim;					//0x201C
 	char szRekordHolder[16];			//0x2020
 	LSpectator *pLSpectator;			//0x2030
+	list<PlayerObservation> *pSpectators;//0x2034
 	struct {			
 		BOOL bOpenedDurielPortal : 1;		
 		BOOL bOpenedLilithPortal : 1;
@@ -891,7 +903,7 @@ struct Game
 		BOOL bSpawnedDiablo : 1;
 		BOOL bSpawnedMephisto : 1;
 		BOOL bSpawnedBaal : 1;
-	} bUberQuestFlags;					//0x2034
+	} bUberQuestFlags;					//0x2038
 };
 
 

@@ -1125,4 +1125,6 @@ void GAME_EmptyExtendedMemory(Game* pGame)
 	BEGINDEBUGMSG("Clearing memory of extended Game...");
 	memset((BYTE*)pGame + 0x1DF4, 0, sizeof(Game) - 0x1DF4);
 	FINISHDEBUGMSG("ok!");
+	DEBUGMSG("Initing the PlayerObservers list")
+	pGame->pSpectators = new list<PlayerObservation>();
 }

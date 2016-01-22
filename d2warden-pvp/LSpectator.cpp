@@ -31,49 +31,70 @@ void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, WORD xPos, 
 	WORD UnitX = D2Funcs.D2GAME_GetUnitX(pWatchedPlayer);
 	WORD UnitY = D2Funcs.D2GAME_GetUnitY(pWatchedPlayer);
 
-	for (LSpectator* l = pGame->pLSpectator; l; l = l->pNext)
-	{
-		if (l->UnitUID == pWatchedPlayer->dwUnitId)
+	for (auto &obs : *pGame->pSpectators) {
+		if (obs.UnitId != pWatchedPlayer->dwUnitId)
+			continue;
+		UnitAny * pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, obs.ObservatorId, UNIT_PLAYER);
+		if (!pWatcher) continue;
+
+		Room1* aRoom = D2Funcs.D2COMMON_GetUnitRoom(pWatchedPlayer);
+		Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(pWatcher);
+		if (!mRoom || !aRoom) continue;
+
+		//POINT Pos = { (xPos + UnitX) / 2, (yPos + UnitY) / 2 };
+		D2POINT Pos = { xPos, yPos };
+		D2POINT Out = { 0, 0 };
+
+		aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, aRoom, &Out, 0);
+		if (aRoom && Out.x && Out.y)
 		{
-			UnitAny * pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, l->WatcherUID, UNIT_PLAYER);
-			if (!pWatcher) continue;
-
-			Room1* aRoom = D2Funcs.D2COMMON_GetUnitRoom(pWatchedPlayer);
-			Room1* mRoom = D2Funcs.D2COMMON_GetUnitRoom(pWatcher);
-			if (!mRoom || !aRoom) continue;
-
-			//POINT Pos = { (xPos + UnitX) / 2, (yPos + UnitY) / 2 };
-			D2POINT Pos = { xPos, yPos };
-			D2POINT Out = { 0, 0 };
-
-			aRoom = D2ASMFuncs::D2GAME_FindFreeCoords(&Pos, aRoom, &Out, 0);
-			if (aRoom && Out.x && Out.y)
+			int mX = D2Funcs.D2COMMON_GetPathX(pWatcher->pPath);
+			int mY = D2Funcs.D2COMMON_GetPathY(pWatcher->pPath);
+			if (aRoom == mRoom)
 			{
-				int mX = D2Funcs.D2COMMON_GetPathX(pWatcher->pPath);
-				int mY = D2Funcs.D2COMMON_GetPathY(pWatcher->pPath);
-				if (aRoom == mRoom)
+				int	aRange = ((Pos.x - mX)*(Pos.x - mX)) + ((Pos.y - mY)*(Pos.y - mY));
+				if (aRange > (25 * 25))
 				{
-					int	aRange = ((Pos.x - mX)*(Pos.x - mX)) + ((Pos.y - mY)*(Pos.y - mY));
-					if (aRange > (25 * 25))
-					{
-						DEBUGMSG("[SPEC] Moving w/o Room to [%d,%d], range = %d", Out.x, Out.y, aRange)
-							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, 0, pGame, pWatcher);
-					}
-				}
-				else
-				{
-					int	aRange = ((Pos.x - mX)*(Pos.x - mX)) + ((Pos.y - mY)*(Pos.y - mY));
-					if (aRange > (25 * 25))
-					{
-						DEBUGMSG("[SPEC] Moving with Room to [%d,%d]", Out.x, Out.y)
-							D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, pGame, pWatcher);
-					}
+					DEBUGMSG("[SPEC] Moving w/o Room to [%d,%d], range = %d", Out.x, Out.y, aRange)
+						D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, 0, pGame, pWatcher);
 				}
 			}
-
+			else
+			{
+				int	aRange = ((Pos.x - mX)*(Pos.x - mX)) + ((Pos.y - mY)*(Pos.y - mY));
+				if (aRange > (25 * 25))
+				{
+					DEBUGMSG("[SPEC] Moving with Room to [%d,%d]", Out.x, Out.y)
+						D2ASMFuncs::D2GAME_TeleportUnit(Out.x, Out.y, aRoom, pGame, pWatcher);
+				}
+			}
 		}
 	}
+}
 
+
+void SPECTATOR_ResetUnitState(UnitAny *pWatcher)
+{
+		DEBUGMSG("Cleaning the specer")
+		pWatcher->dwFlags |= UNITFLAG_SELECTABLE;
+		pWatcher->dwFlags &= ~(UNITFLAG_DEATHVANISH | UNITFLAG_DEAD | UNITFLAG_NEUTRAL);
+		D2Funcs.D2COMMON_SetGfxState(pWatcher, D2EX_SPECTATOR_STATE, 0);
+		D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::uninterruptable, 0);
+		pWatcher->pPath->dwCollisionFlag = 0x1C09;
+		pWatcher->pPath->_5[0] = 1;
+		pWatcher->pPath->_5[1] = 128;
+		D2Funcs.D2COMMON_SetStat(pWatcher, STAT_HP, D2Funcs.D2COMMON_GetStatSigned(pWatcher, STAT_MAXHP, 0), 0); // Restore hp
+		int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
+		int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
+		if (aCurrLevel != aLevel) 
+			D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, pWatcher->pGame);
+
+		ExEventSpecatorEnd msg;
+		msg.P_A6 = 0xA6;
+		msg.MsgType = EXEVENT_SPECTATOR_END;
+		msg.PacketLen = sizeof(ExEventSpecatorEnd);
+		D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorEnd));
+		pWatcher->pPlayerData->isSpecing = 0;
 }
 
 /*
@@ -81,59 +102,23 @@ void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, WORD xPos, 
 */
 void SPECTATOR_RemoveFromQueue(Game* pGame, DWORD QuitterId)
 {
-	LSpectator *l = pGame->pLSpectator;
-	while (l)
-	{
-		if (l->UnitUID == QuitterId || l->WatcherUID == QuitterId)
-		{
-			DEBUGMSG("Looking for unit 0x%x", l->WatcherUID)
-			UnitAny *pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, l->WatcherUID, UNIT_PLAYER);
-			if (pWatcher)
-			{
-				DEBUGMSG("Cleaning the specer")
-				pWatcher->dwFlags |= UNITFLAG_SELECTABLE;
-				pWatcher->dwFlags &= ~(UNITFLAG_DEATHVANISH | UNITFLAG_DEAD | UNITFLAG_NEUTRAL);
-				D2Funcs.D2COMMON_SetGfxState(pWatcher, D2EX_SPECTATOR_STATE, 0);
-				D2Funcs.D2COMMON_SetGfxState(pWatcher, D2States::uninterruptable, 0);
-				pWatcher->pPath->dwCollisionFlag = 0x1C09;
-				pWatcher->pPath->_5[0] = 1;
-				pWatcher->pPath->_5[1] = 128;
-				D2Funcs.D2COMMON_SetStat(pWatcher, STAT_HP, D2Funcs.D2COMMON_GetStatSigned(pWatcher, STAT_MAXHP, 0), 0); // Restore hp
-				int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
-				int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
-				if (aCurrLevel != aLevel) D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, pGame);
+	for (auto &obs : *pGame->pSpectators) {
+		if (obs.UnitId != QuitterId && obs.ObservatorId != QuitterId)
+			continue;
 
-				ExEventSpecatorEnd msg;
-				msg.P_A6 = 0xA6;
-				msg.MsgType = EXEVENT_SPECTATOR_END;
-				msg.PacketLen = sizeof(ExEventSpecatorEnd);
-				D2ASMFuncs::D2GAME_SendPacket(pWatcher->pPlayerData->pClientData, (BYTE*)&msg, sizeof(ExEventSpecatorEnd));
-				pWatcher->pPlayerData->isSpecing = 0;
-			}
-
-
-			LSpectator *d = l;
-			if (l->pPrev)
-			{
-				DEBUGMSG("Removing neighbour spec node...")
-					l->pPrev->pNext = l->pNext;
-				l = l->pNext;
-				D2Funcs.FOG_FreeServerMemory(pGame->pMemPool, d, __FILE__, __LINE__, NULL);
-				continue;
-			}
-			else
-			{
-				DEBUGMSG("Removing single spec node...")
-					pGame->pLSpectator = l->pNext;
-				l = l->pNext;
-				if (l)
-					l->pPrev = 0;
-				D2Funcs.FOG_FreeServerMemory(pGame->pMemPool, d, __FILE__, __LINE__, NULL);
-				continue;
-			}
-		}
-		l = l->pNext;
+		DEBUGMSG("Looking for unit 0x%x", obs.ObservatorId)
+		UnitAny *pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, obs.ObservatorId, UNIT_PLAYER);
+		if (pWatcher)
+			SPECTATOR_ResetUnitState(pWatcher);
+		
 	}
+	pGame->pSpectators->remove_if([&](PlayerObservation const & obs){
+		if (obs.ObservatorId == QuitterId || obs.UnitId == QuitterId)
+			DEBUGMSG("Removing %d", QuitterId);
+
+		return obs.ObservatorId == QuitterId || obs.UnitId == QuitterId;
+	});
+
 }
 
 DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit)
@@ -166,29 +151,9 @@ DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit)
 		SendMsgToClient(pWatcher->pPlayerData->pClientData, "You cannot watch a dead player or being a dead!");
 		return MSG_OK;
 	}
-	LSpectator * pSpec = (LSpectator*)D2Funcs.FOG_AllocServerMemory(pGame->pMemPool, sizeof(LSpectator), __FILE__, __LINE__, NULL);
-	pSpec->UnitUID = pUnit->dwUnitId;
-	pSpec->WatcherUID = pWatcher->dwUnitId;
 
-	LSpectator *l = pGame->pLSpectator;
-	for (; l; l = l->pNext)
-	{
-		if (!l->pNext)
-			break;
-	}
-
-	if (l)
-	{
-		pSpec->pPrev = l;
-		pSpec->pNext = 0;
-		l->pNext = pSpec;
-	}
-	else
-	{
-		pSpec->pPrev = 0;
-		pSpec->pNext = 0;
-		pGame->pLSpectator = pSpec;
-	}
+	PlayerObservation obs = { pWatcher->dwUnitId, pUnit->dwUnitId };
+	pGame->pSpectators->emplace_back(obs);
 	
 	pWatcher->pPlayerData->isSpecing = 1;
 
