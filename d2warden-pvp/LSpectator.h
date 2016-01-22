@@ -22,6 +22,6 @@
 
 DWORD SPECTATOR_OnClickSpecate(Game *pGame, UnitAny* pWatcher, UnitAny* pUnit);
 void SPECTATOR_RemoveFromQueue(Game* pGame, DWORD QuitterId);
-void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, int xPos, int yPos);
+void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, WORD xPos, WORD yPos);
 
 #endif

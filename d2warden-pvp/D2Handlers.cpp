@@ -788,6 +788,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 
 								DEBUGMSG("Found client %s", pClientNear->CharName)
 								UnitAny* pNearUnit = pClientNear->pPlayerUnit;
+								if (D2GAME_IsUnitDead(pNearUnit))
+									continue;
 								if (unitParty != 0xFFFF && unitParty == D2ASMFuncs::D2GAME_GetPartyID(pNearUnit))
 									continue;
 								if (!D2ASMFuncs::D2GAME_isUnitInRange(pUnit->pGame, pUnit->dwUnitId, UNIT_PLAYER, pNearUnit, 15)) {
@@ -800,8 +802,8 @@ BOOL __fastcall OnChat(UnitAny* pUnit, BYTE *ThePacket)
 							}
 						}
 						
-						D2ASMFuncs::D2GAME_MoveUnitToLevelId(pUnit, aLevel, pUnit->pGame);
 						SPECTATOR_RemoveFromQueue(pUnit->pGame, pUnit->dwUnitId);
+						D2ASMFuncs::D2GAME_MoveUnitToLevelId(pUnit, aLevel, pUnit->pGame);
 					}
 				}
 				if (pUnit->pGame->bFestivalMode == 1)

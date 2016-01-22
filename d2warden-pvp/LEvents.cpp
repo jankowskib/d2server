@@ -377,25 +377,6 @@ void __stdcall OnBroadcastEvent(Game* pGame, EventPacket * pEvent)
 			DEBUGMSG("EVENT_TIMEOUT")
 		case EVENT_LEFT: 
 		case EVENT_DROPPED:
-		{
-
-			/*
-			DEBUGMSG("[REMOVECLIENT] Removing (*%s) %s from WardenQueue", pEvent->Name2, pEvent->Name1);
-			WardenClient_i pWardenClient = Warden::getInstance(__FUNCTION__).findClientByName(pEvent->Name1);
-			if(pWardenClient == Warden::getInstance(__FUNCTION__).getInvalidClient()) 
-			{
-				DEBUGMSG("[REMOVECLIENT] Failed to find WardenClient!");
-				return;
-			}
-			SPECTATOR_RemoveFromQueue(pGame, pWardenClient->ptClientData->UnitId);
-			*/
-			//TODO: Think where to move this code^^
-			ClientData* pClient = FindClientDataByName(pGame, pEvent->Name1);
-			if (pClient && pClient->InitStatus == 4 && pClient->pPlayerUnit)
-			{
-				SPECTATOR_RemoveFromQueue(pGame, pClient->pPlayerUnit->dwUnitId);
-			}
-		}
 		break;
 	}
 

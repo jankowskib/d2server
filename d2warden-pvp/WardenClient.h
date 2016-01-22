@@ -57,7 +57,7 @@ public:
 	void request(DWORD Addr, BYTE Bytes);
 
 	DWORD ClientID;
-	DWORD ErrorCount;
+	DWORD UnitID;
 
 	UnitAny* ptPlayer;
 	Game* ptGame;
@@ -73,6 +73,7 @@ public:
 	DWORD NextCheckTime;
 
 	WardenStatus WardenStatus;
+	DWORD ErrorCount;
 	BYTE CheckCounter;
 	BYTE LocaleId;
 	BYTE NewPatch;

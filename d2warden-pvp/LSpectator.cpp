@@ -26,7 +26,7 @@
 /*
 	Updates position on every player that observes WatchedPlayer
 */
-void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, int xPos, int yPos)
+void SPECTATOR_UpdatePositions(Game* pGame, UnitAny* pWatchedPlayer, WORD xPos, WORD yPos)
 {
 	WORD UnitX = D2Funcs.D2GAME_GetUnitX(pWatchedPlayer);
 	WORD UnitY = D2Funcs.D2GAME_GetUnitY(pWatchedPlayer);

@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "WardenClient.h"
+#include "LSpectator.h"
 #include "RC4.h"
 
 
@@ -100,6 +101,7 @@ void WardenClient::setup(Game* pGame, ClientData* pClient)
 	ptClientData = pClient;
 	ptGame = pGame;
 	ptPlayer = pClient->pPlayerUnit;
+	UnitID = ptPlayer->dwUnitId;
 	ready = true;
 
 	DEBUGMSG("Setup finished for %s!", pClient->CharName);
@@ -234,4 +236,10 @@ WardenClient::~WardenClient()
 {
 	DEBUGMSG("Removing a WardenClient")
 	removePacket();
+	
+	if (ready && ptClientData->InitStatus == 4)
+	{
+		DEBUGMSG("Removing quitter (0x%x) from spec tree", UnitID)
+		SPECTATOR_RemoveFromQueue(ptGame, UnitID);
+	}
 }

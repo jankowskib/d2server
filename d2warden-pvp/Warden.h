@@ -88,8 +88,8 @@ public:
 	void onRemoveClient(WardenClient_i client);
 
 	//configuration
-	int wcfgDumpInterval;
-	int wcfgExpRange;
+	DWORD wcfgDumpInterval;
+	DWORD wcfgExpRange;
 	DWORD wcfgRespawnTimer;
 	BYTE wcfgMaxPlayers;
 	BYTE wcfgD2EXVersion;
@@ -155,12 +155,12 @@ private:
 	bool enabled;
 
 	DWORD moduleLength;
-	unsigned char *moduleEncrypted;
+	BYTE *moduleEncrypted;
 
 	list<WardenClient> clients;
 
-	Warden(const Warden&);
-	Warden& operator=(const Warden&);
+	Warden(const Warden&) = delete;
+	Warden& operator=(const Warden&) = delete;
 };
 
 #endif
