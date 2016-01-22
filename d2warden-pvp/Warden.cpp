@@ -28,7 +28,7 @@
 
 #include "LWorldEvent.h"
 
-Warden::Warden() : dist(3000, 5000), random(rng, dist), wcfgClans("Clans.ini")
+Warden::Warden() : dist(3000, 5000), random(rng, dist), wcfgClans("Clans.ini"), uptime(GetTickCount())
 {
 	const char Warden_MOD[256] = "3ea42f5ac80f0d2deb35d99b4e9a780b.mod";
 	const BYTE RC4_Key[17] = "WardenBy_Marsgod"; //3ea42f5ac80f0d2deb35d99b4e9a780b98ff
