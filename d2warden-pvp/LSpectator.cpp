@@ -86,6 +86,7 @@ void SPECTATOR_RemoveFromQueue(Game* pGame, DWORD QuitterId)
 	{
 		if (l->UnitUID == QuitterId || l->WatcherUID == QuitterId)
 		{
+			DEBUGMSG("Looking for unit 0x%x", l->WatcherUID)
 			UnitAny *pWatcher = D2ASMFuncs::D2GAME_FindUnit(pGame, l->WatcherUID, UNIT_PLAYER);
 			if (pWatcher)
 			{
@@ -97,6 +98,7 @@ void SPECTATOR_RemoveFromQueue(Game* pGame, DWORD QuitterId)
 				pWatcher->pPath->dwCollisionFlag = 0x1C09;
 				pWatcher->pPath->_5[0] = 1;
 				pWatcher->pPath->_5[1] = 128;
+				D2Funcs.D2COMMON_SetStat(pWatcher, STAT_HP, D2Funcs.D2COMMON_GetStatSigned(pWatcher, STAT_MAXHP, 0), 0); // Restore hp
 				int aLevel = D2Funcs.D2COMMON_GetTownLevel(pWatcher->dwAct);
 				int aCurrLevel = D2Funcs.D2COMMON_GetLevelNoByRoom(pWatcher->pPath->pRoom1);
 				if (aCurrLevel != aLevel) D2ASMFuncs::D2GAME_MoveUnitToLevelId(pWatcher, aLevel, pGame);
