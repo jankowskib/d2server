@@ -82,7 +82,7 @@ namespace D2Stubs
 		}
 
 		Log("======== Dump of new nodes ======");
-		for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3; ++i)
+		for (int i = 0; i < Warden::getInstance().wcfgMaxPlayers + 3; ++i)
 		{
 			Log("NEWNODES[%d] = %d", i, pMonster->pGame->pNewNodes[i]);
 		}
@@ -92,7 +92,7 @@ namespace D2Stubs
 		Log("pGame->bSpawnedClone 0x%x", pMonster->pGame->bSpawnedClone);
 		Log("pGame->dwGameState 0x%x", pMonster->pGame->dwGameState);
 
-		Log("Warden clients %d", Warden::getInstance(__FUNCTION__).getClientCount());
+		Log("Warden clients %d", Warden::getInstance().getClientCount());
 		Log("=== Dump of players in current game ====");
 		int n = 0;
 		for (ClientData* pClient = pMonster->pGame->pClientList; pClient; pClient = pClient->ptPrevious)

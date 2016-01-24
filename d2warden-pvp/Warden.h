@@ -48,20 +48,9 @@ public:
 	~Warden();
 
 
-	static Warden& getInstance(char* str)
+	static Warden& getInstance()
 	{
 		static Warden warden;
-		int old = warden.threadMap.size();
-		if (warden.threadMap.count(GetCurrentThreadId()))
-		for (auto &funcs : warden.threadMap[GetCurrentThreadId()]) {
-			if (funcs == str)
-				return warden;
-		}
-		warden.threadMap[GetCurrentThreadId()].emplace_back(string(str));
-		if (warden.threadMap.size() > old)
-		{
-			Debug("", "Should break here!");
-		}
 		return warden;
 	}
 

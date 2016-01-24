@@ -75,6 +75,9 @@ void Warden::patchD2()
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
 #ifdef VER_113D
+	
+	//PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0xC0150), 0x8518768B, 4, "Undo crit section patch [TEST]");
+
 	PatchGS(CUSTOM, GetDllOffset("Fog.dll", 0x202C1), 0xEB, 1, "Disable reconnect spam hacklisting");
 
 	PatchGS(CALL, GetDllOffset("D2Game.dll", D2GAME_PARSE_CREATE_PACKETS), (DWORD)OnCreatePacketReceive, 5, "Create packet parser");

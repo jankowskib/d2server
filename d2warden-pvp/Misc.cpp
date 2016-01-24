@@ -66,7 +66,7 @@ bool isAnAdmin(std::string szAcc)
 {
  boost::to_lower(szAcc);
 
- for (const auto &i : Warden::getInstance(__FUNCTION__).wcfgAdmins)
+ for (const auto &i : Warden::getInstance().wcfgAdmins)
 	 if (szAcc == i) 
 		 return true;
 

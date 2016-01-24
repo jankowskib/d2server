@@ -25,7 +25,7 @@
 */
 void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild)  // 0xEDF00
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 
 	if (!ptGame) return;
 	if (!ptUnit) return;
@@ -35,10 +35,10 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 	UnitNode** pNodes = ptGame->pNewNodes;
 
 
-	for (int n = 0; n < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers; ++n)
+	for (int n = 0; n < Warden::getInstance().wcfgMaxPlayers; ++n)
 	{
 		if (!pNodes[n]) {
-			if (ptGame->nClients <= Warden::getInstance(__FUNCTION__).wcfgMaxPlayers && n < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers)
+			if (ptGame->nClients <= Warden::getInstance().wcfgMaxPlayers && n < Warden::getInstance().wcfgMaxPlayers)
 			{
 				UnitNode* ptUNode = (UnitNode *)D2Funcs.FOG_AllocServerMemory(ptGame->pMemPool, sizeof(UnitNode), __FILE__, __LINE__, 0);
 				if (ptUNode)
@@ -57,7 +57,7 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 			}
 			else
 			{
-				Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers, n, Warden::getInstance(__FUNCTION__).wcfgMaxPlayers);
+				Log("NodesEX: nClients=%d <= wcfgMaxPlayers=%d || z=%d < MaxPlayers=%d", ptGame->nClients, Warden::getInstance().wcfgMaxPlayers, n, Warden::getInstance().wcfgMaxPlayers);
 			}
 			break;
 		}
@@ -68,7 +68,7 @@ void __fastcall NODES_AssignNode(Game *ptGame, UnitAny *ptUnit, UnitNode* pChild
 
 void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 
 	if (!ptGame) return;
 	if (!ptUnit) return;
@@ -80,7 +80,7 @@ void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 	UnitNode* pNode = ptGame->pNewNodes[aNodeIdx];
 	if (!pNode) return;
 
-	if (aNodeIdx >= Warden::getInstance(__FUNCTION__).wcfgMaxPlayers)
+	if (aNodeIdx >= Warden::getInstance().wcfgMaxPlayers)
 	{
 		while (pNode->ptUnit != ptUnit)
 		{
@@ -131,7 +131,7 @@ void __fastcall NODES_FreeChildNode(Game *ptGame, UnitAny *ptUnit)
 
 void __fastcall NODES_FreeUnitNode(Game* ptGame, UnitAny* ptUnit)
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 	if (!ptGame) return;
 	if (!ptUnit) return;
 	if (ptUnit->dwType > UNIT_MONSTER) return;
@@ -152,12 +152,12 @@ void __fastcall NODES_FreeUnitNode(Game* ptGame, UnitAny* ptUnit)
 
 BYTE __stdcall getMaxPlayers()
 {
-	return Warden::getInstance(__FUNCTION__).wcfgMaxPlayers;
+	return Warden::getInstance().wcfgMaxPlayers;
 }
 
 UnitNode *__fastcall NODES_GetUnitNode(UnitAny *ptUnit, Game *ptGame)  //0x6FD0DC50
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 	if (!ptGame || !ptUnit) return 0;
 	if (ptUnit->dwType > 1) return 0;
 	if (ptUnit->dwNodeIdx == NEU_NODE) return 0;
@@ -171,13 +171,13 @@ UnitNode *__fastcall NODES_GetUnitNode(UnitAny *ptUnit, Game *ptGame)  //0x6FD0D
 
 void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNode, int NodeIdx) ///6FD0DDE0
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 	UnitNode *pParentNode;
 	UnitNode *pCurrentNode;
 	if (!ptGame || !ptUnit || ptUnit->dwNodeIdx != NEU_NODE || ptUnit->dwType > UNIT_MONSTER)
 		return;
 
-	if (NodeIdx != Warden::getInstance(__FUNCTION__).wcfgMaxPlayers && NodeIdx != Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 1)
+	if (NodeIdx != Warden::getInstance().wcfgMaxPlayers && NodeIdx != Warden::getInstance().wcfgMaxPlayers + 1)
 		return;
 
 	pCurrentNode = ptGame->pNewNodes[NodeIdx];
@@ -207,10 +207,10 @@ void __fastcall NODES_SetUnitNode(Game *ptGame, UnitAny *ptUnit, UnitNode* ptNod
 
 void __fastcall NODES_AddAsParentNode(Game *ptGame, UnitAny *ptUnit, UnitNode *ptNode, int NodeIdx) //0x6FD0DE70
 {
-	int NEU_NODE = Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 3;
+	int NEU_NODE = Warden::getInstance().wcfgMaxPlayers + 3;
 	if (!ptGame || !ptUnit) return;
 	if (ptUnit->dwNodeIdx != NEU_NODE) return;
-	if (NodeIdx >= Warden::getInstance(__FUNCTION__).wcfgMaxPlayers) return;
+	if (NodeIdx >= Warden::getInstance().wcfgMaxPlayers) return;
 	if (ptUnit->dwType > UNIT_MONSTER) return;
 
 	UnitNode * pCurrentNode = ptGame->pNewNodes[NodeIdx];
@@ -246,7 +246,7 @@ void __fastcall NODES_Free(Game *ptGame)
 
 	UnitNode** pNodes = ptGame->pNewNodes;
 
-	for (int i = 0; i < Warden::getInstance(__FUNCTION__).wcfgMaxPlayers + 2; ++i)
+	for (int i = 0; i < Warden::getInstance().wcfgMaxPlayers + 2; ++i)
 	{
 		if (pNodes[i])
 		{

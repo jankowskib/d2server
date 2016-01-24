@@ -28,8 +28,8 @@
 */
 void __stdcall MainLoop(Game *pGame)
 {
-	if (!Warden::getInstance(__FUNCTION__).empty())
-		Warden::getInstance(__FUNCTION__).loop(pGame);
+	if (!Warden::getInstance().empty())
+		Warden::getInstance().loop(pGame);
 }
 
 void __declspec(naked) MainLoop_ASM()
