@@ -58,6 +58,13 @@ struct D2PoolMemory;
 struct ExtendGameInfo;
 
 
+struct TxtLinker
+{
+	void *pLink;
+	DWORD Unk[3];
+};
+
+
 struct WEItem
 {
 	DWORD ItemCode[20];
@@ -1107,6 +1114,43 @@ struct px5e
 	BYTE P_5E;		//0x00
 	BYTE nButton;	//0x01
 	DWORD dwUnitId; //0x02
+};
+
+
+/*
+Delayed state (reszied 0x7 -> 0x8)
+*/
+struct pxa7
+{
+	BYTE Header;	//0x00
+	BYTE UnitType;	//0x01
+	DWORD UnitId;	//0x02
+	WORD StateNo;	//0x06 was BYTE
+};
+
+
+/*
+On State Set packet (resized 0x8+ *state data* -> 0x9+ *state data*)
+*/
+struct pxa8
+{
+	BYTE Header;
+	BYTE UnitType;
+	DWORD UnitId;
+	BYTE PacketLen;
+	WORD StateNo; // was BYTE
+	BYTE Data[1];  // Random size
+};
+
+/*
+Remove state (reszied 0x7 -> 0x8)
+*/
+struct pxa9
+{
+	BYTE Header;
+	BYTE UnitType;
+	DWORD UnitId;
+	WORD StateNo; // was BYTE
 };
 
 struct EventPacket // (1.13d)

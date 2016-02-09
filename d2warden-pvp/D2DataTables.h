@@ -1,4 +1,7 @@
 
+
+struct TxtLinker;
+
 struct ArenaTxt
 {
   DWORD dwSuicide;
@@ -1712,9 +1715,9 @@ struct sgptDataTable {
 	BYTE*	pRunes;					//0xB0
 	BYTE*	pHireDescs;				//0xB4
 	DWORD	dwHireDescsRecs;		//0xB8
-	StatesTxt*	pStates;			//0xBC
-	DWORD	dwStatesRecs;			//0xC0
-	DWORD	dwStates;				//0xC4
+	StatesTxt*	pStatesTxt;			//0xBC
+	TxtLinker*  pStatesLinker;		//0xC0
+	DWORD	dwStatesRecs;			//0xC4
 	BYTE*	pStateMaskFirst;		//0xC8
 	BYTE*	pStateMaskArr[40];		//0xCC
 	BYTE*	pProgressiveStates;		//0x16C

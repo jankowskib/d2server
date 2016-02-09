@@ -35,13 +35,13 @@ BOOL __stdcall WardenPreInit()
 	SetupD2Funcs();
 	
 
-	if (!Warden::getInstance(__FUNCTION__).isInited())
+	if (!Warden::getInstance().isInited())
 	{
 		Log("Error during initialization. Stopping...");
 		return FALSE;
 	}
 
-	if (!Warden::getInstance(__FUNCTION__).NextDC)
+	if (!Warden::getInstance().NextDC)
 		WE_GenerateNextDC();
 
 	Log("Warden initialized successfully.");
