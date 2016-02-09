@@ -383,18 +383,18 @@ void Warden::loadConfig()
 		if (atoi(rt) < 7) wcfgTeleChars[atoi(rt)] = TRUE;
 
 	wcfgD2EXVersion = GetPrivateProfileInt("Warden", "D2ExVersion", 16, wcfgConfigFile.c_str());
-	wcfgSpectator = GetPrivateProfileInt("Warden", "EnableSpectator", 1, wcfgConfigFile.c_str());
+	wcfgSpectator = GetPrivateProfileInt("Warden", "EnableSpectator", 0, wcfgConfigFile.c_str());
 	wcfgAddKillerClass = GetPrivateProfileInt("Warden", "AddKillerClass", 0, wcfgConfigFile.c_str());
 	wcfgAutoIdentify = GetPrivateProfileInt("Warden", "AutoIdentify", 0, wcfgConfigFile.c_str());
 	wcfgHostileLevel = GetPrivateProfileInt("Warden", "HostileLevel", 0, wcfgConfigFile.c_str());
 	wcfgRespawnTimer = GetPrivateProfileInt("Warden", "RespawnTimer", 0, wcfgConfigFile.c_str());
-	wcfgDisableHostileDelay = GetPrivateProfileInt("Warden", "DisableHostileDelay", 1, wcfgConfigFile.c_str());
-	wcfgAllowTourMode = GetPrivateProfileInt("Warden", "AllowTourMode", 1, wcfgConfigFile.c_str());
+	wcfgDisableHostileDelay = GetPrivateProfileInt("Warden", "DisableHostileDelay", 0, wcfgConfigFile.c_str());
+	wcfgAllowTourMode = GetPrivateProfileInt("Warden", "AllowTourMode", 0, wcfgConfigFile.c_str());
 	wcfgAllowVanilla = GetPrivateProfileInt("Warden", "AllowVanilla", 0, wcfgConfigFile.c_str());
 	wcfgAllowGU = GetPrivateProfileInt("Warden", "AllowGU", 0, wcfgConfigFile.c_str());
 	wcfgAllowHB = GetPrivateProfileInt("Warden", "AllowHB", 1, wcfgConfigFile.c_str());
 	wcfgAllowNLWW = GetPrivateProfileInt("Warden", "AllowNLWW", 0, wcfgConfigFile.c_str());
-	wcfgAllowLoggin = GetPrivateProfileInt("Warden", "LogChat", 1, wcfgConfigFile.c_str());
+	wcfgAllowLoggin = GetPrivateProfileInt("Warden", "LogChat", 0, wcfgConfigFile.c_str());
 	wcfgDumpInterval = GetPrivateProfileInt("Warden", "ResDumpInterval", 0, wcfgConfigFile.c_str());
 	wcfgMaxPlayers = GetPrivateProfileInt("Warden", "MaxPlayers", 8, wcfgConfigFile.c_str());
 	wcfgMoveToTown = GetPrivateProfileInt("Warden", "MoveToTown", 1, wcfgConfigFile.c_str());
@@ -407,7 +407,13 @@ void Warden::loadConfig()
 	wcfgExpRange = GetPrivateProfileInt("Warden", "ExpRange", 6400, wcfgConfigFile.c_str());
 	wcfgDisableRepairCost = GetPrivateProfileInt("Warden", "DisableRepairCosts", 1, wcfgConfigFile.c_str());
 	wcfgAllowQuests = GetPrivateProfileInt("Warden", "AllowQuests", 1, wcfgConfigFile.c_str());
-	wcfgEnableLevelCmd = GetPrivateProfileInt("Warden", "EnableLevelCmd", 1, wcfgConfigFile.c_str());
+	wcfgEnableLevelCmd = GetPrivateProfileInt("Warden", "EnableLevelCmd", 0, wcfgConfigFile.c_str());
+
+	wcfgClassicWW = GetPrivateProfileInt("Warden", "EnableClassicWW", 0, wcfgConfigFile.c_str());
+	wcfgDmgRedCap = GetPrivateProfileInt("Warden", "DamageReductionCap", 0, wcfgConfigFile.c_str());
+	wcfgAllowPierceBreakImmunites = GetPrivateProfileInt("Warden", "AllowPierceBreakImmunites", 0, wcfgConfigFile.c_str());
+	wcfgMagicPierceStat = GetPrivateProfileInt("Warden", "MagicPierceStat", 0, wcfgConfigFile.c_str());
+	wcfgPhysPierceStat = GetPrivateProfileInt("Warden", "PhysicalPierceStat", 0, wcfgConfigFile.c_str());
 
 	GetPrivateProfileString("Warden", "UpdateURL", "", URL, 255, wcfgConfigFile.c_str());
 	wcfgUpdateURL = URL;

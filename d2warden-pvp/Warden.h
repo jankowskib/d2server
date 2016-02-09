@@ -80,6 +80,8 @@ public:
 	DWORD wcfgDumpInterval;
 	DWORD wcfgExpRange;
 	DWORD wcfgRespawnTimer;
+	DWORD wcfgMagicPierceStat;
+	DWORD wcfgPhysPierceStat;
 	BYTE wcfgMaxPlayers;
 	BYTE wcfgD2EXVersion;
 	BYTE wcfgSpectator;
@@ -104,6 +106,9 @@ public:
 	BYTE wcfgAllowQuests;
 	BYTE wcfgEnableWE;
 	BYTE wcfgEnableLevelCmd;
+	BYTE wcfgClassicWW;
+	BYTE wcfgDmgRedCap;
+	BYTE wcfgAllowPierceBreakImmunites;
 	string wcfgDatabase;
 	string wcfgDBUser;
 	string wcfgDBPass;

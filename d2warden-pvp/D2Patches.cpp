@@ -76,6 +76,26 @@ void Warden::patchD2()
 
 #ifdef VER_113D
 	
+	if (wcfgClassicWW) {
+		PatchGS(NOP, GetDllOffset("D2Game.dll", 0xC14AB), 0x90, 4, "Bring back the classic ww style");
+	}
+
+	if (wcfgDmgRedCap) {
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x8889F), (BYTE)wcfgDmgRedCap, 1, "Change DR cap");
+	}
+
+	if (wcfgMagicPierceStat) {
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC), (BYTE)wcfgMagicPierceStat, 1, "Set a stat for magic pierce");
+	}
+	
+	if (wcfgPhysPierceStat) {
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC - 0xB0), (BYTE)wcfgPhysPierceStat, 1, "Set a stat for physical pierce");
+	}
+
+	if (wcfgAllowPierceBreakImmunites) {
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x887D0), 0xEB909090, 4, "Allow pierce to break immunities");
+	}
+
 	//PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0xC0150), 0x8518768B, 4, "Undo crit section patch [TEST]");
 
 	PatchGS(CUSTOM, GetDllOffset("Fog.dll", 0x202C1), 0xEB, 1, "Disable reconnect spam hacklisting");
