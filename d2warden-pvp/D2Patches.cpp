@@ -85,11 +85,11 @@ void Warden::patchD2()
 	}
 
 	if (wcfgMagicPierceStat) {
-		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC), (BYTE)wcfgMagicPierceStat, 1, "Set a stat for magic pierce");
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC), (WORD)wcfgMagicPierceStat, 2, "Set a stat for magic pierce");
 	}
 	
 	if (wcfgPhysPierceStat) {
-		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC - 0xB0), (BYTE)wcfgPhysPierceStat, 1, "Set a stat for physical pierce");
+		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x100ECC - 0xB0), (WORD)wcfgPhysPierceStat, 2, "Set a stat for physical pierce");
 	}
 
 	if (wcfgAllowPierceBreakImmunites) {
