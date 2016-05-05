@@ -444,7 +444,7 @@ struct Act // sizeof(0x60)
 struct Attack
 {
 	Game * pGame;				//0x00
-	DWORD * pDifficultyLevelsTxt;//0x04
+	DifficultyLevelsTxt * pDifficultyLevelsTxt;//0x04
 	UnitAny* pAttacker;			//0x08
 	UnitAny* pDefender;			//0x0C
 	DWORD dwAttackerType;		//0x10 (eType of the attacker, this is used so hirelings are treated like players)
@@ -857,6 +857,22 @@ struct Damage
 	DWORD eConvPercent;		// 0x68
 	DWORD _4;					// 0x6C
 };
+
+struct ResRecord	// size 0x2C
+{
+	DWORD dwOffset;				//0x00 its an offset on a Damage structure
+	DWORD nBaseStat;			//0x04
+	DWORD nMaxResStat;			//0x08
+	DWORD nPierceStat;			//0x0C
+	DWORD nAbsPercentStat;		//0x10
+	DWORD nAbsStat;				//0x14
+	DWORD nApplyDR;				//0x18
+	BOOL bHealAttacker;			//0x1C
+	BOOL bDealsDmg;				//0x20
+	char *szDmgName;			//0x24
+	DWORD _1;					//0x28
+};
+
 
 struct Combat  // size 0x88
 {

@@ -39,6 +39,7 @@
 #include "LParty.h"
 #include "LPackets.h"
 #include "LCube.h"
+#include "LDamage.h"
 #include "MainLoop.h"
 
 void Warden::patchD2()
@@ -75,13 +76,13 @@ void Warden::patchD2()
 //	PatchGS(CUSTOM, GetDllOffset("D2Game.dll", D2GAME_TIMER_EXPAND), 16, 1, "Expand Timer List");
 
 #ifdef VER_113D
+
+
+	PatchGS(CALL, GetDllOffset("D2Game.dll", 0x89187), (DWORD)DAMAGE_AppylResistPenalty_STUB, 5, "Change the way the max resist works");
+
 	
 	if (wcfgClassicWW) {
 		PatchGS(NOP, GetDllOffset("D2Game.dll", 0xC14AB), 0x90, 4, "Bring back the classic ww style");
-	}
-
-	if (wcfgDmgRedCap) {
-		PatchGS(CUSTOM, GetDllOffset("D2Game.dll", 0x8889F), (BYTE)wcfgDmgRedCap, 1, "Change DR cap");
 	}
 
 	if (wcfgMagicPierceStat) {

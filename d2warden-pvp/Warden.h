@@ -82,6 +82,12 @@ public:
 	DWORD wcfgRespawnTimer;
 	DWORD wcfgMagicPierceStat;
 	DWORD wcfgPhysPierceStat;
+	DWORD wcfgMaxFireRes;
+	DWORD wcfgMaxColdRes;
+	DWORD wcfgMaxPsnRes;
+	DWORD wcfgMaxLightRes;
+	DWORD wcfgMaxDmgRes;
+
 	BYTE wcfgMaxPlayers;
 	BYTE wcfgD2EXVersion;
 	BYTE wcfgSpectator;
@@ -107,8 +113,8 @@ public:
 	BYTE wcfgEnableWE;
 	BYTE wcfgEnableLevelCmd;
 	BYTE wcfgClassicWW;
-	BYTE wcfgDmgRedCap;
 	BYTE wcfgAllowPierceBreakImmunites;
+
 	string wcfgDatabase;
 	string wcfgDBUser;
 	string wcfgDBPass;

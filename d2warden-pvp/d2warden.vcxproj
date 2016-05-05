@@ -254,6 +254,7 @@ EXIT 0</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="LCube.cpp" />
+    <ClCompile Include="LDamage.cpp" />
     <ClCompile Include="LegacyFuncs.cpp" />
     <ClCompile Include="LPackets.cpp" />
     <ClCompile Include="LParty.cpp" />
@@ -320,6 +321,7 @@ EXIT 0</Command>
     <ClInclude Include="inih\ini.h" />
     <ClInclude Include="introtate.h" />
     <ClInclude Include="LCube.h" />
+    <ClInclude Include="LDamage.h" />
     <ClInclude Include="LegacyFuncs.h" />
     <ClInclude Include="LEvents.h" />
     <ClInclude Include="LItems.h" />

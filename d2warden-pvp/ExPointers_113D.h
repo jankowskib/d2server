@@ -146,6 +146,7 @@ EXFUNCPTR(D2COMMON, LoadAct, Act*, __stdcall, (DWORD ActNumber, DWORD InitSeed, 
 EXFUNCPTR(D2COMMON, GetRoomXYByLevel, Room1*, __stdcall, (Act* ptAct, int LevelNo, int Unk0, int* xPos, int* yPos, int UnitSize), -10632) // 1.13d
 EXFUNCPTR(D2COMMON, ChangeCurrentMode, BOOL, __stdcall, (UnitAny* ptUnit, int Mode), -10193) // 1.13d
 EXFUNCPTR(D2COMMON, GetUnitRoom, Room1*, __stdcall, (UnitAny *ptUnit), -10846) //k
+EXFUNCPTR(D2COMMON, IsMonsterUndead, BOOL, __stdcall, (UnitAny *ptUnit), -10690)
 EXFUNCPTR(D2COMMON, GetPathX, int, __stdcall, (Path* ptPath), -10465) // 1.13d
 EXFUNCPTR(D2COMMON, GetPathY, int, __stdcall, (Path* ptPath), -10030) // 1.13d
 EXFUNCPTR(D2COMMON, GetPathUNK, int, __stdcall, (Path* ptPath), -10349) // 1.13d

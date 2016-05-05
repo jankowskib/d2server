@@ -137,6 +137,9 @@
     <ClCompile Include="inih\cpp\INIReader.cpp">
       <Filter>_LIBS\inih</Filter>
     </ClCompile>
+    <ClCompile Include="LDamage.cpp">
+      <Filter>Source Files\ModuLes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D2Handlers.h">
@@ -261,6 +264,9 @@
     </ClInclude>
     <ClInclude Include="inih\cpp\INIReader.h">
       <Filter>_LIBS\inih</Filter>
+    </ClInclude>
+    <ClInclude Include="LDamage.h">
+      <Filter>Header Files\ModuLes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

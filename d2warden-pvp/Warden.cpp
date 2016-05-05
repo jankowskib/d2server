@@ -410,10 +410,14 @@ void Warden::loadConfig()
 	wcfgEnableLevelCmd = GetPrivateProfileInt("Warden", "EnableLevelCmd", 0, wcfgConfigFile.c_str());
 
 	wcfgClassicWW = GetPrivateProfileInt("Warden", "EnableClassicWW", 0, wcfgConfigFile.c_str());
-	wcfgDmgRedCap = GetPrivateProfileInt("Warden", "DamageReductionCap", 0, wcfgConfigFile.c_str());
 	wcfgAllowPierceBreakImmunites = GetPrivateProfileInt("Warden", "AllowPierceBreakImmunites", 0, wcfgConfigFile.c_str());
 	wcfgMagicPierceStat = GetPrivateProfileInt("Warden", "MagicPierceStat", 0, wcfgConfigFile.c_str());
 	wcfgPhysPierceStat = GetPrivateProfileInt("Warden", "PhysicalPierceStat", 0, wcfgConfigFile.c_str());
+	wcfgMaxFireRes = GetPrivateProfileInt("Warden", "MaxFireRes", 95, wcfgConfigFile.c_str());;
+	wcfgMaxColdRes = GetPrivateProfileInt("Warden", "MaxColdRes", 95, wcfgConfigFile.c_str());;
+	wcfgMaxPsnRes = GetPrivateProfileInt("Warden", "MaxPsnRes", 95, wcfgConfigFile.c_str());;
+	wcfgMaxLightRes = GetPrivateProfileInt("Warden", "MaxLightRes", 95, wcfgConfigFile.c_str());;
+	wcfgMaxDmgRes = GetPrivateProfileInt("Warden", "MaxDmgRes", 50, wcfgConfigFile.c_str());;
 
 	GetPrivateProfileString("Warden", "UpdateURL", "", URL, 255, wcfgConfigFile.c_str());
 	wcfgUpdateURL = URL;
