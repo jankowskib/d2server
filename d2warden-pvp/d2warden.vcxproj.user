@@ -20,8 +20,9 @@
     <LocalDebuggerWorkingDirectory>D:\Inne\D2 Stuff\D2GS\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerAttach>true</LocalDebuggerAttach>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerDebuggerType>NativeOnly</LocalDebuggerDebuggerType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug without service start|Win32'">
     <LocalDebuggerAttach>true</LocalDebuggerAttach>

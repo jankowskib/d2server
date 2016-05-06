@@ -237,7 +237,7 @@ WardenClient::~WardenClient()
 	DEBUGMSG("Removing a WardenClient")
 	removePacket();
 	
-	if (ready && ptClientData->InitStatus == 4)
+	if (ready) // Remove to prevent crash, dunno why i put check there for a player status
 	{
 		DEBUGMSG("Removing quitter (0x%x) from spec tree", UnitID)
 		SPECTATOR_RemoveFromQueue(ptGame, UnitID);
