@@ -127,11 +127,11 @@ void __declspec(naked) DAMAGE_AppylResistPenalty_STUB()
 {
 	__asm {
 
+		push ebx
 		push edi
-			push ebx
 
-			call DAMAGE_ApplyResistPenalty
+		call DAMAGE_ApplyResistPenalty
 
-			ret
+		ret
 	}
 }

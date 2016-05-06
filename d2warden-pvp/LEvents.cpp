@@ -166,6 +166,16 @@ void EVENTS_OnGameJoin(Game* pGame, ClientData* pClient)
 	SendExEvent(pClient, EXOP_SET_MAX_PLAYERS, Warden::getInstance().wcfgMaxPlayers);
 	SendExEvent(pClient, EXOP_RESPAWNTIME, Warden::getInstance().wcfgRespawnTimer);
 
+	// Send a new res cap to the client if we don't use default one
+	if (Warden::getInstance().wcfgMaxFireRes != 95)
+		SendExEvent(pClient, EXOP_SET_MAX_FIRE_RES_CAP, Warden::getInstance().wcfgMaxFireRes);
+	if (Warden::getInstance().wcfgMaxColdRes != 95)
+		SendExEvent(pClient, EXOP_SET_MAX_COLD_RES_CAP, Warden::getInstance().wcfgMaxColdRes);
+	if (Warden::getInstance().wcfgMaxLightRes != 95)
+		SendExEvent(pClient, EXOP_SET_MAX_LIGHT_RES_CAP, Warden::getInstance().wcfgMaxLightRes);
+	if (Warden::getInstance().wcfgMaxPsnRes != 95)
+		SendExEvent(pClient, EXOP_SET_MAX_PSN_RES_CAP, Warden::getInstance().wcfgMaxPsnRes);
+
 	EVENTS_SendAccountInfo(pClient);
 	EVENTS_SendClanInfo(pClient);
 
